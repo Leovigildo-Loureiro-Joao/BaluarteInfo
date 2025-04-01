@@ -1,4 +1,4 @@
-package com.igreja.api.services;
+package com.igreja.api.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,27 +6,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 
-public class uploadFiles {
+public class UploadUtils {
     public MultipartFile fileSelect;
     public Path pathSelect;
     public String unique;
-    public  Map<String, Object> PrepararUpload(MultipartFile file,String kindName){
+    public void PrepararUpload(MultipartFile file,String kindName){
         try {
-            if (file.isEmpty()) {
-                return Map.of( "status",HttpStatus.BAD_REQUEST, "name",file);
+            if (file==null&&file.isEmpty()&&!file.getContentType().contains(kindName)) {
+                return;
             }
-            if (!file.getContentType().contains(kindName)) {
-                return Map.of( "status",HttpStatus.UNSUPPORTED_MEDIA_TYPE, "name",file);
-            }
-
             String filename=StringUtils.cleanPath(file.getOriginalFilename());
 
             Path uploadPath= Paths.get("uploads");
@@ -39,15 +33,17 @@ public class uploadFiles {
 
             pathSelect=path;
             unique=uniqueName;
-            return Map.of("status",HttpStatus.OK,"img", uniqueName);
+            fileSelect=file;
         } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
       
     } 
 
     public void Upload() throws IOException{
+        if (fileSelect.isEmpty()) {
+            throw new IOException("Sem ficheiro");
+        }
         try (InputStream fileInputStream = fileSelect.getInputStream()) {
             Files.copy(fileInputStream, pathSelect, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {

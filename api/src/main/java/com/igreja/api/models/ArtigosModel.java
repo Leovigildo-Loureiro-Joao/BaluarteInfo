@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 @Entity
@@ -33,7 +34,7 @@ public class ArtigosModel {
     @NotBlank
     private String titulo;
 
-    @NotBlank
+    @NotNull
     private LocalDate dataPublicacao;
 
     @NotBlank
