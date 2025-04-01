@@ -26,24 +26,24 @@ public class InfoIgrejaController {
 
     @PostMapping(value = "/admin/info/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(@ModelAttribute @Valid InfoDto info) throws IOException {
-        infoIgrejaService.PrepararUpload(info.img(), "image");
+        infoIgrejaService.getUpload().PrepararUpload(info.img(), "image");
         try {
             var infos=infoIgrejaService.save(info);
             return ResponseEntity.ok(infos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
      
     }
 
     @PostMapping(value = "/admin/info/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> update(@ModelAttribute @Valid InfoDto info) throws IOException {
-        infoIgrejaService.PrepararUpload(info.img(), "image");
+        infoIgrejaService.getUpload().PrepararUpload(info.img(), "image");
         try {
             var infos=infoIgrejaService.update(info);
             return ResponseEntity.ok(infos);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
      
     }
