@@ -1,5 +1,7 @@
 package com.igreja.api.models;
 
+import java.time.LocalDate;
+
 import com.igreja.api.enums.InfoType;
 
 import jakarta.persistence.CascadeType;
@@ -29,12 +31,21 @@ public class ComentarioModel {
     private int id;
 
     @ManyToOne
-    @JoinColumn(referencedColumnName = "id",nullable=false)
-    private UserModel userModel;
+    private UserModel user;
+
+    @ManyToOne
+    private MidiaModel midia;
+
+    @ManyToOne
+    private ArtigosModel artigos;
+
+    @ManyToOne
+    private ActividadeModel actividade;
 
     @NotBlank
     private String descricao;
 
-   
+   @NotBlank
+    private LocalDate dataPublicacao;
     
 }

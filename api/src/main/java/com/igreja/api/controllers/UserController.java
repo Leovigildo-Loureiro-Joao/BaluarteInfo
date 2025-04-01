@@ -47,7 +47,7 @@ public class UserController {
         UserDetails userDetails = userService.loadUserByUsername(userDto.username());
         String token = jwtUtil.generateToken(userDetails);
 
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(token); 
     }
 
     @PostMapping("/auth/register")
