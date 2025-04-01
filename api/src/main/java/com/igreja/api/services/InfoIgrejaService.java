@@ -7,7 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dtos.user.InfoDto;
+import com.igreja.api.dto.user.InfoDto;
 import com.igreja.api.enums.InfoType;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.repositories.InfoIgrejaRepository;
