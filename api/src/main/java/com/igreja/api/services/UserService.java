@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dtos.user.UserDto;
+import com.igreja.api.dto.user.UserDto;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.UserRepository;
 import com.mchange.v2.beans.BeansUtils;
