@@ -1,5 +1,7 @@
 package com.igreja.api.models;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,7 +19,7 @@ import lombok.Setter;
 @Getter @Setter
 @NoArgsConstructor
 @Table(name = "mensagem")
-public class MesagensModel {
+public class MensagensModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -33,4 +35,7 @@ public class MesagensModel {
 
     @Email
     private String destino;
+
+    @NotBlank
+    private LocalDate dataPublicacao;
 }

@@ -39,7 +39,7 @@ public class UserModel implements UserDetails{
     private String password;
     private String roles;
 
-    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<ComentarioModel> comentarios;
 
     @Override

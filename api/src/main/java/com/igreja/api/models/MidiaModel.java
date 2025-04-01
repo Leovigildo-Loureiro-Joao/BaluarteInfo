@@ -1,13 +1,19 @@
 package com.igreja.api.models;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import com.igreja.api.enums.MidiaType;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -33,4 +39,14 @@ public class MidiaModel {
     private String titulo;
 
     private String url;
+
+    @NotBlank
+    private LocalDate dataPublicacao;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<ComentarioModel> comentarios;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<ActividadeModel> actividade;
+    
 }
