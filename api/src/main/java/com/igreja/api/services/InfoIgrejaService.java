@@ -1,6 +1,7 @@
 package com.igreja.api.services;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.user.InfoDto;
 import com.igreja.api.enums.InfoType;
+import com.igreja.api.models.ArtigosModel;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.repositories.InfoIgrejaRepository;
 import com.igreja.api.utils.UploadUtils;
@@ -61,5 +63,9 @@ public class InfoIgrejaService{
     public InfoIgrejaModel findByType (InfoType type){
         return igrejaRepository.findByType(type).orElse(null);
     }
+
+     public List<InfoIgrejaModel> AllData() throws IOException {
+      return igrejaRepository.findAll();
+   }
 
 }
