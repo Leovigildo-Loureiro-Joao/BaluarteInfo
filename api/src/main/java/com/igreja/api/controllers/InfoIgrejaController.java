@@ -36,6 +36,16 @@ public class InfoIgrejaController {
      
     }
 
+    @PostMapping(value = "/admin/info/all")
+    public ResponseEntity<?> viewAll() {
+        try {
+            return ResponseEntity.ok(infoIgrejaService.AllData());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+     
+    }
+
     @PostMapping(value = "/admin/info/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> update(@ModelAttribute @Valid InfoDto info) throws IOException {
         infoIgrejaService.getUpload().PrepararUpload(info.img(), "image");

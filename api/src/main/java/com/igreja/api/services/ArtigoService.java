@@ -52,10 +52,13 @@ public class ArtigoService{
    public List<ArtigosModel> AllData() throws IOException {
       return artigoRepository.findAll();
    }
+   
+   public ArtigosModel Select(int id) throws IOException {
+      return artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+   }
 
    public boolean delete(int id) throws InternalError, IOException {
-      ArtigosModel artigo= artigoRepository.findById(id)
-      .orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+      ArtigosModel artigo= Select(id);
       if (DeleteFiles(artigo.getPdf(), artigo.getImg())) {
          artigoRepository.delete(artigo);   
          return true;
@@ -64,8 +67,7 @@ public class ArtigoService{
    }
 
    public ArtigosModel edit(int id,ArtigoDto artigo) throws InternalError, IOException {
-      ArtigosModel artigoActual= artigoRepository.findById(id)
-      .orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+      ArtigosModel artigoActual=Select(id);
       BeanUtils.copyProperties(artigo, artigoActual);
       if (!artigo.pdf().isEmpty()) {
          upload.fileSelect=artigo.pdf();

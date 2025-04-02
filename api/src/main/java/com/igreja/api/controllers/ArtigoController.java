@@ -24,7 +24,6 @@ import jakarta.validation.Valid;
 
 
 @Controller
-@CrossOrigin(origins = "http://127.0.0.1:5500", maxAge = 3600)
 public class ArtigoController {
 
     @Autowired
@@ -64,6 +63,15 @@ public class ArtigoController {
     public ResponseEntity<?> AllArtigos() throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(artigoService.AllData());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/admin/artigo/{id}")
+    public ResponseEntity<?> SelectArigo(@PathVariable int id) throws IOException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(artigoService.Select(id));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
