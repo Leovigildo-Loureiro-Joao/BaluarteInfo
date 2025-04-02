@@ -4,7 +4,9 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +24,7 @@ import jakarta.validation.Valid;
 
 
 @Controller
+@CrossOrigin(origins = "http://127.0.0.1:5500", maxAge = 3600)
 public class ArtigoController {
 
     @Autowired
@@ -52,6 +55,15 @@ public class ArtigoController {
         try {
             artigoService.getUpload().PrepararUpload(artigo.pdf(), "pdf");
             return ResponseEntity.status(HttpStatus.OK).body(artigoService.edit(id,artigo));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/admin/artigo/all")
+    public ResponseEntity<?> AllArtigos() throws IOException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(artigoService.AllData());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

@@ -3,6 +3,7 @@ package com.igreja.api.services;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.BeanUtils;
@@ -46,6 +47,10 @@ public class ArtigoService{
       } catch (IOException e) {
             throw new IOException("Pdf não encontrado");
       }
+   }
+
+   public List<ArtigosModel> AllData() throws IOException {
+      return artigoRepository.findAll();
    }
 
    public boolean delete(int id) throws InternalError, IOException {

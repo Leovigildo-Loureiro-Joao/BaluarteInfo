@@ -22,7 +22,7 @@ public class JwUtil {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 1440)) // 1 hora de validade
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 3600 * 24)) // 1 hora de validade
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
