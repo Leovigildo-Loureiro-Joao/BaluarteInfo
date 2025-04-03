@@ -3,6 +3,7 @@ package com.igreja.api.services;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -10,13 +11,15 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dto.user.ArtigoDto;
-import com.igreja.api.dto.user.InfoDto;
+import com.igreja.api.dto.ArtigoDto;
+import com.igreja.api.dto.InfoDto;
+import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.models.ArtigosModel;
+import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.InfoIgrejaModel;
+import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.ArtigosRepository;
 import com.igreja.api.utils.PdfUtils;
-import com.igreja.api.utils.UploadUtils;
 import com.mchange.v2.beans.BeansUtils;
 
 import lombok.Getter;
@@ -27,21 +30,23 @@ public class ArtigoService{
     
    @Autowired
    private ArtigosRepository artigoRepository;
-   
-   private UploadUtils upload;
 
-   public ArtigoService() {
-         upload=new UploadUtils();
-   }
+   @Autowired
+   private CloudDinaryService upload;
+
 
    public ArtigosModel save(ArtigoDto artigo) throws IOException {
       try {
-         upload.Upload();
-         PdfUtils.extractCoverImage("uploads/"+upload.unique, "uploads/",upload.unique.replace("pdf", "png"));
+         upload.GerarName(artigo.pdf());
          ArtigosModel artigosM=new ArtigosModel(); 
+         upload.uploadFile(artigo.pdf(),"raw");
+         artigosM.setPdf(upload.getUrl());
+         String coverImagePath = PdfUtils.extractCoverImage(artigo.pdf().getInputStream(), upload.getUniqueName().replace("pdf", "png"));
+         upload.uploadFile(new File(coverImagePath), "image");
+         artigosM.setImg(upload.getUrl());
          BeanUtils.copyProperties(artigo, artigosM);
-         artigosM.setImg(upload.unique.replace("pdf", "png"));
-         artigosM.setPdf(upload.unique);
+         artigosM.setImg(upload.getUrl());
+         
          artigosM.setDataPublicacao(LocalDate.now());
          return artigoRepository.save(artigosM); 
       } catch (IOException e) {
@@ -49,12 +54,22 @@ public class ArtigoService{
       }
    }
 
-   public List<ArtigosModel> AllData() throws IOException {
+   public List<ArtigosModel> AllData() {
       return artigoRepository.findAll();
    }
    
-   public ArtigosModel Select(int id) throws IOException {
+   public ArtigosModel Select(int id)  {
       return artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+   }
+
+   public List<ComentarioResult> ComentariosAll(int id) {
+      List<ComentarioResult> comentarios=new ArrayList<>();
+      ArtigosModel artigo=Select(id);
+      for (ComentarioModel comentario : artigo.getComentarios()) {
+         UserModel user=comentario.getUser();
+         comentarios.add(new ComentarioResult(user.getImg(), user.getUsername(), comentario.getDescricao()));
+      }
+      return comentarios;
    }
 
    public boolean delete(int id) throws InternalError, IOException {
@@ -70,20 +85,23 @@ public class ArtigoService{
       ArtigosModel artigoActual=Select(id);
       BeanUtils.copyProperties(artigo, artigoActual);
       if (!artigo.pdf().isEmpty()) {
-         upload.fileSelect=artigo.pdf();
-         upload.Upload();
-         PdfUtils.extractCoverImage("uploads/"+upload.unique, "uploads/",upload.unique.replace("pdf", "png"));
          if (DeleteFiles(artigoActual.getPdf(),artigoActual.getImg())) {
-            artigoActual.setPdf(upload.unique);
-            artigoActual.setImg(upload.unique.replace("pdf", "png"));
+            String coverImagePath = PdfUtils.extractCoverImage(artigo.pdf().getInputStream(), upload.getUniqueName().replace("pdf", "png"));
+            upload.uploadFile(artigo.pdf(),"raw");
+            artigoActual.setPdf(upload.getUrl());
+            upload.uploadFile(new File(coverImagePath), "image");
+            artigoActual.setImg(upload.getUrl());
          }
       }
       return artigoRepository.save(artigoActual); 
    }
 
-   public boolean DeleteFiles(String pdf,String img) throws IOException {
-      File pdfFile = new File("uploads/"+pdf);
-      File imgFile = new File("uploads/"+img);
-      return pdfFile.delete()&&imgFile.delete();
-   }
+   public boolean DeleteFiles(String pdfUrl, String imgUrl) throws IOException {
+
+      // Excluir os arquivos da nuvem
+      boolean pdfDeleted = upload.deleteFile(pdfUrl);
+      boolean imgDeleted = upload.deleteFile(imgUrl);
+  
+      return pdfDeleted && imgDeleted;
+  }
 }

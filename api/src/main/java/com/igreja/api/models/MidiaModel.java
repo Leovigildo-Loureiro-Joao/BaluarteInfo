@@ -13,6 +13,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -43,10 +45,11 @@ public class MidiaModel {
     @NotBlank
     private LocalDate dataPublicacao;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "midia")
     private List<ComentarioModel> comentarios;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<ActividadeModel> actividade;
+    @ManyToOne
+    @JoinColumn(referencedColumnName = "id")
+    private ActividadeModel actividade;
     
 }

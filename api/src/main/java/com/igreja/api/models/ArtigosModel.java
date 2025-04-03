@@ -44,6 +44,6 @@ public class ArtigosModel {
     @NotBlank
     private String pdf;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "artigo")
     private List<ComentarioModel> comentarios;
 }

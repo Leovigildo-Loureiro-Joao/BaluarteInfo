@@ -31,13 +31,14 @@ public class ComentarioModel {
     private int id;
 
     @ManyToOne
+    @JoinColumn(referencedColumnName = "id",nullable = false)
     private UserModel user;
 
     @ManyToOne
     private MidiaModel midia;
 
     @ManyToOne
-    private ArtigosModel artigos;
+    private ArtigosModel artigo;
 
     @ManyToOne
     private ActividadeModel actividade;
@@ -45,7 +46,6 @@ public class ComentarioModel {
     @NotBlank
     private String descricao;
 
-   @NotBlank
     private LocalDate dataPublicacao;
     
 }

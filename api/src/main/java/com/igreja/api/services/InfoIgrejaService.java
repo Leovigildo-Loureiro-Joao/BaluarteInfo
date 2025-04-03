@@ -8,12 +8,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dto.user.InfoDto;
+import com.igreja.api.dto.InfoDto;
 import com.igreja.api.enums.InfoType;
 import com.igreja.api.models.ArtigosModel;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.repositories.InfoIgrejaRepository;
-import com.igreja.api.utils.UploadUtils;
 import com.mchange.v2.beans.BeansUtils;
 
 import lombok.Getter;
@@ -25,11 +24,9 @@ public class InfoIgrejaService{
     @Autowired
     private InfoIgrejaRepository igrejaRepository;
 
-    private UploadUtils upload;
+    @Autowired
+    private CloudDinaryService upload;
 
-    public InfoIgrejaService() {
-        upload=new UploadUtils();
-    }
 
     public InfoIgrejaModel save(InfoDto dto) throws IOException{
         if (!Existis(dto.type())) {
@@ -50,8 +47,8 @@ public class InfoIgrejaService{
     public InfoIgrejaModel save(InfoIgrejaModel model,InfoDto dto)  throws IOException{
         BeanUtils.copyProperties(dto, model);
         if (dto.type().equals(InfoType.QuemSomos)||dto.type().equals(InfoType.Salvacao)) {
-            upload.Upload();
-            model.setImg(upload.unique);
+            upload.uploadFile(dto.img(), "image");
+            model.setImg(upload.getUrl());
         }
        return igrejaRepository.save(model);    
     }
