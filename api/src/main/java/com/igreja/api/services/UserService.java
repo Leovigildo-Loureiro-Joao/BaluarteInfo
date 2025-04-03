@@ -8,9 +8,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dto.user.UserDto;
+import com.igreja.api.dto.UserDto;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.UserRepository;
+import com.igreja.api.utils.GravatarUtils;
 import com.mchange.v2.beans.BeansUtils;
 
 import java.util.List;
@@ -54,6 +55,7 @@ public class UserService implements UserDetailsService{
         if (ExistsUser(user)) {
             throw new NoSuchElementException("It is user exists"); 
         }
+        user.setImg( GravatarUtils.getGravatarUrl(user.getEmail()));
         return userRepository.save(user);
     }
 }

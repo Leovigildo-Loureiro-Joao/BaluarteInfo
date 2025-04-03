@@ -46,9 +46,9 @@ public class ActividadeModel {
 
     private String img;
 
-     @OneToMany(cascade = CascadeType.ALL)
+     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
     private List<ComentarioModel> comentarios;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
     private List<MidiaModel> midia;
 }

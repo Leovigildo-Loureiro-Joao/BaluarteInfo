@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.igreja.api.components.JwUtil;
-import com.igreja.api.dto.user.UserDto;
+import com.igreja.api.dto.UserDto;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.services.UserService;
 

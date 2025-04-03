@@ -1,0 +1,69 @@
+package com.igreja.api.controllers;
+
+import java.io.IOException;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+
+import com.igreja.api.dto.midia.MidiaDto;
+import com.igreja.api.services.MidiaService;
+
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
+
+public class MidiaController {
+    
+    private MidiaService midiaService;
+
+    @PostMapping("/admin/midia/register")
+    public ResponseEntity<?> REgisterComentario(@RequestBody @Valid MidiaDto midiaDto) {    
+       try {
+            return ResponseEntity.ok(midiaService.save(midiaDto));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/admin/midia/edit/{id}")
+    public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@RequestBody @Valid MidiaDto midiaDto) {    
+       try {
+            return ResponseEntity.ok(midiaService.edit(midiaDto,id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/admin/midia/delete/{id}")
+    public ResponseEntity<?> DeleteComentario(@PathVariable("id") int id) {    
+       try {
+            midiaService.delete(id);
+            return ResponseEntity.ok("Deletado");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/user/midia/{id}/comentarioAll")
+    public ResponseEntity<?> AllComentarios(@PathVariable int id) throws IOException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(midiaService.ComentariosAll(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping(value = "/user/comentario/{id}")
+    public ResponseEntity<?> SelectComentario(@PathVariable int id) throws IOException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(midiaService.Select(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+}

@@ -1,4 +1,4 @@
-package com.igreja.api.dto.user;
+package com.igreja.api.dto;
 
 import org.springframework.web.multipart.MultipartFile;
 

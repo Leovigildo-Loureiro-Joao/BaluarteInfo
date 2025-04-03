@@ -14,8 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-
-import com.igreja.api.dto.user.InfoDto;
+import com.igreja.api.dto.InfoDto;
 import com.igreja.api.services.InfoIgrejaService;
 
 @Controller
@@ -26,7 +25,6 @@ public class InfoIgrejaController {
 
     @PostMapping(value = "/admin/info/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(@ModelAttribute @Valid InfoDto info) throws IOException {
-        infoIgrejaService.getUpload().PrepararUpload(info.img(), "image");
         try {
             var infos=infoIgrejaService.save(info);
             return ResponseEntity.ok(infos);
@@ -36,7 +34,7 @@ public class InfoIgrejaController {
      
     }
 
-    @PostMapping(value = "/admin/info/all")
+    @PostMapping(value = "/user/info/all")
     public ResponseEntity<?> viewAll() {
         try {
             return ResponseEntity.ok(infoIgrejaService.AllData());
@@ -48,7 +46,6 @@ public class InfoIgrejaController {
 
     @PostMapping(value = "/admin/info/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> update(@ModelAttribute @Valid InfoDto info) throws IOException {
-        infoIgrejaService.getUpload().PrepararUpload(info.img(), "image");
         try {
             var infos=infoIgrejaService.update(info);
             return ResponseEntity.ok(infos);
