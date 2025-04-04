@@ -2,6 +2,7 @@ package com.igreja.api.controllers;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,15 +10,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.services.MidiaService;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 
+@RestController
 public class MidiaController {
     
+    @Autowired
     private MidiaService midiaService;
 
     @PostMapping("/admin/midia/register")
@@ -58,10 +63,19 @@ public class MidiaController {
     }
 
 
-    @GetMapping(value = "/user/comentario/{id}")
+    @GetMapping(value = "/user/midia/{id}")
     public ResponseEntity<?> SelectComentario(@PathVariable int id) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(midiaService.Select(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/admin/midia/connect")
+    public ResponseEntity<?> ConnectActividade(@RequestBody @Valid ConnectMidiaDto connect) throws IOException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(midiaService.ConnectActividade(connect));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

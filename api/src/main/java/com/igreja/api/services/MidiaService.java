@@ -6,19 +6,27 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.MidiaDto;
+import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
+import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.MidiaRepository;
 
 @Service
 public class MidiaService {
 
+    @Autowired
     public MidiaRepository midiaRepository;
+
+    @Autowired
+    public ActividadeRepository actividadeRepository;
     
     public MidiaModel save(MidiaDto midiaDto) { 
         MidiaModel midia= new MidiaModel();
@@ -45,6 +53,16 @@ public class MidiaService {
 
     public List<MidiaModel> AllData() {
       return midiaRepository.findAll();
+    }
+
+    public String ConnectActividade(ConnectMidiaDto connect) {
+        ActividadeModel actividadeModel= actividadeRepository.findById(connect.actividade()).orElseThrow();
+        MidiaModel midiaModel= midiaRepository.findById(connect.midia()).orElseThrow();
+        midiaModel.setActividade(actividadeModel);
+        actividadeModel.getMidia().add(midiaModel);
+        midiaRepository.save(midiaModel);
+        actividadeRepository.save(actividadeModel);
+        return "Connectado com sucesso";
     }
    
 

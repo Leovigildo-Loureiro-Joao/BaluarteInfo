@@ -13,11 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.services.InfoIgrejaService;
 
-@Controller
+@RestController
 public class InfoIgrejaController {
 
     @Autowired
