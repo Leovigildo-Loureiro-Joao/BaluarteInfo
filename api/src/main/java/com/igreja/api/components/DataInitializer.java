@@ -22,6 +22,7 @@ public class DataInitializer implements CommandLineRunner{
         if (userRepository.count() == 0) {
             UserModel admin = new UserModel("admin", passwordEncoder.encode("1234"),"leovigildojoao902@gmail.com", "ADMIN,USER");
             userRepository.save(admin); 
+            
         }
     }
 
