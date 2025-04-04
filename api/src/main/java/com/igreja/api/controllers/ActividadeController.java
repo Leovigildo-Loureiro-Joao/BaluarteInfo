@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.ArtigoDto;
 import com.igreja.api.dto.actividade.ActividadeDto;
@@ -20,7 +21,7 @@ import com.igreja.api.services.ActividadeService;
 
 import jakarta.validation.Valid;
 
-@Controller
+@RestController
 public class ActividadeController {
     
     @Autowired

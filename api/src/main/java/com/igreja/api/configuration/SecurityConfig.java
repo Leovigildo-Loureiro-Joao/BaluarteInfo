@@ -38,6 +38,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Permite acesso ao Swagger
                 .requestMatchers("/public/**").hasRole("USER")
                 .requestMatchers("/auth/**").permitAll()
                 .anyRequest().authenticated()
@@ -67,6 +68,7 @@ CorsConfigurationSource corsConfigurationSource() {
     source.registerCorsConfiguration("/**", configuration);
     return source;
 }
+
     
 
     @Bean

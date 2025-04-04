@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.ArtigoDto;
 import com.igreja.api.dto.MensagemDto;
@@ -20,7 +21,7 @@ import com.igreja.api.services.MensagemService;
 
 import jakarta.validation.Valid;
 
-@Controller
+@RestController
 public class MensagemController {
 
     @Autowired
@@ -63,7 +64,7 @@ public class MensagemController {
     }
 
     @GetMapping(value = "/admin/mensagem/{id}")
-    public ResponseEntity<?> SelectArigo(@PathVariable int id) throws IOException {
+    public ResponseEntity<?> Select(@PathVariable int id) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(mensagemService.Select(id));
         } catch (Exception e) {
