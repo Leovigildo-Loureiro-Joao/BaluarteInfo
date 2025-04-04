@@ -2,7 +2,11 @@ package com.igreja.api.models;
 
 import java.time.LocalDate;
 
+import com.igreja.api.enums.MensagemType;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,6 +40,11 @@ public class MensagensModel {
     @Email
     private String destino;
 
-    @NotBlank
+    private boolean lido;
+
+    @Enumerated(EnumType.STRING)
+    private MensagemType tipo;
+    
     private LocalDate dataPublicacao;
+    
 }
