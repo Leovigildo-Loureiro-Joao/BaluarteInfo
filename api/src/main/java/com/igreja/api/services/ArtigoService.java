@@ -18,7 +18,9 @@ import com.igreja.api.models.ArtigosModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.models.UserModel;
+import com.igreja.api.models.VistosModel;
 import com.igreja.api.repositories.ArtigosRepository;
+import com.igreja.api.repositories.VistosRepository;
 import com.igreja.api.utils.PdfUtils;
 import com.mchange.v2.beans.BeansUtils;
 
@@ -30,6 +32,9 @@ public class ArtigoService{
     
    @Autowired
    private ArtigosRepository artigoRepository;
+
+   @Autowired
+   private VistosRepository vistosRepository;
 
    @Autowired
    private CloudDinaryService upload;
@@ -59,7 +64,16 @@ public class ArtigoService{
    }
    
    public ArtigosModel Select(int id)  {
-      return artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+      ArtigosModel artigosModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+      return artigosModel;
+   }
+
+   public ArtigosModel Visto(int id)  {
+      ArtigosModel artigosModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+      VistosModel vistos=new VistosModel();
+      vistos.setArtigo(artigosModel);
+      vistosRepository.save(vistos);
+      return artigosModel;
    }
 
    public List<ComentarioResult> ComentariosAll(int id) {

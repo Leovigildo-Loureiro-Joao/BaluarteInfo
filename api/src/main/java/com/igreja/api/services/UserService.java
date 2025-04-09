@@ -47,6 +47,12 @@ public class UserService implements UserDetailsService{
         return userRepository.findAllByUser();
     }
 
+
+    public UserModel findById(long id){
+        return userRepository.findById(id).orElseThrow(()->new NoSuchElementException("It is user not exists"));
+    }
+
+
     public boolean ExistsUser(UserModel user){
         return userRepository.findByUsername(user.getUsername()).isPresent();
     }

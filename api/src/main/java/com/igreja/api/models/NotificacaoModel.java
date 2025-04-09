@@ -1,5 +1,7 @@
 package com.igreja.api.models;
 
+import java.time.LocalDateTime;
+
 import com.igreja.api.enums.NotificacaoType;
 
 import jakarta.persistence.Entity;
@@ -32,4 +34,6 @@ public class NotificacaoModel {
 
     @Enumerated(EnumType.STRING)
     private NotificacaoType type;
+
+    private LocalDateTime dataNotificacao;
 }

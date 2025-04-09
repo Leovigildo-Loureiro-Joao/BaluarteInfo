@@ -13,6 +13,7 @@ import com.igreja.api.dto.comentario.ComentarioDto;
 import com.igreja.api.dto.config.ConfiguracaoDto;
 import com.igreja.api.dto.config.ValueConfigDto;
 import com.igreja.api.enums.ConfigType;
+import com.igreja.api.enums.NotificacaoType;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.ConfiguracaoModel;
 import com.igreja.api.models.UserModel;
@@ -52,4 +53,7 @@ public class ConfigService {
     }
 
 
+    public ConfiguracaoModel SelectByType(ConfigType limiteInscritos)  {
+        return configurationRepository.findByType(limiteInscritos).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este config não existe na base dados"));
+    }
 }

@@ -4,6 +4,11 @@ import java.time.LocalDateTime;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.igreja.api.enums.ActividadeType;
+import com.igreja.api.enums.PublicoAlvoType;
+
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -12,17 +17,17 @@ public record ActividadeDto(
 
    @NotBlank String tema,
 
-   @NotBlank String tipoEvento,
+   @Enumerated(EnumType.STRING) ActividadeType tipoEvento,
 
-   @NotBlank String publicoAlvo,
+   @Enumerated(EnumType.STRING) PublicoAlvoType publicoAlvo,
 
    @NotBlank String Organizador,
 
-   @NotNull LocalDateTime dataPublicacao,
+   @NotNull LocalDateTime dataEvento,
 
    @NotBlank String contactos,
 
-    @NotBlank MultipartFile img
+MultipartFile img
 ) {
  
 }

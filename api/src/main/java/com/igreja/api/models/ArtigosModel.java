@@ -46,4 +46,7 @@ public class ArtigosModel {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "artigo")
     private List<ComentarioModel> comentarios;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "artigo")
+    private List<VistosModel> vistos;
 }

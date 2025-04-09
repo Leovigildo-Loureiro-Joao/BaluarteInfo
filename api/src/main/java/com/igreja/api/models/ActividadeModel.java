@@ -4,8 +4,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.igreja.api.enums.ActividadeType;
+import com.igreja.api.enums.PublicoAlvoType;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,17 +34,18 @@ public class ActividadeModel {
     @NotBlank
     private String tema;
 
-    @NotBlank
-    private String tipoEvento;
+    @Enumerated(EnumType.STRING)
+    private ActividadeType tipoEvento;
 
-    @NotBlank
-    private String publicoAlvo;
+    @Enumerated(EnumType.STRING)
+    private PublicoAlvoType publicoAlvo;
 
     @NotBlank
     private String Organizador;
 
-    @NotBlank
     private LocalDateTime dataPublicacao;
+
+    private LocalDateTime dataEvento;
 
     @NotBlank
     private String contactos;
@@ -51,4 +57,7 @@ public class ActividadeModel {
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
     private List<MidiaModel> midia;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
+    private List<InscritosModel> inscritos;
 }

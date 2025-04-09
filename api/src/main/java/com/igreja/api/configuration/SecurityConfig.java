@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Permite acesso ao Swagger
                 .requestMatchers("/public/**").hasRole("USER")
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/test/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -54,8 +55,8 @@ CorsConfigurationSource corsConfigurationSource() {
     
     // Substitua "*" por origens específicas
     configuration.setAllowedOrigins(Arrays.asList(
-        "http://127.0.0.1:5500",  // Seu frontend local
-        "http://localhost:5500",   // Alternativa comum
+        "http://127.0.0.1:3000",  // Seu frontend local
+        "http://localhost:3000",   // Alternativa comum
         "https://seusite.com"      // Seu domínio de produção
     ));
     

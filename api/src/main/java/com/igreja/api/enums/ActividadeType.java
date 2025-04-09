@@ -1,6 +1,6 @@
 package com.igreja.api.enums;
 
-public enum AcrividadeType {
+public enum ActividadeType {
     Culto, 
     Conferência, 
     Evangelismo, 

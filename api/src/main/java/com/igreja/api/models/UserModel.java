@@ -47,6 +47,9 @@ public class UserModel implements UserDetails{
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "user")
     private List<ComentarioModel> comentarios;
 
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "user")
+    private List<InscritosModel> inscritos;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
        return null;
