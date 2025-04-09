@@ -42,11 +42,13 @@ public class MidiaModel {
 
     private String url;
 
-    @NotBlank
     private LocalDate dataPublicacao;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "midia")
     private List<ComentarioModel> comentarios;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "midia")
+    private List<VistosModel> vistos;
 
     @ManyToOne
     @JoinColumn(referencedColumnName = "id")

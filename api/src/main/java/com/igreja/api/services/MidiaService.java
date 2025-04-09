@@ -13,11 +13,14 @@ import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.models.ActividadeModel;
+import com.igreja.api.models.ArtigosModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
+import com.igreja.api.models.VistosModel;
 import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.MidiaRepository;
+import com.igreja.api.repositories.VistosRepository;
 
 @Service
 public class MidiaService {
@@ -27,6 +30,9 @@ public class MidiaService {
 
     @Autowired
     public ActividadeRepository actividadeRepository;
+
+    @Autowired
+   private VistosRepository vistosRepository;
     
     public MidiaModel save(MidiaDto midiaDto) { 
         MidiaModel midia= new MidiaModel();
@@ -35,9 +41,20 @@ public class MidiaService {
         return midiaRepository.save(midia);
     }
 
+
+
     public MidiaModel Select(int id)  {
-        return midiaRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas esta midia não existe na base dados"));
-     }
+        MidiaModel midia=midiaRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+        return midia;
+   }
+
+    public MidiaModel Visto(int id)  {
+        MidiaModel midia=midiaRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+        VistosModel vistos=new VistosModel();
+        vistos.setMidia(midia);
+        vistosRepository.save(vistos);
+        return midia;
+    }
 
     public MidiaModel edit(MidiaDto dto,int id){
         MidiaModel midia=Select(id);

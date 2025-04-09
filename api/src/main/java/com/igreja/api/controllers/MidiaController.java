@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.services.MidiaService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 import jakarta.validation.Valid;
 
 @RestController
@@ -29,6 +30,15 @@ public class MidiaController {
     public ResponseEntity<?> REgisterComentario(@RequestBody @Valid MidiaDto midiaDto) {    
        try {
             return ResponseEntity.ok(midiaService.save(midiaDto));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/admin/midia/All")
+    public ResponseEntity<?> AllData() {    
+       try {
+            return ResponseEntity.ok(midiaService.AllData());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

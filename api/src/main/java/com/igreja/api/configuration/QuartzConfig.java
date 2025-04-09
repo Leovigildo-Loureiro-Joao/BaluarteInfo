@@ -41,7 +41,7 @@ public class QuartzConfig {
     @Bean
     public Trigger LembreteTrigger(){
         SimpleScheduleBuilder scheduleBuilder=SimpleScheduleBuilder.simpleSchedule()
-        .withIntervalInHours(1)
+        .withIntervalInSeconds(20)
         .repeatForever();
         
         return TriggerBuilder.newTrigger()

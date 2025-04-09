@@ -2,6 +2,7 @@ package com.igreja.api.services;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,12 +33,14 @@ public class ActividadeService {
         upload.uploadFile(actividade.img(),"image");
         ActividadeModel actividadeActual=new ActividadeModel();
         actividadeActual.setImg(upload.getUrl());
+        actividadeActual.setDataPublicacao(LocalDateTime.now());
         BeanUtils.copyProperties(actividade,actividadeActual);
         return actividadeRepository.save(actividadeActual);
      }
 
      public ActividadeModel edit(int id,ActividadeDto actividade) throws InternalError, IOException {
         ActividadeModel actividadeActual=Select(id);
+        actividadeActual.setDataPublicacao(LocalDateTime.now());
         BeanUtils.copyProperties(actividade, actividadeActual);
         if (!actividade.img().isEmpty()) {
             if (DeleteFile(actividadeActual.getImg())) {

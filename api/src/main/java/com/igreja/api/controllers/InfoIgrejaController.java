@@ -35,7 +35,7 @@ public class InfoIgrejaController {
      
     }
 
-    @PostMapping(value = "/user/info/all")
+    @PostMapping(value = "/test/info/all")
     public ResponseEntity<?> viewAll() {
         try {
             return ResponseEntity.ok(infoIgrejaService.AllData());
