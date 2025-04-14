@@ -1,9 +1,22 @@
 package com.igreja.api.services;
 
-import java.io.File;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.imageio.ImageIO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,57 +26,123 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Service
-
 public class CloudDinaryService {
-    @Autowired
-    private Cloudinary cloudinary;
+    private final Cloudinary cloudinary;
+    private final ExecutorService uploadExecutor; // Pool dedicado para uploads
+
     @Getter
     private String url;
-    @Getter
+
+    @Getter @Setter
     private String uniqueName;
 
-    public void GerarName(MultipartFile file){
-        UUID uuid = UUID.randomUUID(); // Gera um UUID único para o arquivo
-        uniqueName = uuid.toString() + "_" + file.getOriginalFilename(); 
+    public CloudDinaryService(Cloudinary cloudinary) {
+        this.cloudinary = cloudinary;
+        this.uploadExecutor = Executors.newVirtualThreadPerTaskExecutor(); // Pool com 4 threads
     }
 
-    public void uploadFile(MultipartFile file,String resourceType) throws IOException {
-      // Adiciona o UUID ao nome do arquivo
-        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-            "resource_type", resourceType,
-            "folder", "upload",
-            "public_id", uniqueName
-        ));
-        url= uploadResult.get("url").toString(); // Retorna a URL do arquivo
+    // Gera o nome único de forma mais eficiente (sem dependência do MultipartFile)
+    public void generateUniqueName(String originalFilename) {
+        this.uniqueName = UUID.randomUUID() + "_" + originalFilename;
     }
 
-    public void uploadFile(File file,String resourceType) throws IOException {
-        // Adiciona o UUID ao nome do arquivo
-          Map uploadResult = cloudinary.uploader().upload(file, ObjectUtils.asMap(
-              "resource_type", resourceType,
-              "folder", "upload",
-              "public_id", uniqueName
-          ));
-          url= uploadResult.get("url").toString(); // Retorna a URL do arquivo
-      }
-
-    public boolean deleteFile(String url) throws IOException {
-        try {
-            Map result = cloudinary.uploader().destroy(extractPublicId(url), ObjectUtils.emptyMap());
-            return "ok".equals(result.get("result")); // Retorna true se a exclusão foi bem-sucedida
-        } catch (Exception e) {
-            throw new IOException("Erro ao excluir arquivo do Cloudinary: " + e.getMessage());
-        }
+    // Upload assíncrono para MultipartFile
+    public String uploadFileAsync(MultipartFile file, String resourceType) throws InterruptedException, ExecutionException, TimeoutException {
+        return uploadExecutor.submit(() -> {
+            try {
+                System.out.println(this.uniqueName);
+              String encodedPublicId = URLEncoder.encode(this.uniqueName.trim(), StandardCharsets.UTF_8.toString())
+                .replace("+", "_");
+            
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), 
+                ObjectUtils.asMap(
+                    "resource_type", resourceType,
+                    "folder", "upload",
+                    "timeout", 4000,
+                    "quality", "auto:fast",
+                    "public_id", encodedPublicId,  // Usa o nome normalizado
+                    "filename_override", encodedPublicId // Força o nome do arquivo
+                ));
+                    System.out.println(this.uniqueName); 
+                return uploadResult.get("url").toString();
+            } catch (IOException e) {
+                throw new RuntimeException("Falha no upload do arquivo", e);
+            }
+        }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
     }
 
+
+    public String uploadFileAsync(byte[] file, String resourceType) throws InterruptedException, ExecutionException, TimeoutException {
+        return uploadExecutor.submit(() -> {
+            try {
+                System.out.println(this.uniqueName);
+              String encodedPublicId = URLEncoder.encode(this.uniqueName.trim(), StandardCharsets.UTF_8.toString())
+                .replace("+", "_");
+            
+            Map uploadResult = cloudinary.uploader().upload(file, 
+                ObjectUtils.asMap(
+                    "resource_type", resourceType,
+                    "folder", "upload",
+                    "timeout", 4000,
+                    "quality", "auto:fast",
+                    "public_id", encodedPublicId  // Usa o nome normalizado
+                ));
+                    System.out.println(this.uniqueName); 
+                return uploadResult.get("url").toString();
+            } catch (IOException e) {
+                throw new RuntimeException("Falha no upload do arquivo", e);
+            }
+        }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
+    }
+
+    // Upload assíncrono para BufferedImage
+    public String uploadImageAsync(BufferedImage image, String resourceType) throws InterruptedException, ExecutionException, TimeoutException {
+        return uploadExecutor.submit(() -> {
+          
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(image, "JPEG", baos);
+                byte[] imageBytes = baos.toByteArray();
+                Map uploadResult = cloudinary.uploader().upload(imageBytes, 
+                    ObjectUtils.asMap(
+                        "resource_type", resourceType,
+                        "folder", "upload",
+                         "timeout", 4000,
+                        "quality", "auto:fast",
+                        "public_id", this.uniqueName.replace(".pdf", "").trim()
+                    ));
+                return uploadResult.get("url").toString();
+            } catch (IOException e) {
+                throw new RuntimeException("Falha no upload da imagem", e);
+            }
+        }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
+    }
+   
+    // Exclusão assíncrona
+    public CompletableFuture<Boolean> deleteFileAsync(String url) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String publicId = extractPublicId(url);
+                Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                return "ok".equals(result.get("result"));
+            } catch (Exception e) {
+                throw new RuntimeException("Falha ao excluir arquivo", e);
+            }
+        }, uploadExecutor);
+    }
+
+    // Extração segura do public_id
     private String extractPublicId(String url) {
-        // Exemplo: https://res.cloudinary.com/<cloud_name>/raw/upload/v1234567890/folder/file.pdf
-        // O public_id seria "folder/file"
-        String[] parts = url.split("/");
-        String fileWithExtension = parts[parts.length - 1]; // Exemplo: file.pdf
-        String publicId = url.substring(url.indexOf("upload/") + 7, url.lastIndexOf(fileWithExtension) - 1);
-        return publicId;
+
+        int uploadIndex = url.indexOf("upload/");
+        if (uploadIndex == -1) {
+            throw new IllegalArgumentException("URL do Cloudinary inválida");
+        }
+        String urlS =url.split("/")[url.split("/").length-1];
+        
+        return"upload/"+urlS.substring(0, urlS.lastIndexOf(".")); // Extrai o public_id corretamente
     }
 }

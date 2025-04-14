@@ -37,9 +37,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "USER")
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Permite acesso ao Swagger
-                .requestMatchers("/public/**").hasRole("USER")
+                .requestMatchers("/user/**").hasRole("USER")
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/test/**").permitAll()
                 .anyRequest().authenticated()

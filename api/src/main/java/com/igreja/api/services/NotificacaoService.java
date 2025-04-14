@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dto.MensagemDto;
+import com.igreja.api.dto.mensage.MensagemDto;
 import com.igreja.api.enums.ConfigType;
 import com.igreja.api.enums.NotificacaoType;
 import com.igreja.api.models.ActividadeModel;
@@ -110,7 +110,7 @@ public class NotificacaoService {
             actividades.forEach(t -> {
                 if (t.getDataEvento().isBefore(LocalDateTime.now())) {
                     String descricao = "Ola " + use.getUsername() + " a nossa actividade " + t.getTema() + " ja tem um trailer, aceda a nossa plataforma para mais detalhes";
-                    mensagemService.save(new MensagemDto(use.getEmail(), "Notificacao de Actividade", descricao,userService.findById(1).getEmail()));
+                    mensagemService.save(new MensagemDto("Notificacao de Actividade", descricao,use.getEmail()));
                 }
                 
             });
@@ -123,7 +123,7 @@ public class NotificacaoService {
             actividades.forEach(t -> {
                 if (t.getDataEvento().isBefore(LocalDateTime.now())) {
                     String descricao = "Ola " + use.getUsername() + " a nossa actividade " + t.getTema() + " ja tem uma galeria actualizada, aceda a nossa plataforma para mais detalhes";
-                    mensagemService.save(new MensagemDto(use.getEmail(), "Notificacao de Actividade", descricao,userService.findById(1).getEmail()));
+                    mensagemService.save(new MensagemDto("Notificacao de Actividade", descricao,use.getEmail()));
                 }
                 
             });
@@ -135,7 +135,7 @@ public class NotificacaoService {
         userService.findAll().forEach(use -> {
             artigos.forEach(t -> {
                 String descricao = "Ola " + use.getUsername() + " a nosso novo artigo " + t.getTitulo() + " ja esta disponivel, aceda a nossa plataforma para mais detalhes";
-                mensagemService.save(new MensagemDto(use.getEmail(), "Notificacao de Artigo", descricao,userService.findById(1).getEmail()));
+                mensagemService.save(new MensagemDto( "Notificacao de Artigo", descricao,use.getEmail()));
             });
         });
     }

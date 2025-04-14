@@ -18,7 +18,7 @@ public class LembreteJob implements Job{
             notificacaoService.NotifyActividadeLembrete();
             System.out.println("Job executado com sucesso...");
         } catch (Exception e) {
-            System.out.println("Job falhou alunos:  "+e.getMessage()); 
+            System.out.println("Job falhou Lembrete:  "+e.getMessage()); 
         }
     }
 }

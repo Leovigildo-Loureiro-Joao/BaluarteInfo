@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import com.igreja.api.jobs.GaleriaJob;
 import com.igreja.api.jobs.InscritosJob;
 import com.igreja.api.jobs.LembreteJob;
+import com.igreja.api.jobs.MensagemPendenteJob;
 import com.igreja.api.jobs.VistosJob;
 
 @Configuration
@@ -97,6 +98,28 @@ public class QuartzConfig {
     public JobDetail VistosDetail(){
         return JobBuilder.newJob(VistosJob.class)
         .withIdentity("VistosDetail")
+        .storeDurably()
+        .build();
+    }
+
+
+    @Bean
+    public Trigger MensagemPendenteTrigger(){
+        SimpleScheduleBuilder scheduleBuilder=SimpleScheduleBuilder.simpleSchedule()
+        .withIntervalInSeconds(20)
+        .repeatForever();
+        
+        return TriggerBuilder.newTrigger()
+        .forJob(MensagemPendenteDetail())
+        .withIdentity("MensagemPendenteTrigger")
+        .withSchedule(scheduleBuilder)
+        .build();
+    }
+
+    @Bean
+    public JobDetail MensagemPendenteDetail(){
+        return JobBuilder.newJob(MensagemPendenteJob.class)
+        .withIdentity("MensagemPendenteDetail")
         .storeDurably()
         .build();
     }

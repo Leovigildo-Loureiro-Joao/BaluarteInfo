@@ -18,6 +18,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,6 +41,11 @@ public class MidiaModel {
     @NotBlank
     private String titulo;
 
+    @NotBlank(message = "URL é obrigatória")  // Não pode ser vazio
+    @Pattern(
+        regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$",  // Regex para URLs
+        message = "URL inválida! Ex: http://exemplo.com"
+    )
     private String url;
 
     private LocalDate dataPublicacao;

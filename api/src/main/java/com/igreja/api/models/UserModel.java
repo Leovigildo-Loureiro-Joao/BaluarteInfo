@@ -36,7 +36,7 @@ public class UserModel implements UserDetails{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
-    private String username;
+    private String nome;
     @Email
     private String email;
     @NotNull
@@ -54,13 +54,17 @@ public class UserModel implements UserDetails{
     public Collection<? extends GrantedAuthority> getAuthorities() {
        return null;
     }
-    public UserModel(String username, String password,String email, String roles) {
-        this.username = username;
+    public UserModel(String nome, String password,String email, String roles) {
+        this.nome = nome;
         this.password = password;
         this.roles = roles;
         this.email = email;
         this.img = GravatarUtils.getGravatarUrl(email);
 
+    }
+    @Override
+    public String getUsername() {
+        return this.email;
     }
 
     
