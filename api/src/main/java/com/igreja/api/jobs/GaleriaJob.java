@@ -14,11 +14,11 @@ public class GaleriaJob implements Job{
     @Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
         try {
-            System.out.println("Iniciando o job das actividades dos alunos...");
+            System.out.println("Iniciando o job da galeria...");
             notificacaoService.NotifyActividadeGaleria();;
             System.out.println("Job executado com sucesso...");
         } catch (Exception e) {
-            System.out.println("Job falhou alunos:  "+e.getMessage()); 
+            System.out.println("Job falhou galeria:  "+e.getMessage()); 
         }
     }
     

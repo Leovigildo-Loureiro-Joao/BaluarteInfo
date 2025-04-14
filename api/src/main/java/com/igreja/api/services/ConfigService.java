@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioDto;
 import com.igreja.api.dto.config.ConfiguracaoDto;
-import com.igreja.api.dto.config.ValueConfigDto;
 import com.igreja.api.enums.ConfigType;
 import com.igreja.api.enums.NotificacaoType;
 import com.igreja.api.models.ComentarioModel;
@@ -37,19 +36,19 @@ public class ConfigService {
         return configurationRepository.save(config);
     }
 
-    public ConfiguracaoModel edit(ValueConfigDto dto){
-        ConfiguracaoModel config=configurationRepository.findById(dto.id()).orElse(null);
+    public ConfiguracaoModel edit(ConfiguracaoDto dto){
+        ConfiguracaoModel config=configurationRepository.findByType(dto.type()).orElse(null);
         config.setEditado(LocalDateTime.now());
         BeanUtils.copyProperties(dto, config);
         return configurationRepository.save(config);
     }
 
     public void StartUse(){
-        save(new ConfiguracaoDto("100", ConfigType.ActividadeLimite));
-        save(new ConfiguracaoDto("50", ConfigType.ComentarioLimite));
-        save(new ConfiguracaoDto("100", ConfigType.IncritosLimite));
-        save(new ConfiguracaoDto("50", ConfigType.MembrosLimite));
-        save(new ConfiguracaoDto("100", ConfigType.VisitasLimite));
+        save(new ConfiguracaoDto(100, ConfigType.ActividadeLimite));
+        save(new ConfiguracaoDto(50, ConfigType.ComentarioLimite));
+        save(new ConfiguracaoDto(100, ConfigType.IncritosLimite));
+        save(new ConfiguracaoDto(50, ConfigType.MembrosLimite));
+        save(new ConfiguracaoDto(100, ConfigType.VisitasLimite));
     }
 
 

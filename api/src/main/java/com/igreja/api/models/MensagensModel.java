@@ -3,6 +3,7 @@ package com.igreja.api.models;
 import java.time.LocalDate;
 
 import com.igreja.api.enums.MensagemType;
+import com.igreja.api.enums.StatusMensage;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,6 +45,9 @@ public class MensagensModel {
 
     @Enumerated(EnumType.STRING)
     private MensagemType tipo;
+
+    @Enumerated(EnumType.STRING)
+    private StatusMensage status=StatusMensage.PENDENTE;
     
     private LocalDate dataPublicacao;
     

@@ -1,11 +1,17 @@
 package com.igreja.api.services;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,27 +43,19 @@ public class ArtigoService{
    private VistosRepository vistosRepository;
 
    @Autowired
-   private CloudDinaryService upload;
+   private CloudDinaryService cloudinaryService;
 
 
-   public ArtigosModel save(ArtigoDto artigo) throws IOException {
-      try {
-         upload.GerarName(artigo.pdf());
-         ArtigosModel artigosM=new ArtigosModel(); 
-         upload.uploadFile(artigo.pdf(),"raw");
-         artigosM.setPdf(upload.getUrl());
-         String coverImagePath = PdfUtils.extractCoverImage(artigo.pdf().getInputStream(), upload.getUniqueName().replace("pdf", "png"));
-         upload.uploadFile(new File(coverImagePath), "image");
-         artigosM.setImg(upload.getUrl());
-         BeanUtils.copyProperties(artigo, artigosM);
-         artigosM.setImg(upload.getUrl());
-         
-         artigosM.setDataPublicacao(LocalDate.now());
-         return artigoRepository.save(artigosM); 
-      } catch (IOException e) {
-            throw new IOException("Pdf não encontrado");
-      }
-   }
+   public ArtigosModel save(ArtigoDto artigo) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+      cloudinaryService.generateUniqueName(artigo.pdf().getOriginalFilename());
+      ArtigosModel artigosM = new ArtigosModel();
+      artigosM.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
+      artigosM.setImg(cloudinaryService.uploadImageAsync(PdfUtils.extractCoverImageAsync(artigo.pdf().getInputStream()), "image"));
+      BeanUtils.copyProperties(artigo, artigosM);
+      artigosM.setDataPublicacao(LocalDate.now());
+      
+      return artigoRepository.save(artigosM);
+  }
 
    public List<ArtigosModel> AllData() {
       return artigoRepository.findAll();
@@ -86,7 +84,7 @@ public class ArtigoService{
       return comentarios;
    }
 
-   public boolean delete(int id) throws InternalError, IOException {
+   public boolean delete(int id) throws InternalError, IOException, InterruptedException, ExecutionException {
       ArtigosModel artigo= Select(id);
       if (DeleteFiles(artigo.getPdf(), artigo.getImg())) {
          artigoRepository.delete(artigo);   
@@ -95,27 +93,25 @@ public class ArtigoService{
       throw new InternalError("A processo não foi realizado");
    }
 
-   public ArtigosModel edit(int id,ArtigoDto artigo) throws InternalError, IOException {
+   public ArtigosModel edit(int id,ArtigoDto artigo) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
       ArtigosModel artigoActual=Select(id);
       BeanUtils.copyProperties(artigo, artigoActual);
       if (!artigo.pdf().isEmpty()) {
          if (DeleteFiles(artigoActual.getPdf(),artigoActual.getImg())) {
-            String coverImagePath = PdfUtils.extractCoverImage(artigo.pdf().getInputStream(), upload.getUniqueName().replace("pdf", "png"));
-            upload.uploadFile(artigo.pdf(),"raw");
-            artigoActual.setPdf(upload.getUrl());
-            upload.uploadFile(new File(coverImagePath), "image");
-            artigoActual.setImg(upload.getUrl());
+            artigoActual.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
+            BufferedImage coverImagePath = PdfUtils.extractCoverImage(artigo.pdf().getInputStream());
+            artigoActual.setImg(cloudinaryService.uploadImageAsync(coverImagePath, "image"));
          }
       }
       return artigoRepository.save(artigoActual); 
    }
 
-   public boolean DeleteFiles(String pdfUrl, String imgUrl) throws IOException {
+   public boolean DeleteFiles(String pdfUrl, String imgUrl) throws IOException, InterruptedException, ExecutionException {
 
       // Excluir os arquivos da nuvem
-      boolean pdfDeleted = upload.deleteFile(pdfUrl);
-      boolean imgDeleted = upload.deleteFile(imgUrl);
-  
-      return pdfDeleted && imgDeleted;
+      CompletableFuture<Boolean> pdfDeleted = cloudinaryService.deleteFileAsync(pdfUrl);
+      CompletableFuture<Boolean> imgDeleted = cloudinaryService.deleteFileAsync(imgUrl);
+      CompletableFuture.allOf(pdfDeleted,imgDeleted).join();
+      return pdfDeleted.get() && imgDeleted.get();
   }
 }

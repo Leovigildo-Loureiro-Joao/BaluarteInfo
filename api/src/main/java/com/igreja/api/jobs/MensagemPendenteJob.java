@@ -5,20 +5,22 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.igreja.api.services.NotificacaoService;
+import com.igreja.api.services.MensagemService;
 
-public class VistosJob implements Job{
-     @Autowired
-    private NotificacaoService notificacaoService;
+public class MensagemPendenteJob implements Job{
+
+    @Autowired
+    private MensagemService mensagemService;
 
     @Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
         try {
-            System.out.println("Iniciando o job das vistos...");
-            notificacaoService.NotifyVistos();
+            System.out.println("Iniciando o job Mensagens...");
+            mensagemService.EnviarAsPendentes();
             System.out.println("Job executado com sucesso...");
         } catch (Exception e) {
-            System.out.println("Job falhou vistos:  "+e.getMessage()); 
+            System.out.println("Job falhou Mensagens:  "+e.getMessage()); 
         }
     }
+    
 }

@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dto.UserDto;
+import com.igreja.api.dto.user.UserDto;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.utils.GravatarUtils;
@@ -26,8 +26,7 @@ public class UserService implements UserDetailsService{
     
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserModel user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+        UserModel user=userRepository.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("User not found"));
         return User.builder()
         .username(user.getUsername())
         .password(user.getPassword())
@@ -54,7 +53,7 @@ public class UserService implements UserDetailsService{
 
 
     public boolean ExistsUser(UserModel user){
-        return userRepository.findByUsername(user.getUsername()).isPresent();
+        return userRepository.findByEmail(user.getUsername()).isPresent();
     }
 
     public UserModel save(UserModel user){

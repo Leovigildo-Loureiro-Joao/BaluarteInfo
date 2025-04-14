@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,25 +31,22 @@ public class ActividadeService {
     @Autowired
     private CloudDinaryService upload;
 
-     public ActividadeModel save(ActividadeDto actividade) throws IOException {
-        upload.GerarName(actividade.img());
-        upload.uploadFile(actividade.img(),"image");
+     public ActividadeModel save(ActividadeDto actividade) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+        upload.generateUniqueName(actividade.img().getOriginalFilename());
         ActividadeModel actividadeActual=new ActividadeModel();
-        actividadeActual.setImg(upload.getUrl());
+        actividadeActual.setImg(upload.uploadFileAsync(actividade.img(),"image"));
         actividadeActual.setDataPublicacao(LocalDateTime.now());
         BeanUtils.copyProperties(actividade,actividadeActual);
         return actividadeRepository.save(actividadeActual);
      }
 
-     public ActividadeModel edit(int id,ActividadeDto actividade) throws InternalError, IOException {
+     public ActividadeModel edit(int id,ActividadeDto actividade) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
         ActividadeModel actividadeActual=Select(id);
         actividadeActual.setDataPublicacao(LocalDateTime.now());
         BeanUtils.copyProperties(actividade, actividadeActual);
         if (!actividade.img().isEmpty()) {
             if (DeleteFile(actividadeActual.getImg())) {
-                upload.GerarName(actividade.img());
-                upload.uploadFile(actividade.img(),"image");
-                actividadeActual.setImg(upload.getUrl());
+                actividadeActual.setImg(upload.uploadFileAsync(actividade.img(),"image"));
             }
         }
         return actividadeRepository.save(actividadeActual); 
@@ -58,7 +58,7 @@ public class ActividadeService {
 
    public boolean DeleteFile(String url) throws IOException {
       // Excluir os arquivos da nuvem
-      boolean pdfDeleted = upload.deleteFile(url);
+      boolean pdfDeleted = upload.deleteFileAsync(url).join();
       return pdfDeleted;
   }
 

@@ -47,7 +47,7 @@ public class InfoIgrejaService{
     public InfoIgrejaModel save(InfoIgrejaModel model,InfoDto dto)  throws IOException{
         BeanUtils.copyProperties(dto, model);
         if (dto.type().equals(InfoType.QuemSomos)||dto.type().equals(InfoType.Salvacao)) {
-            upload.uploadFile(dto.img(), "image");
+            //upload.uploadFile(dto.img(), "image");
             model.setImg(upload.getUrl());
         }
        return igrejaRepository.save(model);    

@@ -6,6 +6,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
 
-public record ConfiguracaoDto(@NotNull String value,  @Enumerated(EnumType.STRING) ConfigType type) {
+public record ConfiguracaoDto(@NotNull int value,  @Enumerated(EnumType.STRING) ConfigType type) {
     
 }

@@ -4,20 +4,18 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.components.JwUtil;
-import com.igreja.api.dto.UserDto;
+import com.igreja.api.dto.user.UserDto;
+import com.igreja.api.dto.user.UserLoginDto;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.services.UserService;
 
@@ -42,10 +40,13 @@ public class UserController {
   
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody @Valid UserDto userDto) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDto.username(), userDto.password()));
-        
-        UserDetails userDetails = userService.loadUserByUsername(userDto.username());
+    public ResponseEntity<?> login(@RequestBody @Valid UserLoginDto userDto) {
+        UserDetails userDetails = userService.loadUserByUsername(userDto.email());
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDto.password()));
+        // Generate JWT token
         String token = jwtUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(token); 
