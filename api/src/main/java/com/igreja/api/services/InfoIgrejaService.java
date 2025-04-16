@@ -3,10 +3,11 @@ package com.igreja.api.services;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.enums.InfoType;
@@ -31,17 +32,17 @@ public class InfoIgrejaService{
     public InfoIgrejaModel save(InfoDto dto) throws IOException{
         if (!Existis(dto.type())) {
             InfoIgrejaModel model=new InfoIgrejaModel();
-            return save(model, dto);
+            
         }
-        throw new BadRequestException("Não pode haver duplicações de informações!");
+     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não pode haver duplicações de informações!");
     }
 
     public InfoIgrejaModel update(InfoDto dto) throws IOException{
         if (Existis(dto.type())) {
             InfoIgrejaModel model=findByType(dto.type());
-            return save(model, dto);
+       
         }
-        throw new BadRequestException("Não existe esta informação na base de dados!");
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não pode haver duplicações de informações!");
     }
 
     public InfoIgrejaModel save(InfoIgrejaModel model,InfoDto dto)  throws IOException{
