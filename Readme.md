@@ -14,8 +14,8 @@
 - [x] Configuração inicial do projeto
 - [x] Criacao do prototipo
 - [x] Criacao da Api
-- [ ] Autenticação
-- [ ] Interface de Usuário
+- [x] Autenticação
+- [-] Interface de Usuário
 - [ ] Responsividade e consumo da Api
 - [ ] Testes Automatizados 
 
