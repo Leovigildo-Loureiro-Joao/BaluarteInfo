@@ -65,5 +65,6 @@ public class InfoIgrejaService{
      public List<InfoIgrejaModel> AllData() throws IOException {
       return igrejaRepository.findAll();
    }
+   
 
 }

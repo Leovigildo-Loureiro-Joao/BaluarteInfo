@@ -32,6 +32,9 @@ public class ActividadeService {
     private CloudDinaryService upload;
 
      public ActividadeModel save(ActividadeDto actividade) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+        if (actividade.dataEvento().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("A data do evento não pode ser no passado");
+        }
         upload.generateUniqueName(actividade.img().getOriginalFilename());
         ActividadeModel actividadeActual=new ActividadeModel();
         actividadeActual.setImg(upload.uploadFileAsync(actividade.img(),"image"));

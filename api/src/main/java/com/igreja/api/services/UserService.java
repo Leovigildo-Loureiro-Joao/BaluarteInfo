@@ -43,7 +43,7 @@ public class UserService implements UserDetailsService{
     }
 
     public List<UserModel> findAll(){
-        return userRepository.findAllByUser();
+        return userRepository.findAll();
     }
 
 
