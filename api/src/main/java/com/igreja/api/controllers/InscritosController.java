@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 
 import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,10 +31,10 @@ public class InscritosController {
     public ResponseEntity<?> Register(@PathVariable(name = "idActividade") @Valid int id) {
         try {
               Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            return ResponseEntity.ok().body(inscritosService.save(new InscritosDto(userRepository.findByEmail(authentication.getName()).get().getId(), id)));    
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(inscritosService.save(new InscritosDto(userRepository.findByEmail(authentication.getName()).get().getId(), id)));    
         } catch (Exception e) {
             // TODO: handle exception
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            return ResponseEntity.internalServerError().body(e.getMessage()); 
         }
         
     }

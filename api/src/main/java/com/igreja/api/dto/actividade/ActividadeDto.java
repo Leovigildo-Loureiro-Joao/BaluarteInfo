@@ -11,6 +11,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 public record ActividadeDto(
     @NotBlank String descricao,
@@ -25,7 +26,8 @@ public record ActividadeDto(
 
    @NotNull LocalDateTime dataEvento,
 
-   @NotBlank String contactos,
+   @Pattern(regexp = "\\d+", message = "O campo 'contactos' deve conter apenas números.")
+   String contactos,
 
 MultipartFile img
 ) {

@@ -10,10 +10,6 @@ import com.igreja.api.models.UserModel;
 
 public interface UserRepository extends JpaRepository<UserModel, Long> {
 
-    Optional<UserModel> findByEmail(String emai);
-
-
-    @Query(value = "SELECT * FROM user", nativeQuery = true)
-    List<UserModel> findAllByUser();
+    Optional<UserModel> findByEmail(String email);
     
 }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.igreja.api.dto.InscritosDto;
 import com.igreja.api.enums.StatusIncritos;
 import com.igreja.api.models.ActividadeModel;
@@ -38,7 +39,9 @@ public class InscritosService {
         inscritosModel.setActividade(actividade);
         if (actividade.getDataEvento().isAfter(LocalDateTime.now())) {
             inscritosModel=inscritosRepository.save(inscritosModel);
-             String jsonData = new ObjectMapper().writeValueAsString(Map.of(
+            ObjectMapper mapper= new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+             String jsonData =mapper.writeValueAsString(Map.of(
                 "Id", inscritosModel.getId(),
                 "userId", user.getId(),
                 "eventoId", actividade.getId(),

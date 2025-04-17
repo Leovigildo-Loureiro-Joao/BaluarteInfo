@@ -25,7 +25,7 @@ public class InscritosModel {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id",referencedColumnName = "id",nullable = false)
+    @JoinColumn(name = "user_id",referencedColumnName = "id",nullable = false,unique = true)
     private UserModel user;
 
     @ManyToOne
