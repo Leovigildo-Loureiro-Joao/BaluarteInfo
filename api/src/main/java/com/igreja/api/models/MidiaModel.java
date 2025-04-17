@@ -1,6 +1,7 @@
 package com.igreja.api.models;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.igreja.api.enums.MidiaType;
@@ -51,10 +52,10 @@ public class MidiaModel {
     private LocalDate dataPublicacao;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "midia")
-    private List<ComentarioModel> comentarios;
+    private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "midia")
-    private List<VistosModel> vistos;
+    private List<VistosModel> vistos=new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(referencedColumnName = "id")

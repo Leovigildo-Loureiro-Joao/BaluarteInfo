@@ -1,5 +1,6 @@
 package com.igreja.api.models;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -45,10 +46,10 @@ public class UserModel implements UserDetails{
     private String roles;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "user")
-    private List<ComentarioModel> comentarios;
+    private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "user")
-    private List<InscritosModel> inscritos;
+    private List<InscritosModel> inscritos=new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
