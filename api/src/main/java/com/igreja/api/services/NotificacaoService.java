@@ -46,7 +46,7 @@ public class NotificacaoService {
         //Quando a actividade ja encerrou para marcar momentos
         service.AllData().forEach(t -> {
             int comentarios = t.getComentarios().size();
-            if (comentarios >= configService.SelectByType(ConfigType.ComentarioLimite).getValue() && t.getDataEvento().isAfter(LocalDateTime.now())) {
+            if (comentarios >= configService.SelectByType(ConfigType.ComentarioLimiteActividade).getValue() && t.getDataEvento().isAfter(LocalDateTime.now())) {
                 String descricao = "A actividade " + t.getTema() + " ja tem " + comentarios + " comentarios e ja foi encerrada actualize a galeria de modo a marcar momentos"; 
                 if (notificacaoRepository.findByDescricao(descricao).isEmpty()) {
                     NotificacaoModel notificacao = new NotificacaoModel();
@@ -64,7 +64,7 @@ public class NotificacaoService {
     public void NotifyActividadeLimiteInscritos(){
          //Quando aos incritos previstos excederam para lancar um trailler ou uma mensagem para todos
         //Quando a actividade ja encerrou para marcar momentos
-        int totalIncritos = configService.SelectByType(ConfigType.IncritosLimite).getValue();
+        int totalIncritos = configService.SelectByType(ConfigType.IncritosLimiteActividade).getValue();
          service.AllData().forEach(t -> {
             int inscritos = t.getInscritos().size();
             if (inscritos >= totalIncritos-5 && t.getDataEvento().isAfter(LocalDateTime.now()) && t.getDataEvento().isBefore(LocalDateTime.now())) {

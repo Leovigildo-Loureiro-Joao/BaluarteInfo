@@ -2,6 +2,7 @@ package com.igreja.api.models;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.igreja.api.enums.ActividadeType;
@@ -53,11 +54,11 @@ public class ActividadeModel {
     private String img;
 
      @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
-    private List<ComentarioModel> comentarios;
+    private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
-    private List<MidiaModel> midia;
+    private List<MidiaModel> midia=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
-    private List<InscritosModel> inscritos;
+    private List<InscritosModel> inscritos=new ArrayList<>();
 }
