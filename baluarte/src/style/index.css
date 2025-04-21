@@ -1,3 +1,76 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    *{
+        @apply box-border m-0 p-0;
+    }
+
+    html{
+        @apply text-html-size;
+    }
+
+    p{
+        @apply text-text-pargh
+    }
+
+ 
+
+    .text-min-white{
+        @apply text-xl text-white;
+    }
+
+    .title-min-white{
+        @apply text-2xl text-white;
+    }
+
+    .liNavBar{
+        @apply text-white text-li-nav flex flex-col font-semibold cursor-pointer h-9 justify-center transition-all duration-300 ease-in-out;
+    }
+
+    .liNavBar:hover,footer li:hover{
+        @apply text-primary transition-all duration-300 ease-in-out ; 
+    }
+
+    .liNavBar.selected span{
+        @apply bg-white rounded-full py-1 relative bottom-1; 
+    }
+
+    .liNavBar.selected{
+        @apply relative -top-1; 
+    }
+
+    .liNavBar p{
+        @apply px-2; 
+    }
+
+    .inputRectangle{
+        @apply bg-white rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none ;
+    }
+
+    .buttonRectangle{
+        @apply bg-primary text-white rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none cursor-pointer;
+    }
+
+    .buttonRectangle.min{
+        @apply w-[200px];
+    }
+    .h2-title{
+        @apply  text-primary font-semibold text-h2-title mb-2 flex flex-col;
+    }
+
+    footer li{
+        @apply text-text text-text-pargh flex flex-col font-semibold cursor-pointer h-9 justify-center transition-all duration-300 ease-in-out;
+    }
+
+    .h2-title.sec span{
+        @apply w-[50px]  bg-primary rounded-lg py-1 ; 
+    }
+
+    .h2-title.sec{
+        @apply my-10 text-h2-title-big
+    }
+
+    
+}
