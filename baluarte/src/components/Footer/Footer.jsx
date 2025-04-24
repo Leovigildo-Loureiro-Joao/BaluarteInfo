@@ -31,9 +31,9 @@ export const Footer=()=>{
                         <div>
                             <h2 className="h2-title">Links uteis</h2>
                             <ul className='gap-2 flex flex-col'>
-                                <li><a href="#">Quem somos</a></li>
-                                <li><a href="#">Missão e Visão</a></li>
-                                <li><a href="#">Actividades em destaque</a></li>
+                                <li><a href="#quemsomos">Quem somos</a></li>
+                                <li><a href="#missao">Missão e Visão</a></li>
+                                <li><a href="#actividades">Actividades em destaque</a></li>
                                 <li><a href="#">Contactos</a></li>
                             </ul>
                         </div>

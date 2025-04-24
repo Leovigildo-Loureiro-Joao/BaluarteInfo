@@ -3,7 +3,7 @@ import {icone} from "../../assets/Assets"
 
 export const Header=()=>{
     return <section className={`relative bg-cover bg-center h-96 bg-fundo-baluarte `} >
-    <div class="absolute z-0 inset-0 bg-sombra-vermelha/40"></div> 
+    <div className="absolute z-0 inset-0 bg-sombra-vermelha/40"></div> 
     <div className="z-10 relative flex flex-col"> 
         <div className="flex justify-between p-20">
             <div className=" flex h-min">

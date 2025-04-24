@@ -15,8 +15,6 @@
         @apply text-text-pargh
     }
 
- 
-
     .text-min-white{
         @apply text-xl text-white;
     }
@@ -29,15 +27,23 @@
         @apply text-white text-li-nav flex flex-col font-semibold cursor-pointer h-9 justify-center transition-all duration-300 ease-in-out;
     }
 
-    .liNavBar:hover,footer li:hover{
+    footer li:hover{
         @apply text-primary transition-all duration-300 ease-in-out ; 
     }
 
-    .liNavBar.selected span{
-        @apply bg-white rounded-full py-1 relative bottom-1; 
+    .liNavBar:hover span{
+        @apply bg-white rounded-full py-1 relative bottom-1 w-full transition-all duration-300; 
     }
 
-    .liNavBar.selected{
+    .liNavBar span{
+        @apply bg-white rounded-full py-1 relative bottom-1 w-0 transition-all duration-300; 
+    }
+
+    .liNavBar.selected span{
+        @apply bg-primary rounded-full py-1 relative bottom-1 w-full; 
+    }
+
+    .liNavBar{
         @apply relative -top-1; 
     }
 
@@ -50,7 +56,11 @@
     }
 
     .buttonRectangle{
-        @apply bg-primary text-white rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none cursor-pointer;
+        @apply bg-primary text-white rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none cursor-pointer transition-all duration-300;
+    }
+
+    .buttonRectangle:hover{
+        @apply bg-primary/40 transition-all duration-300;
     }
 
     .buttonRectangle.min{
@@ -72,5 +82,72 @@
         @apply my-10 text-h2-title-big
     }
 
+    #carrosel p{
+        @apply w-[75vw] text-center text-li-nav text-text tracking-[2px] leading-[30px];
+ 
+    }
+
+    #carrosel div.selected{
+        @apply transition-all duration-1000 ease-in-out;
+    }
+
+    #carrosel div{
+        @apply  transition-all duration-1000 ease-in-out;;
+    }
+
+    #painel-corresel i{
+        @apply w-[10px] h-[10px] rounded-[100%] bg-[rgb(194,_194,_194)] m-[10px] cursor-pointer
+    }
+
+    #painel-corresel i.selected{
+        @apply w-[10px] h-[10px] rounded-[100%] bg-primary m-[10px]
+    }
     
+    #painel-corresel{
+        @apply w-[10px] h-[10px] rounded-[100%] relative z-10 flex justify-around w-max
+    }
+    
+    ul.tema li{
+        @apply  text-subtitle text-black tracking-[2px] leading-[30px] px-5 flex flex-col cursor-pointer;
+    }
+
+    ul.tema li span{
+        @apply w-[0] bg-black rounded-lg py-[1px] transition-all duration-300 ease-in-out;
+    }
+
+    ul.tema li:hover span{
+        @apply w-full bg-primary ;
+    }
+
+    ul.tema li.selected span{
+        @apply w-full bg-primary/45 px-5;
+    }
+
+    #carrosel {
+        will-change: transform; /* Otimização de performance */
+      }
+      
+      .selected {
+        opacity: 1;
+      }
+      
+      #carrosel div:not(.selected) {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      #painel-corresel i {
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+      }
+      
+      #painel-corresel i:hover {
+        background-color: #ccc !important;
+      }
+    
+      #carrosel strong{
+        color:#CB2020;
+        font-size:1.5rem;
+        font-weight:bolder;
+      }
 }

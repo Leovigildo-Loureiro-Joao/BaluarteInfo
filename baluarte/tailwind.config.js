@@ -16,6 +16,7 @@ module.exports = {
       },backgroundImage: {
         'fundo-baluarte': "url('../assets/rectangle.jpg')",
         'footer': "url('../assets/wave.svg')",
+        'missao-visao': "url('../assets/bottom.svg')",
       },backgroundColor:{
         'sombra-vermelha': "#540000",
       },fontSize:{
