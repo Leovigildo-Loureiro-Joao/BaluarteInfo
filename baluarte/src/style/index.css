@@ -47,6 +47,8 @@
         @apply relative -top-1; 
     }
 
+    
+
     .liNavBar p{
         @apply px-2; 
     }
@@ -56,16 +58,37 @@
     }
 
     .buttonRectangle{
-        @apply bg-primary text-white rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none cursor-pointer transition-all duration-300;
+        @apply bg-primary text-white text-text-pargh rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none cursor-pointer transition-all duration-300;
+    }
+
+    .buttonRectangle-white{
+        @apply bg-white text-primary text-text-pargh rounded-lg shadow-md p-4 flex border-primary border flex-col gap-2 outline-none cursor-pointer transition-all duration-300;
+    }
+
+    .buttonRectangle-white:hover{
+        @apply bg-primary/50 text-white transition-all duration-300;
     }
 
     .buttonRectangle:hover{
         @apply bg-primary/40 transition-all duration-300;
     }
 
-    .buttonRectangle.min{
+    .buttonRectangle.min,.buttonRectangle-white.min{
         @apply w-[200px];
     }
+
+    .buttonRectangle.artcle,.buttonRectangle-white.artcle{
+        @apply rounded-none rounded-b-xl  w-full ;
+    }
+
+    .buttonRectangle.artcle{
+        @apply rounded-r-none ;
+    }
+
+    .buttonRectangle-white.artcle{
+        @apply rounded-l-none ;
+    }
+
     .h2-title{
         @apply  text-primary font-semibold text-h2-title mb-2 flex flex-col;
     }
@@ -111,6 +134,10 @@
         @apply  text-subtitle text-black tracking-[2px] leading-[30px] px-5 flex flex-col cursor-pointer;
     }
 
+    ul.tema.min li{
+        @apply  text-text-pargh tracking-normal;
+    }
+
     ul.tema li span{
         @apply w-[0] bg-black rounded-lg py-[1px] transition-all duration-300 ease-in-out;
     }
@@ -150,4 +177,25 @@
         font-size:1.5rem;
         font-weight:bolder;
       }
+
+      input{
+        @apply text-text-pargh
+      }
+
+      .artigo figure:hover div{
+        opacity: 1;
+        transition: 0.3s all;
+      }
+
+      .artigo figure:not(:hover) div{
+        opacity: 0;
+        transition: 0.3s all;
+      }
+
+      #modal-content:not(.show){
+        display: none;
+        opacity: 0;
+      }
+
+      
 }

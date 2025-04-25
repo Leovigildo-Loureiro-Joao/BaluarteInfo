@@ -1,19 +1,30 @@
 
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { Home } from './pages/Home/Home.jsx'
+import { createBrowserRouter, RouterProvider,Link} from 'react-router-dom'
+import { Home } from './pages/Home.jsx'
+import { Actividade } from './pages/Actividade.jsx'
 import React from 'react';
 import "./style/index.css"
+import { Destaque } from './pages/Destaque.jsx';
 
 const router=createBrowserRouter([{
   path: "/",
   element: <App/>,
   children:[
-  {
-    path: "/",
-    element: <Home/>
-  }]
+    {
+      path: "/",
+      element: <Home/>
+    },
+    {
+      path: "/Actividade",
+      element: <Actividade/>
+    },
+    {
+      path: "/Destaque",
+      element: <Destaque/>
+    }
+  ]
 }])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
