@@ -6,5 +6,7 @@ import quemsomos from './quemsomos.png';
 import salvacao from './salvacao.png';
 import artigo from './artigo.png';
 import music from './music.mp3';
+import video from './14.mp4';
+import activi from './activi.jpg';
 
-export { wave ,icone,quemsomos,topWave,bottomWave,salvacao,artigo,music};
+export { wave ,icone,quemsomos,topWave,bottomWave,salvacao,artigo,music,video,activi};

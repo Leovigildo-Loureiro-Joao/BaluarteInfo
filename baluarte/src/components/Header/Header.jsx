@@ -27,6 +27,7 @@ export const Header=()=>{
                 <Link to="/"><li onClick={()=>{setSelect(["selected","","",""])}} className={"liNavBar "+(select[0])}><span></span><p>Pagina Inical</p></li></Link>
                 <Link to="/Actividade"><li onClick={()=>{setSelect(["","selected","",""])}} className={"liNavBar "+(select[1])}><span></span><p>Actividades</p></li></Link>
                 <Link to="/Destaque"><li onClick={()=>{setSelect(["","","selected",""])}} className={"liNavBar "+(select[2])}><span></span><p>Destaque</p></li></Link>
+                <Link to="/Midia"><li onClick={()=>{setSelect(["","","selected",""])}} className={"liNavBar "+(select[2])}><span></span><p>Midia e Docs</p></li></Link>
                 <li className={"liNavBar"}><span></span><p>Contactos</p></li>
              
             </ul>

@@ -11,7 +11,7 @@
         @apply text-html-size;
     }
 
-    p{
+    p,h3{
         @apply text-text-pargh
     }
 
@@ -197,5 +197,10 @@
         opacity: 0;
       }
 
-      
+      .rect-image img{
+        width: 250px;
+        height: 350px;
+        object-fit: cover;
+        
+      }
 }

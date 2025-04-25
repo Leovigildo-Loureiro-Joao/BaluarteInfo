@@ -7,6 +7,7 @@ import { Actividade } from './pages/Actividade.jsx'
 import React from 'react';
 import "./style/index.css"
 import { Destaque } from './pages/Destaque.jsx';
+import { Midia } from './pages/Midia.jsx';
 
 const router=createBrowserRouter([{
   path: "/",
@@ -23,6 +24,10 @@ const router=createBrowserRouter([{
     {
       path: "/Destaque",
       element: <Destaque/>
+    },
+    {
+      path: "/Midia",
+      element: <Midia/>
     }
   ]
 }])

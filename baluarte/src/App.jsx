@@ -6,11 +6,14 @@ import { ModalContent } from './components/Dialog/modal_content'
 
 
 function App() {
+
+    const [modal,setModal]=useState(null)
+
   return (
     <>
-      <ModalContent/>
+      <ModalContent modal={modal}/>
       <Header/>
-      <Outlet/>
+      <Outlet context={{modal:modal,setModal:setModal}}/>
       <Footer/>
     </>
   )

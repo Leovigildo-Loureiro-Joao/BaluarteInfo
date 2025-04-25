@@ -1,10 +1,13 @@
+import { useOutletContext } from "react-router-dom"
 import { salvacao } from "../assets/Assets"
 import { ContentArticle } from "../components/cards/Articles/content_articles"
 import { ContentAudios } from "../components/cards/Audios/content_audios"
 import { ContentVideo } from "../components/cards/Videos/content_videos"
 
-export const Destaque=()=>{
+export const Destaque=(value)=>{
+   
 
+  
     return < section className="flex gap-20 flex-col">
         <section className="bg-missao-visao bg-no-repeat bg-cover h-full relative -top-56 py-96 flex gap-10">
             <figure className="w-1/2">
