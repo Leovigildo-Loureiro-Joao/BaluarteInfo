@@ -1,7 +1,10 @@
 import { quemsomos } from "../assets/Assets"
 import { Actividade_Content } from "../components/cards/Actividade/container-active-min"
 import { SlidesActiviyMin } from "../components/cards/Actividade/slides-active";
+import { ContentArticle } from "../components/cards/Articles/content_articles";
+import { ContentAudios } from "../components/cards/Audios/content_audios";
 import { Missao } from "../components/cards/Missao/Missao"
+import { ContentVideo } from "../components/cards/Videos/content_videos";
 
 export const Home=()=>{
     const frazes=["<strong>Proclamar o amor</strong> transformador de Cristo, restaurando vidas, fortalecendo famílias e formando discípulos cheios do <Forte>Espírito</Forte>, para impactar o mundo com fé, <Forte>esperança e justiça</Forte>.",
@@ -27,8 +30,15 @@ export const Home=()=>{
        </section>
        
         <Missao frazes={frazes}/>
-
-        <SlidesActiviyMin/>
-
+        <div className="mt-10 flex flex-col justify-center items-center">
+            <div className="h2-title sec flex flex-col font-extrabold">
+                <h1>Actividades</h1>
+             
+            </div>
+            <SlidesActiviyMin/>
+        </div>
+        <ContentArticle/>
+        <ContentAudios/>
+        <ContentVideo/>
     </>
 }

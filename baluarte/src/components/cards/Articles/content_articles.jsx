@@ -2,7 +2,7 @@ import { GridArticle } from "./gridArticle"
 
 export const ContentArticle=()=>{
     return <>
-        <section className="px-40 pt-0 relative -top-96">
+        <section className="px-40 pt-0">
             <div className="h2-title sec">
                 <h1>Nossos novos Artigos</h1>
                 <span></span>

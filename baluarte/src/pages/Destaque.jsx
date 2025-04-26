@@ -24,8 +24,6 @@ export const Destaque=(value)=>{
                 </div>
             </div>
         </section>
-        <ContentArticle/>
-        <ContentAudios/>
-        <ContentVideo/>
+       
     </section>
 }

@@ -3,7 +3,7 @@ import { GridAudios } from "./GridAudios"
 
 export const ContentAudios=()=>{
     return <>
-        <section className="px-40 pt-0 relative -top-96">
+        <section className="px-40 pt-0">
             <div className="h2-title sec">
                 <h1>Audios mais requisitados</h1>
                 <span></span>

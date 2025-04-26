@@ -3,7 +3,7 @@ import { GridVideos } from "./GridVideos"
 
 export const ContentVideo=()=>{
     return <>
-        <section className="px-40 pt-0 relative -top-96 -mb-[10vw]">
+        <section className="px-40 pt-0">
             <div className="h2-title sec">
                 <h1>Nossos novos videos</h1>
                 <span></span>
