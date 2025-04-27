@@ -4,6 +4,7 @@ import { activi, artigo, quemsomos } from "../../../assets/Assets"
 import { ContentVideo } from "../Videos/content_videos"
 import { GridVideos } from "../Videos/GridVideos"
 
+
 export const ActiviComplete=({data})=>{
     if (data!=undefined) {
         return <section className=" flex flex-col gap-20 p-10 w-[70vw]">

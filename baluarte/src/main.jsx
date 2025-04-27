@@ -18,6 +18,10 @@ const router=createBrowserRouter([{
       element: <Home/>
     },
     {
+      path: "/Actividade/:id",
+      element: <Actividade/>
+    },
+    {
       path: "/Actividade",
       element: <Actividade/>
     },

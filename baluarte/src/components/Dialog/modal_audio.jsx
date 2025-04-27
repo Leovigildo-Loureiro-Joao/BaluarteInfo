@@ -3,16 +3,12 @@ import { music } from "../../assets/Assets"
 import { ListItem } from "../items-list/ListItem"
 import { useState } from "react"
 
-export const ModalAudio=({titulo,audio=music,src,descricao,setModal})=>{
+export const ModalAudio=({titulo,audio=music,src,descricao,closeModal})=>{
 
     const [select,setSelect]=useState(0)
 
     return <dialog className="w-[400px] h-[350px] min-h-[350px] bg-white rounded-xl flex flex-col static">
-        <div className="flex justify-between p-10 pb-5"><h2 className="text-h2-title font-bold text-primary">{titulo}</h2><RxPlus onClick={
-            ()=>{
-                setModal(null);
-            }
-        } className=" text-4xl transition-all duration-300 rotate-45 hover:text-primary hover:shadow-inner"/></div>
+        <div className="flex justify-between p-10 pb-5"><h2 className="text-h2-title font-bold text-primary">{titulo}</h2><RxPlus onClick={closeModal} className=" text-4xl transition-all duration-300 rotate-45 hover:text-primary hover:shadow-inner"/></div>
         <div className="min-w-fit flex flex-col items-center justify-center gap-5">
             <ul className="flex w-1/2 justify-around tema min">
                 <ListItem text={"Imagem"} classe={select==0?"selected":""} setValue={setSelect} value={0} />

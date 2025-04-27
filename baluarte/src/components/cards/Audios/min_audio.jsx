@@ -5,11 +5,17 @@ import { RiSoundModuleFill, RiSurroundSoundFill, RiSurroundSoundLine } from "rea
 import { TfiMusic, TfiSoundcloud } from "react-icons/tfi"
 import { ModalAudio } from "../../Dialog/modal_audio"
 import { useOutletContext } from "react-router-dom"
+import { useModal } from "../../Dialog/ModalContext"
 
 export const MinAudio=({titulo,descricao,img,audio})=>{
-    const values=useOutletContext();
+    const { openModal } = useModal();
     function OpenModal() {
-        values.setModal(<ModalAudio titulo={titulo} src={img} descricao={descricao} audio={audio} setModal={ values.setModal}/>)
+        openModal("modalAudio", {
+            titulo: titulo,
+            audio: audio,
+            src: img,
+            descricao: descricao
+        })
     }
 
     return <article className="artigo flex flex-col w-[300px]">
