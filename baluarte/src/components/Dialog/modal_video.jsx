@@ -3,6 +3,27 @@ import { music } from "../../assets/Assets"
 import { ListItem } from "../items-list/ListItem"
 import { useState } from "react"
 
+
+const YouTubeVideo = ({ videoId }) => {
+    const videoUrl = `https://www.youtube.com/embed/${videoId}`;
+    
+    return (
+      <div className="video-container">
+        <iframe
+          width="560"
+          height="315"
+          src={videoUrl}
+          title="YouTube video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+    );
+  };
+  
+  export default YouTubeVideo;
+
 export const ModalVideo=({titulo,src,descricao,video})=>{
 
     const [select,setSelect]=useState(0)
@@ -27,7 +48,7 @@ export const ModalVideo=({titulo,src,descricao,video})=>{
                     </div>
                  
                 </div>
-                <video controls src={video}></video>
+                <YouTubeVideo videoId={"rtlOE2WV8NQ"} />
             </div>
             
         </div>

@@ -26,7 +26,7 @@ export const Missao = ({ frazes = [] }) => {
     }, [frazes.length]);
     
     return (
-        <section id="missao" className="bg-missao-visao bg-no-repeat bg-cover h-full flex justify-center flex-col py-40 w-screen">
+        <section id="missao" className=" bg-no-repeat bg-cover h-full flex justify-center flex-col py-40 w-screen">
             <div className="px-20 relative -top-10 z-10 flex flex-col justify-center items-center w-screen">
                 <div className="h2-title sec">
                     <h1>Missão e Visão</h1>
