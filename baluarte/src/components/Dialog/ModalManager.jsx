@@ -3,10 +3,12 @@ import React from "react";
 import { useModal } from "./ModalContext";
 import { ModalVideo } from "./modal_video";
 import { ModalAudio } from "./modal_audio";
+import { ModalComentar } from "./modal_comentar";
 
 const modals = {
     modalAudio: ModalAudio,
-    modalVideo: ModalVideo
+    modalVideo: ModalVideo,
+    modalComentar: ModalComentar,
 };
 
 export const ModalManager = () => {

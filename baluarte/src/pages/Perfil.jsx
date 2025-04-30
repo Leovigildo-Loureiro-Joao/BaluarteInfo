@@ -6,7 +6,7 @@ export const Perfil=()=>{
     
     return <section className="p-20 flex flex-col items-center">
         <figure className="flex justify-center  gap-5 flex-col pb-20 items-center">
-            <img src={perfil} alt="" className="rounded-full object-cover object-top border-black w-[150px] h-[150px]"/>
+            <img src={perfil} alt="" className="perfil w-[150px] h-[150px]"/>
             <figcaption className="flex flex-col itens-center text-center gap-5">
                 <h2 className="text-text-pargh">leovigildojaoa@gmail.com</h2>
                 <h1 className="text-h2-title font-bold">Leovigildo João</h1>

@@ -18,7 +18,7 @@ export const Header=()=>{
             </div>
             <div className="flex flex-col">
                 <figure className="flex justify-end">
-                    <Link to="/Perfil/1"><img src={perfil} className="rounded-full object-cover object-top border-black w-[50px] h-[50px]"/></Link>
+                    <Link to="/Perfil/1"><img src={perfil} className="perfil w-[50px] h-[50px]"/></Link>
                 </figure>
                 <h2 className="title-min-white text-end text-subtitle py-10">Salmos 23:1</h2>
                 <p className="text-min-white text-li-nav">"O Senhor é o meu pastor, nada me faltará."</p>

@@ -18,17 +18,18 @@ export const MinAudio=({titulo,descricao,img,audio})=>{
         })
     }
 
-    return <article className="artigo flex flex-col w-[300px]">
+    return <article className="artigo flex flex-col w-[300px] shadow-black/20 shadow-xl">
         <figure>
-            <h2 className="text-white  rounded-t-xl text-li-nav font-bold relative p-5 px-10 z-10 bg-black/70">{titulo}</h2>
-            <div className="  bg-black/60 flex   gap-10 justify-center items-center absolute h-[200px] w-[300px] opacity-0">
+            <h2 className="text-black font-bold  rounded-t-xl text-li-nav relative p-5 px-10 z-10 border-[1px] border-solid ">{titulo}</h2>
+            <div className="  flex gradient  gap-10 justify-center items-center absolute h-[170px] w-[300px] opacity-0">
                 <AiFillSound onClick={OpenModal} size={30} color="white"/>
             </div>
-            <img src={img} alt="" className=" cursor-pointer h-[150px] object-cover w-[400px]"/>
+            <img src={img} alt="" className=" cursor-pointer h-[170px] object-cover w-[400px]"/>
+               
         </figure>
-        <div className="bg-black px-10 py-5 flex gap-2 flex-col h-[150px]">
-            <p className="text-white">{descricao}</p>
-        </div>
+        <div className="bg-secondary px-10 py-5 flex gap-2 flex-col h-[100px]">
+                <p>{descricao}</p>
+            </div>
         <div className="flex">
             <button className="buttonRectangle artcle" onClick={OpenModal}>Escutar</button>
             <button className="buttonRectangle-white artcle">Baixar</button>

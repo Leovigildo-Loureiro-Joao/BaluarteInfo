@@ -2,7 +2,7 @@ import { BiPointer } from "react-icons/bi"
 import { LiaEye, LiaFacebook, LiaShareSolid, LiaShareSquare } from "react-icons/lia"
 
 export const MinArticle=({titulo,descricao,img})=>{
-    return <article className="artigo flex flex-col w-[300px]">
+    return <article className="artigo flex flex-col w-[300px] ">
         <figure className="">
             <img src={img} alt="" className="rounded-t-xl cursor-pointer h-[200px] object-cover w-[400px]"/>
         </figure>

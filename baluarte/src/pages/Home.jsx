@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { quemsomos } from "../assets/Assets"
+import { artigo, music, quemsomos } from "../assets/Assets"
 import { Actividade_Content } from "../components/cards/Actividade/container-active-min"
 import { SlidesActiviyMin } from "../components/cards/Actividade/slides-active";
 import { ContentArticle } from "../components/cards/Articles/content_articles";
@@ -7,6 +7,7 @@ import { ContentAudios } from "../components/cards/Audios/content_audios";
 import { Missao } from "../components/cards/Missao/Missao"
 import { ContentVideo } from "../components/cards/Videos/content_videos";
 import { ListItem } from "../components/items-list/ListItem";
+import { useModal } from "../components/Dialog/ModalContext";
 
 export const Home=()=>{
     const [select,setSelect]=useState(0);
@@ -41,22 +42,27 @@ export const Home=()=>{
             <SlidesActiviyMin/>
         </div>
         <ContentArticle/>
-        <section className="pb-40 px-80">
-            <nav className="flex w-[-webkit-fill-available] justify-start pb-5 -ml-5">
-                <ul className="flex w-1/2 gap-5 tema">
-                    <ListItem text={"Audios"} classe={select==0?"selected":""} setValue={setSelect} value={0} />
-                    <ListItem text={"Videos"} classe={select==1?"selected":""} setValue={setSelect} value={1}/>     
-                </ul>
-            </nav>
-            <section className="w-[920px] overflow-hidden">
-                <section className="flex  gap-10" style={{
-                                transform: `translateX(-${select * 920}px)`,
-                                transition: "transform 0.5s ease-in-out"
-                            }}>
-                    <ContentAudios/>
-                    <ContentVideo/>
+        <section className="pb-40 px-52">
+           
+            <section className="flex justify-center flex-col items-center">
+                <nav className="flex w-[990px] justify-start pb-5 -ml-5">
+                    <ul className="flex w-1/2 gap-5 tema">
+                        <ListItem text={"Audios"} classe={select==0?"selected":""} setValue={setSelect} value={0} />
+                        <ListItem text={"Videos"} classe={select==1?"selected":""} setValue={setSelect} value={1}/>     
+                    </ul>
+                </nav>
+                <section className="w-[990px] overflow-hidden">
+                    <section className="flex  gap-20" style={{
+                                    transform: `translateX(-${select * 990}px)`,
+                                    transition: "transform 0.5s ease-in-out"
+                                }}>
+                        <ContentAudios/>
+                        <ContentVideo/>
+                    </section>
                 </section>
+               
             </section>
+            
             
         </section>
     </>

@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { quemsomos } from "../assets/Assets"
-import { MinActive } from "../components/cards/Actividade/min-active"
-import { ListItem } from "../components/items-list/ListItem";
+
 import { SlidesActiviy } from "../components/cards/Actividade/slides-active";
 import { LiaSearchSolid } from "react-icons/lia";
 
