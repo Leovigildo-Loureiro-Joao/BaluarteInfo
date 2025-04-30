@@ -3,7 +3,7 @@ import { Retrato_Article } from "./retrato_article"
 
 export const SlideArticle=({index})=>{
     return <section className="w-[620px] flex overflow-hidden">
-        <div className="w-auto flex gap-[20px] py-10"  style={{
+        <div className="w-auto flex gap-[20px] pb-10"  style={{
             transform: `translateX(-${index * 615}px)`,
             transition: "transform 0.5s ease-in-out"
         }}>

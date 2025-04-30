@@ -25,18 +25,16 @@ const YouTubeVideo = ({ videoId }) => {
   
   export default YouTubeVideo;
 
-export const ModalVideo=({titulo,src,descricao,video})=>{
-
-    const [select,setSelect]=useState(0)
+export const ModalVideo=({titulo,descricao,video,closeModal})=>{
 
     return <dialog className="w-[800px] h-[400px] min-h-[400px] bg-white rounded-xl flex flex-col static">
-        <div className="flex justify-between p-10 pb-5"><h2 className="text-h2-title font-bold text-primary">{titulo}</h2><RxPlus className=" text-4xl transition-all duration-300 rotate-45 hover:text-primary hover:shadow-inner"/></div>
+        <div className="flex justify-between p-10 pb-5"><h2 className="text-h2-title font-bold text-primary">{titulo}</h2><RxPlus onClick={closeModal} className=" text-4xl transition-all duration-300 rotate-45 hover:text-primary hover:shadow-inner"/></div>
         <div className=" flex gap-5">
-            <YouTubeVideo videoId={"rtlOE2WV8NQ"} />
+            <YouTubeVideo videoId={video} />
             <div className="max-w-[200px] max-h-[240px] overflow-x-hidden overflow-y-auto">
                 <h2 className="text-h2-title text-primary font-semibold mb-5">Descricao</h2>
                 <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. In ipsa veniam excepturi est quisquam suscipit aliquid aut vero. Architecto, error ea laudantium quod exercitationem distinctio quasi ratione reprehenderit. Tempora, rerum.
+                    {descricao}
                 </p>
             </div>
         </div>

@@ -18,7 +18,7 @@ export const MinAudio=({titulo,descricao,img,audio})=>{
         })
     }
 
-    return <article className="artigo flex flex-col w-[300px] shadow-black/20 shadow-xl">
+    return <article className="artigo flex flex-col w-[300px] h-[360px] shadow-black/20 shadow-xl">
         <figure>
             <h2 className="text-black font-bold  rounded-t-xl text-li-nav relative p-5 px-10 z-10 border-[1px] border-solid ">{titulo}</h2>
             <div className="  flex gradient  gap-10 justify-center items-center absolute h-[170px] w-[300px] opacity-0">

@@ -9,7 +9,8 @@ import "./style/index.css"
 import { Destaque } from './pages/Destaque.jsx';
 import { Midia } from './pages/Midia.jsx';
 import { Perfil } from './pages/Perfil.jsx';
-import { MidiaDocs } from './pages/MidiaDocs.jsx';
+import { QuemSomos } from './pages/QuemSomos.jsx';
+import { Salvacao } from './pages/Salvacao.jsx';
 
 const router=createBrowserRouter([{
   path: "/",
@@ -35,13 +36,22 @@ const router=createBrowserRouter([{
       path: "/Destaque",
       element: <Destaque/>
     },
+    ,
+    {
+      path: "/Destaque/:seccao",
+      element: <Destaque/>
+    },
     {
       path: "/Midia",
       element: <Midia/>
     },
     {
-      path: "/MidiaDocs",
-      element: <MidiaDocs/>
+      path: "/QuemSomos",
+      element: <QuemSomos/>
+    },
+    {
+      path: "/Salvacao",
+      element: <Salvacao/>
     }
   ]
 }])

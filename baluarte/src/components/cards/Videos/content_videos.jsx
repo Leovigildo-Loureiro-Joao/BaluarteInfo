@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 import { GridVideos } from "./GridVideos"
 
 
@@ -8,7 +9,8 @@ export const ContentVideo=()=>{
             mais perto de Deus a cada leitura!</p>
             <div className="my-10 flex flex-col justify-center items-center">
                 <GridVideos />
-                <button className="buttonRectangle min mt-20">Ver mais videos</button>
+                <Link to={"/Destaque/Videos"}><button className="buttonRectangle min mt-20">Ver mais videos</button></Link>
+                
             </div>
             
         </section>

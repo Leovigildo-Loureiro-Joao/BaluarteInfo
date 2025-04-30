@@ -1,5 +1,6 @@
 import { FaFacebook, FaYoutube, FaWhatsapp } from 'react-icons/fa';
 import { wave } from "../../assets/Assets"
+import { Link } from 'react-router-dom';
 
 export const Footer=()=>{
     return <footer className="">
@@ -19,10 +20,10 @@ export const Footer=()=>{
                         <h2 className="h2-title">Destaque</h2>
                         <nav >
                             <ul className="flex gap-5">
-                                <li><a href="#">Artigos</a></li>
-                                <li><a href="#">Videos</a></li>
-                                <li><a href="#">Audios</a></li>
-                                <li><a href="#">Salvação hoje !</a></li>
+                                <li><Link to="/Destaque/Artigos">Artigos</Link></li>
+                                <li><Link to="/Destaque/Videos">Videos</Link></li>
+                                <li><Link to="/Destaque/Audios">Audios</Link></li>
+                                <li><Link to="/Salvacao">Salvação hoje !</Link></li>
                             </ul>
                         </nav>
                         

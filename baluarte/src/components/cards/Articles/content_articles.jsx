@@ -15,7 +15,7 @@ export const ContentArticle=()=>{
     }
     return <>
         <section className="p-40 flex flex-col jjustify-center items-center">
-            <div className="h2-title sec w-[590px] flex flex-row justify-between items-center">
+            <div className="h2-title w-[590px] my-0 flex flex-row justify-between items-center">
                 <h1>Nossos novos Artigos</h1>
                 <button className="buttonRectangle px-10">Ver mais artigos</button>
             </div>

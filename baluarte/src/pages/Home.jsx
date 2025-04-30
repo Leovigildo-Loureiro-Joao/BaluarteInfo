@@ -8,6 +8,7 @@ import { Missao } from "../components/cards/Missao/Missao"
 import { ContentVideo } from "../components/cards/Videos/content_videos";
 import { ListItem } from "../components/items-list/ListItem";
 import { useModal } from "../components/Dialog/ModalContext";
+import { Link } from "react-router-dom";
 
 export const Home=()=>{
     const [select,setSelect]=useState(0);
@@ -25,7 +26,7 @@ export const Home=()=>{
                     <p >Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur doloribus cupiditate sit fugit facilis, incidunt possimus reiciendis laboriosam molestias et deserunt obcaecati saepe quam commodi, minus tempora id minima expedita!
                         <br/> <br/>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, incidunt debitis aut quaerat ratione, et commodi pariatur repudiandae recusandae quas, animi autem explicabo veritatis ducimus atque! Magni dolore voluptatibus quaerat.
                     </p>
-                    <div className="flex justify-center"><button className="buttonRectangle min">Saber mais</button></div>
+                    <div className="flex justify-center"><Link to={"/QuemSomos"}><button className="buttonRectangle min">Saber mais</button></Link></div>
                 </div>
             </div>
             <figure className="ml-[10%] w-2/5">
