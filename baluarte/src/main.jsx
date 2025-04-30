@@ -8,6 +8,8 @@ import React from 'react';
 import "./style/index.css"
 import { Destaque } from './pages/Destaque.jsx';
 import { Midia } from './pages/Midia.jsx';
+import { Perfil } from './pages/Perfil.jsx';
+import { MidiaDocs } from './pages/MidiaDocs.jsx';
 
 const router=createBrowserRouter([{
   path: "/",
@@ -22,6 +24,10 @@ const router=createBrowserRouter([{
       element: <Actividade/>
     },
     {
+      path: "/Perfil/:userID",
+      element: <Perfil/>
+    },
+    {
       path: "/Actividade",
       element: <Actividade/>
     },
@@ -32,6 +38,10 @@ const router=createBrowserRouter([{
     {
       path: "/Midia",
       element: <Midia/>
+    },
+    {
+      path: "/MidiaDocs",
+      element: <MidiaDocs/>
     }
   ]
 }])

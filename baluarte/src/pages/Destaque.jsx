@@ -3,6 +3,7 @@ import { salvacao } from "../assets/Assets"
 import { ContentArticle } from "../components/cards/Articles/content_articles"
 import { ContentAudios } from "../components/cards/Audios/content_audios"
 import { ContentVideo } from "../components/cards/Videos/content_videos"
+import { GridArticle } from "../components/cards/Articles/gridArticle"
 
 export const Destaque=(value)=>{
    
@@ -24,6 +25,12 @@ export const Destaque=(value)=>{
                 </div>
             </div>
         </section>
-       
+       <section className="flex justify-center items-center">
+        <section className="flex flex-col gap-10 relative -top-96 w-[900px]">
+            <GridArticle/>
+            <ContentAudios/>
+            <ContentVideo/>
+        </section>
+       </section>
     </section>
 }

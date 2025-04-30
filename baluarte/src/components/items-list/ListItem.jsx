@@ -3,5 +3,5 @@ export const ListItem=({text,classe,setValue,value})=>{
         ()=>{
             setValue(value)
         }
-    }><p>{text}</p><span></span></li>
+    }><p className="whitespace-nowrap">{text}</p><span></span></li>
 }

@@ -16,19 +16,7 @@ export const MinActive = ({titulo,descricao,img,dataSelect,id}) => {
                         </p>
                     </div>
                     <button onClick={()=>{
-                        const complete={
-                            descricao:"Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure est adipisci consequuntur ipsam rerum, saepe id ratione molestiae architecto velit sit tempore debitis tempora vitae laudantium praesentium earum pariatur aliquid.",
-                            tema:"Envangelho",
-                            titulo:"Nao perca a esperanca",
-                            tipoEvento:"Envagelismo",
-                            publicoAlvo:"Todos",
-                            Organizador:"Leovigildo",
-                            dataEvento:"2025-12-02T02:00:00",
-                            contactos:"955383237",
-                            img:img
-                        }
-                        dataSelect(<ActiviComplete data={complete}/>)
-                        nav("/Actividade")
+                        nav("/Actividade/1")
                     }} className="text-white text-2xl p-5 hover:bg-primary rounded-b-lg hover:transition-all hover:duration-300 transition-all duration-300 ">Saber mais</button>
                 </div>
             </div>

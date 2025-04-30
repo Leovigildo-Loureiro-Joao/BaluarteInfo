@@ -8,5 +8,6 @@ import artigo from './artigo.png';
 import music from './music.mp3';
 import video from './14.mp4';
 import activi from './activi.jpg';
+import perfil from './perfil.png';
 
-export { wave ,icone,quemsomos,topWave,bottomWave,salvacao,artigo,music,video,activi};
+export { wave ,icone,perfil,quemsomos,topWave,bottomWave,salvacao,artigo,music,video,activi};

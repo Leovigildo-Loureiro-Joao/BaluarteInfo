@@ -2,13 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 @layer components {
+
     *{
         @apply box-border m-0 p-0;
     }
 
     html{
         @apply text-html-size;
+    }
+
+    #boxGaleria{
+        --width:250px;
     }
 
     p,h3{
@@ -198,9 +205,39 @@
       }
 
       .rect-image img{
-        width: 250px;
-        height: 350px;
-        object-fit: cover;
+       @apply w-[250px] h-[350px] object-cover max-w-[250px] shadow-2xl opacity-50 transition-all duration-300
         
       }
+
+
+      .rect-image{
+        position: relative;
+        left: 100%;
+        width: var(--width);
+       }
+
+       @keyframes autoRun {
+         from{
+            left: 100%;
+         }
+         to{
+            left: 0;
+         }
+       }
+
+      .rect-image.selected img{
+        @apply w-[300px] h-[450px] object-cover max-w-[300px] opacity-100 shadow-xl transition-all duration-300
+       
+            
+       }
+
+       #carrosel div:not(.selected) {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+       .rect-image figure{
+        @apply w-[300px] h-[450px] object-cover max-w-[300px] opacity-100 shadow-xl transition-all duration-300
+         
+       }
 }

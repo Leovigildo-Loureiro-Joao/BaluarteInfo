@@ -20,11 +20,11 @@ export const MinAudio=({titulo,descricao,img,audio})=>{
 
     return <article className="artigo flex flex-col w-[300px]">
         <figure>
-            <h2 className="text-white  rounded-t-xl text-li-nav font-bold relative top-[45px] p-5 px-10 z-10 bg-black/70">{titulo}</h2>
+            <h2 className="text-white  rounded-t-xl text-li-nav font-bold relative p-5 px-10 z-10 bg-black/70">{titulo}</h2>
             <div className="  bg-black/60 flex   gap-10 justify-center items-center absolute h-[200px] w-[300px] opacity-0">
                 <AiFillSound onClick={OpenModal} size={30} color="white"/>
             </div>
-            <img src={img} alt="" className="rounded-t-xl cursor-pointer h-[200px] object-cover w-[400px]"/>
+            <img src={img} alt="" className=" cursor-pointer h-[150px] object-cover w-[400px]"/>
         </figure>
         <div className="bg-black px-10 py-5 flex gap-2 flex-col h-[150px]">
             <p className="text-white">{descricao}</p>

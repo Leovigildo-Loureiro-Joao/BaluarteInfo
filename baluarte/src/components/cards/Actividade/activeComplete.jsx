@@ -1,15 +1,15 @@
-import { FaArrowLeft, FaLeftLong } from "react-icons/fa6"
-import { LiaArrowAltCircleLeft } from "react-icons/lia"
-import { activi, artigo, quemsomos } from "../../../assets/Assets"
-import { ContentVideo } from "../Videos/content_videos"
+import { FaArrowLeft } from "react-icons/fa6"
 import { GridVideos } from "../Videos/GridVideos"
+import { Galeria } from "./Galeria"
+import { Link } from "react-router-dom"
 
 
 export const ActiviComplete=({data})=>{
+
     if (data!=undefined) {
         return <section className=" flex flex-col gap-20 p-10 w-[70vw]">
             <div>
-                <FaArrowLeft  className="text-[20px] text-primary" />
+                <Link to={"/Actividade"}><FaArrowLeft  className="text-[20px] text-primary" /></Link>
             </div>
             <article className="flex gap-10">
                     <figure className="w-[20vw] max-w-[20vw]">
@@ -22,7 +22,7 @@ export const ActiviComplete=({data})=>{
                         <h3><strong>Organizador: </strong>{data.Organizdor}</h3>
                         <div className="max-w-[300px]">
                             <h3><strong>Descricao</strong></h3>
-                            <p c>{data.descricao}</p>
+                            <p>{data.descricao}</p>
                         </div>
                         <h3><strong>Publico alvo:</strong> {data.publicoAlvo}</h3>
                         <div className="flex gap-5">
@@ -31,39 +31,7 @@ export const ActiviComplete=({data})=>{
                         </div>
                     </div>
             </article>
-            <div>
-                <div>
-                    <div className="h2-title sec">
-                        <h1>Galeria de fotos</h1>
-                        <span></span>
-                    </div>
-                    <p className="w-[50%]">
-                        Reviva os momentos especiais das nossas atividades através da nossa galeria! 
-                        Aqui você encontrará imagens inspiradoras que capturam a essência de cada evento, 
-                        desde momentos de oração e louvor até comunhão e celebração. 
-                        Deixe-se envolver pela atmosfera única de cada encontro e prepare-se para participar
-                        das próximas experiências!
-                    </p>
-                </div>
-                <div className="flex gap-10 mt-10">
-
-                    <figure className="rect-image">
-                        <img src={quemsomos} alt="" />
-                    </figure>
-                    <figure className="rect-image">
-                        <img src={quemsomos} alt="" />
-                    </figure>
-                    <figure className="rect-image">
-                        <img src={activi} alt="" />
-                    </figure>
-                    <figure className="rect-image">
-                        <img src={quemsomos} alt="" />
-                    </figure>
-                    <figure className="rect-image">
-                        <img src={quemsomos} alt="" />
-                    </figure>
-                </div>
-            </div>
+          <Galeria/>
            <section className="relative">
                 <div className="h2-title sec">
                     <h1>Nossos novos videos</h1>
@@ -73,7 +41,6 @@ export const ActiviComplete=({data})=>{
                 jornada de fé!</p>
                 <div className="my-10 flex flex-col justify-center items-center">
                     <GridVideos />
-                    <button className="buttonRectangle min mt-20">Saber mais</button>
                 </div>
             </section>
         </section>
