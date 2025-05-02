@@ -16,20 +16,19 @@
             <version>13</version>
         </dependency>
         <dependency>
-            <groupId>org.rationalityfrontline.workaround</groupId>
-            <artifactId>jfoenix</artifactId>
-            <version>21.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>13</version>
         </dependency>
         <dependency>
+            <groupId>org.rationalityfrontline.workaround</groupId>
+            <artifactId>jfoenix</artifactId>
+            <version>21.0.0</version>
+        </dependency>
+        <dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-            <version>1.18.20</version>
 		</dependency>
     </dependencies>
     <build>
@@ -39,7 +38,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <release>22</release>
+                    <release>11</release>
                 </configuration>
             </plugin>
             <plugin>
