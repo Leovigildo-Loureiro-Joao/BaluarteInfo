@@ -1,0 +1,101 @@
+
+*{
+    -fx-background-color: transparent; 
+    -fx-font-family: Roboto;
+}
+
+ListView *{
+    -fx-background-color: transparent; 
+    -fx-padding: 0;
+    -fx-margin:0;
+}
+
+ListView{
+    -fx-background-color: transparent; 
+}
+
+ListView *:selected{
+    -fx-background-color: white;   
+ }
+ 
+
+Label,Text,TextField,ListView{
+    -fx-font-family: Roboto;
+}
+
+.card{
+    -fx-background-radius:8;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box,#e5e5e5,8,0.1,1,1);
+}
+
+.card.percentagem{
+   -fx-max-width: 250;
+   -fx-max-height: 160;
+   -fx-pref-width: 250;
+   -fx-pref-height: 160;
+}
+
+
+.tela{
+    -fx-background-color: #F8F8F8;
+    -fx-pref-width: 1200px;
+}
+
+.titulo{
+    -fx-fill: #CB2020;
+    -fx-font-size: 18;
+}
+
+.textData{
+    -fx-fill: #000000;
+    -fx-font-size: 12;
+}
+
+.textSubtitle{
+    -fx-fill: #CB2020;
+    -fx-font-size: 14;
+}
+
+Label.calerdarItem{
+    -fx-min-height: 40;
+    -fx-min-width: 40;
+    -fx-padding: 0 5;
+}
+ItemDash{
+    -fx-padding: 10;
+}
+ItemDash Label{
+   -fx-translate-y: 5;
+   -fx-text-fill: white;
+   -fx-font-size: 14;
+}
+
+
+ItemDash.select Label{
+    -fx-translate-y: 5;
+    -fx-text-fill: #CB2020;
+    -fx-font-size: 14;
+ }
+
+
+ 
+ ItemNotif Label{
+    -fx-text-fill: black;
+ }
+
+ ItemNotif.select{
+    -fx-border-color: #cb202024 #cb202024 #cb202024 #CB2020 ;
+    -fx-border-width: 0 0 0 2;
+    -fx-background-color: #cb202024;
+ }
+
+ ItemNotif{
+    -fx-border-color: white;
+    -fx-border-width: 0 0 0 2;
+    -fx-padding: 10 25;
+ }
+
+
+
+

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="742.0" prefWidth="1334.0" styleClass="tela" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <AnchorPane layoutX="46.0" layoutY="125.0" maxHeight="586.0" prefHeight="586.0" prefWidth="471.0" styleClass="card" AnchorPane.bottomAnchor="31.0" AnchorPane.leftAnchor="46.0" AnchorPane.rightAnchor="817.0" AnchorPane.topAnchor="125.0">
+         <children>
+            <Text layoutX="21.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quem Somos">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <styleClass>
+                  <String fx:value="subTitleCard" />
+                  <String fx:value="select" />
+               </styleClass></Text>
+            <Text layoutX="188.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="subTitleCard" text="Salvação hoje" />
+            <TextArea disable="true" layoutX="20.0" layoutY="61.0" prefHeight="233.0" prefWidth="379.0" style="-fx-border-color: grey; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-width: 1;" text="We must bear in mind that the understanding of the great significance of the effective mechanism remains the crucial sdfsdfsdfsdffffffffcomponent of The Data of Professional Ground" wrapText="true" AnchorPane.bottomAnchor="292.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="61.0">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </TextArea>
+            <StackPane layoutX="20.0" layoutY="319.0" prefHeight="184.0" prefWidth="357.0" style="-fx-border-color: black; -fx-border-radius: 6; -fx-background-color: 6;" AnchorPane.bottomAnchor="73.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="25.0">
+               <children>
+                  <ImageView fitHeight="192.0" fitWidth="380.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../assets/foto.png" />
+                     </image>
+                  </ImageView>
+               </children>
+               <padding>
+                  <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+               </padding>
+            </StackPane>
+            <JFXButton layoutX="20.0" layoutY="532.0" prefHeight="35.0" prefWidth="111.0" styleClass="buttonFX" text="Editar" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="563.0" layoutY="125.0" maxHeight="580.0" prefHeight="277.0" prefWidth="424.0" styleClass="card" AnchorPane.rightAnchor="347.0">
+         <children>
+            <Text layoutX="31.0" layoutY="44.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Missão" />
+            <TextArea disable="true" layoutX="31.0" layoutY="62.0" prefHeight="144.0" prefWidth="363.0" style="-fx-border-color: grey; -fx-border-radius: 4; -fx-border-width: 1;" text="We must bear in mind that the understanding of the great significance of the effective mechanism remains the crucial component of The Data of Professional Ground" wrapText="true" AnchorPane.leftAnchor="31.0" AnchorPane.rightAnchor="30.0">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </TextArea>
+            <JFXButton layoutX="283.0" layoutY="225.0" prefHeight="35.0" prefWidth="111.0" styleClass="buttonFX" text="Editar" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="563.0" layoutY="428.0" maxHeight="580.0" prefHeight="277.0" prefWidth="424.0" styleClass="card" AnchorPane.rightAnchor="347.0">
+         <children>
+            <Text layoutX="36.0" layoutY="40.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Versiculo biblico" />
+            <TextArea disable="true" layoutX="39.0" layoutY="104.0" prefHeight="85.0" prefWidth="363.0" style="-fx-border-color: grey; -fx-border-radius: 4; -fx-border-width: 1;" text="We must bear in mind that the understanding of the great significance of the effective mechanism remains the crucial component of The Data of Professional Ground" wrapText="true" AnchorPane.leftAnchor="39.0" AnchorPane.rightAnchor="22.0">
+               <font>
+                  <Font size="11.0" />
+               </font>
+            </TextArea>
+            <TextField disable="true" layoutX="36.0" layoutY="68.0" prefHeight="26.0" prefWidth="363.0" style="-fx-border-color: grey; -fx-border-radius: 4;" />
+            <JFXButton layoutX="291.0" layoutY="216.0" prefHeight="35.0" prefWidth="111.0" styleClass="buttonFX" text="Editar" />
+         </children>
+      </AnchorPane>
+      <Text layoutX="50.0" layoutY="75.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Edite dados so seu site a sua preferencia, cada subseccao do site " />
+      <Text layoutX="50.0" layoutY="100.0" strokeType="OUTSIDE" strokeWidth="0.0" text="De modo que do seu ponto de vista da informação em questão" />
+   </children>
+</AnchorPane>
