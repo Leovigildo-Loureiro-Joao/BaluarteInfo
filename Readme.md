@@ -15,7 +15,8 @@
 - [x] Criacao do prototipo
 - [x] Criacao da Api
 - [x] Autenticação
-- [ ] Interface de Usuário
+- [x] Interface de Usuário
+- [ ] Interface de Admin
 - [ ] Responsividade e consumo da Api
 - [ ] Testes Automatizados 
 
