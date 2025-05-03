@@ -54,10 +54,10 @@ public class HomeController implements Initializable{
         notif.getItems().add(new ItemNotif("Mas de 5 pessoas enviaram se inscreveram para o projecto actulize a galeria", "Luanda aos 18,09 de 2024"));
         calendario=new Calendario(blocoDia,mes);
         calendario.GerarCalendario(LocalDate.now());
-        circlePro_Ins.getChildren().add(new Circle_progress(30, 58,3.5));
-        circlePro_act_com.getChildren().add(new Circle_progress(20, 39,2.8));
-        circlePro_act_ins.getChildren().add(new Circle_progress(20, 39,2.8));
-        circlePro_visit.getChildren().add(new Circle_progress(30, 58,3.5));
+        circlePro_Ins.getChildren().add(new Circle_progress(30, 58,3.5,70));
+        circlePro_act_com.getChildren().add(new Circle_progress(20, 39,2.8,40));
+        circlePro_act_ins.getChildren().add(new Circle_progress(20, 39,2.8,20));
+        circlePro_visit.getChildren().add(new Circle_progress(30, 58,3.5,45));
     }
 
     @FXML

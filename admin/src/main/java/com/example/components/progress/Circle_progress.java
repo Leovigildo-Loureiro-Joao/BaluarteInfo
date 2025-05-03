@@ -39,7 +39,7 @@ public class Circle_progress  extends Group{
             PseudoClass.getPseudoClass("indeterminate");
     
 
-    public Circle_progress(int radius,int size,double translate){
+    public Circle_progress(int radius,int size,double translate,int values){
         ar = Arco(radius,0);
         value = new Label("0%");
         value.setPrefWidth(size);
@@ -54,7 +54,7 @@ public class Circle_progress  extends Group{
         this.setId("pgranima");
         this.getStylesheets().add("file:"+App.class.getResource("styles/home.css").getFile());
         pt.setPrefHeight(90);
-        setValue(50);
+        setValue(values);
     }
 
     public Arc Arco(int radius,int length){
@@ -99,7 +99,7 @@ public class Circle_progress  extends Group{
             
             
         }
-        float num=(float) (progress.get()*progressValue/5000);
+        float num=(float) (progress.get()*progressValue/(progressValue*100));
         if (progress.get()>0){
             ar.setLength(num);
             this.value.setText((int)(num/360*100)+"%");
@@ -108,7 +108,7 @@ public class Circle_progress  extends Group{
     }
 
     public final double getProgress() {
-        float num=(float) (progress.get()*progressValue/5000);
+        float num=(float) (progress.get()*progressValue/(progressValue*100));
         this.value.setText((int)(num/360*100)+"%");
         ar.setLength(num);
         return progress == null ? INDETERMINATE_PROGRESS : progress.get();
