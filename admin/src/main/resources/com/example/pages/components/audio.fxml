@@ -1,6 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" />
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="667.0" prefWidth="600.0" styleClass="tela" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox layoutY="-2.0" prefHeight="617.0" prefWidth="1200.0" spacing="150.0" AnchorPane.bottomAnchor="52.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
+         <children>
+            <VBox prefHeight="567.0" prefWidth="479.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Audios" />
+                  <HBox prefHeight="42.0" prefWidth="369.0">
+                     <children>
+                        <TextField prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar audios" styleClass="fieldTextLine" />
+                        <JFXButton prefHeight="33.0" prefWidth="25.0" text=" ">
+                           <HBox.margin>
+                              <Insets left="-50.0" />
+                           </HBox.margin>
+                           <graphic>
+                              <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" translateY="2.0">
+                                 <image>
+                                    <Image url="@../../assets/0001.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </JFXButton>
+                     </children>
+                     <VBox.margin>
+                        <Insets top="20.0" />
+                     </VBox.margin>
+                  </HBox>
+                  <JFXScrollPane prefHeight="462.0" prefWidth="479.0">
+                     <VBox.margin>
+                        <Insets top="20.0" />
+                     </VBox.margin>
+                  </JFXScrollPane>
+               </children>
+            </VBox>
+            <VBox maxHeight="-Infinity" prefHeight="564.0" prefWidth="446.0" spacing="20.0" styleClass="card">
+               <padding>
+                  <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+               </padding>
+               <children>
+                  <TextField promptText="Digite o titulo do audio" styleClass="fieldTextLine" />
+                  <TextArea prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do audio" styleClass="border-panel">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </TextArea>
+                  <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="border-panel">
+                     <children>
+                        <ImageView fitHeight="209.0" fitWidth="274.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../assets/song.png" />
+                           </image>
+                        </ImageView>
+                        <JFXButton text="Clique aqui para efectuar o upload" translateY="-20.0" />
+                     </children>
+                  </StackPane>
+                  <JFXButton prefHeight="46.0" prefWidth="366.0" styleClass="buttonColor" text="Enviar" />
+               </children>
+            </VBox>
+         </children>
+         <padding>
+            <Insets left="40.0" top="50.0" />
+         </padding>
+      </HBox>
+   </children>
+</AnchorPane>

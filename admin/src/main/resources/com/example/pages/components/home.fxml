@@ -40,12 +40,12 @@
                   <Text layoutX="25.0" layoutY="35.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Actividades" />
                   <AnchorPane fx:id="circlePro_act_ins" layoutX="38.0" layoutY="56.0" prefHeight="49.0" prefWidth="50.0" />
                   <AnchorPane fx:id="circlePro_act_com" layoutX="113.0" layoutY="56.0" prefHeight="49.0" prefWidth="50.0" />
-                  <Text fontSmoothingType="LCD" layoutX="106.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Comentarios">
+                  <Text fontSmoothingType="LCD" layoutX="106.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="minText" text="Comentarios">
                      <font>
                         <Font size="11.0" />
                      </font>
                   </Text>
-                  <Text fontSmoothingType="LCD" layoutX="41.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Inscritos">
+                  <Text fontSmoothingType="LCD" layoutX="41.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="minText" text="Inscritos">
                      <font>
                         <Font size="11.0" />
                      </font>

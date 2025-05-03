@@ -23,6 +23,10 @@ Label,Text,TextField,ListView{
     -fx-font-family: Roboto;
 }
 
+.minText{
+    -fx-font-size: 11;
+}
+
 .card{
     -fx-background-radius:8;
     -fx-background-color: white;
@@ -53,12 +57,19 @@ Label,Text,TextField,ListView{
 .titulo{
     -fx-fill: #CB2020;
     -fx-font-size: 18;
+    -fx-font-weight: BOLD;
 }
 
 .textData{
     -fx-fill: #000000;
     -fx-font-size: 12;
 }
+
+.textDataG{
+    -fx-fill: #5a5a5a;
+    -fx-font-size: 13;
+}
+
 
 .textSubtitle{
     -fx-fill: #CB2020;
@@ -124,6 +135,13 @@ ItemDash.select Label{
     -fx-text-fill: #CB2020;
 }
 
+.buttonColor{
+    -fx-background-radius: 4;
+    -fx-background-color: CB2020;
+    -fx-text-fill: white;
+}
+
+
 .selectSection{
     -fx-border-color: transparent ;
     -fx-border-width: 2;
@@ -142,4 +160,8 @@ ItemDash.select Label{
     -fx-border-color: #c8c8c8;
     -fx-border-width: 1;
     -fx-border-radius: 4;
+}
+
+.fieldTextLine{
+    -fx-border-color: transparent transparent  #c8c8c8 transparent ;
 }

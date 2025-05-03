@@ -79,7 +79,7 @@ public class MainController implements Initializable{
         lista.getItems().add(new ItemDash("Videos","video"));
         lista.getItems().add(new ItemDash("Audios","audio"));
         lista.getItems().add(new ItemDash("Editar site","edit"));
-        lista.getItems().add(new ItemDash("Configurações","home"));
+        lista.getItems().add(new ItemDash("Configurações","config"));
         loadFXMLAsync("home");
      }
 }

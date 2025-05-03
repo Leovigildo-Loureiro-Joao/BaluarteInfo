@@ -48,7 +48,7 @@
                      </children>
                   </HBox>
                   <JFXTextArea fx:id="conteudo" editable="false" prefHeight="288.0" prefWidth="342.0" />
-                  <StackPane prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: black; -fx-border-radius: 4;">
+                  <StackPane prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: gray; -fx-border-radius: 4;">
                      <children>
                         <ImageView fitHeight="163.0" fitWidth="342.0" pickOnBounds="true" preserveRatio="true">
                            <image>

@@ -14,6 +14,7 @@ public class ItemDash extends HBox{
 
     public ItemDash(String texto,String src){
         this.src=src;
+        
         image=new ImageView(new Image(App.class.getResourceAsStream("assets/"+src+".png")));
         label=new Label(texto);
         
