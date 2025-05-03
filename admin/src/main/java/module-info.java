@@ -3,6 +3,7 @@ module com.example {
     requires javafx.fxml;
     requires lombok;
     requires java.desktop;
+    requires com.jfoenix;
 
 
     opens com.example to javafx.fxml;

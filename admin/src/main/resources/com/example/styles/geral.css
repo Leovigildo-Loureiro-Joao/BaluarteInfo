@@ -116,3 +116,30 @@ ItemDash.select Label{
 }
 
 
+.buttonWhite{
+    -fx-border-radius: 4;
+    -fx-border-color: #CB2020;
+    -fx-background-radius: 4;
+    -fx-background-color: white;
+    -fx-text-fill: #CB2020;
+}
+
+.selectSection{
+    -fx-border-color: transparent ;
+    -fx-border-width: 2;
+    -fx-font-size: 14;
+    -fx-font-weight: BOLD;
+    -fx-text-fill: #797979;
+}
+
+.selectSection.sel{
+    -fx-border-color: transparent transparent #CB2020 transparent ;
+    -fx-border-width: 2;
+    -fx-text-fill: #CB2020;
+}
+
+.border-panel{
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}

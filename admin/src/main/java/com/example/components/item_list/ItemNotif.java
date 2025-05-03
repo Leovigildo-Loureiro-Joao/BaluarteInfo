@@ -20,6 +20,7 @@ public class ItemNotif extends VBox{
         image.setFitWidth(20);
         image.setFitHeight(20);
         image.setTranslateY(5);
+        this.setSpacing(15);
         Text textos=new Text(texto);
         textos.setWrappingWidth(350);
         HBox hb= new HBox(image,textos);

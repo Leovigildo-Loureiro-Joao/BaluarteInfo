@@ -1,6 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
+<?import com.jfoenix.controls.*?>
+<?import java.lang.*?>
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
 
-
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" />
+<AnchorPane fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="663.0" prefWidth="1334.0" styleClass="tela" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.EditController">
+   <stylesheets>
+      <URL value="@../../styles/home.css" />
+      <URL value="@../../styles/geral.css" />
+   </stylesheets>
+   <children>
+      <AnchorPane layoutX="39.0" layoutY="20.0" prefHeight="633.0" prefWidth="426.0" styleClass="card" AnchorPane.leftAnchor="39.0" AnchorPane.rightAnchor="735.0">
+         <children>
+            <VBox layoutX="25.0" layoutY="22.0" prefHeight="597.0" prefWidth="342.0" spacing="20.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="24.0">
+               <children>
+                  <HBox prefHeight="26.0" prefWidth="342.0" spacing="40.0">
+                     <children>
+                        <JFXToggleNode fx:id="checkSomos" onAction="#Select" selected="true">
+                           <selectedColor>
+                              <Color opacity="0.0" />
+                           </selectedColor>
+                           <toggleGroup>
+                              <ToggleGroup fx:id="sectEdit" />
+                           </toggleGroup>
+                           <graphic>
+                              <Label text="Quem Somos">
+                                 <styleClass>
+                                    <String fx:value="selectSection" />
+                                    <String fx:value="sel" />
+                                 </styleClass>
+                              </Label>
+                           </graphic>
+                        </JFXToggleNode>
+                        <JFXToggleNode fx:id="sectSalva" onAction="#Select" toggleGroup="$sectEdit">
+                           <selectedColor>
+                              <Color opacity="0.0" />
+                           </selectedColor>
+                           <graphic>
+                              <Label styleClass="selectSection" text="Salvação hoje!!!" />
+                           </graphic>
+                        </JFXToggleNode>
+                     </children>
+                  </HBox>
+                  <JFXTextArea fx:id="conteudo" editable="false" prefHeight="288.0" prefWidth="342.0" />
+                  <StackPane prefHeight="150.0" prefWidth="200.0" style="-fx-border-color: black; -fx-border-radius: 4;">
+                     <children>
+                        <ImageView fitHeight="163.0" fitWidth="342.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../../assets/Group.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </StackPane>
+                  <JFXButton onAction="#EditConteudo" prefHeight="36.0" prefWidth="97.0" styleClass="buttonWhite" text="Editar" />
+               </children>
+            </VBox>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="534.0" layoutY="20.0" prefHeight="314.0" prefWidth="447.0" styleClass="card" AnchorPane.leftAnchor="534.0">
+         <children>
+            <JFXTextArea fx:id="missao" editable="false" layoutX="25.0" layoutY="62.0" prefHeight="165.0" prefWidth="342.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="24.0" />
+            <Text layoutX="25.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Missao e visao" />
+            <JFXButton layoutX="326.0" layoutY="255.0" onAction="#EditMissao" prefHeight="36.0" prefWidth="97.0" styleClass="buttonWhite" text="Editar" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="534.0" layoutY="360.0" prefHeight="294.0" prefWidth="447.0" styleClass="card">
+         <children>
+            <JFXTextArea fx:id="trecho" editable="false" layoutX="25.0" layoutY="117.0" prefHeight="110.0" prefWidth="370.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="24.0" />
+            <Text layoutX="25.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Versiculo biblico" />
+            <JFXButton layoutX="326.0" layoutY="234.0" onAction="#EditeVBiblico" prefHeight="36.0" prefWidth="97.0" styleClass="buttonWhite" text="Editar" />
+            <TextField fx:id="versiculo" layoutX="25.0" layoutY="62.0" prefHeight="36.0" prefWidth="398.0" styleClass="border-panel" visible="false" />
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
