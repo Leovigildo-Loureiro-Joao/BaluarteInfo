@@ -4,6 +4,12 @@
     -fx-font-family: 'Roboto';
 }
 
+ScrollBar .thumb{
+    -fx-background-color: #cccccc8a;
+    -fx-background-radius: 45;
+    -fx-background-insets: 5;
+}
+
 ListView *{
     -fx-background-color: transparent; 
     -fx-padding: 0;
