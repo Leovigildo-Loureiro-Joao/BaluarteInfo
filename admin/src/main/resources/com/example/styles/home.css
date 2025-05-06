@@ -11,3 +11,9 @@ Label.calerdarItem{
     -fx-padding: 0 5;
     -fx-alignment: CENTER;
 }
+
+
+.jfx-combo-box > .input-focused-line {
+    -fx-background-color: -jfx-focus-color;
+    -fx-pref-height: 2px;
+}

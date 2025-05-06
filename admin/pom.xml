@@ -36,6 +36,22 @@
             <version>1.18.28</version>
 			<optional>true</optional>
 		</dependency>
+         <!-- Módulo necessário para tocar áudio -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>13</version>
+        </dependency>
+        <dependency>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx-commons</artifactId>
+            <version>9.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>de.jensd</groupId>
+            <artifactId>fontawesomefx-fontawesome</artifactId>
+            <version>4.7.0-9.1.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

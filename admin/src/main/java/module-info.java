@@ -4,7 +4,7 @@ module com.example {
     requires lombok;
     requires java.desktop;
     requires com.jfoenix;
-    requires font.awesome;
+    requires de.jensd.fx.glyphs.fontawesome;
 
 
     opens com.example to javafx.fxml;

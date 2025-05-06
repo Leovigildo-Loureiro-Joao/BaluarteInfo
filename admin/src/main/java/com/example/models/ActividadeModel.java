@@ -17,14 +17,13 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class ArtigoModel extends HBox{
+public class ActividadeModel extends HBox{
       
     private Label titulo;
     private Label descricao;
@@ -39,7 +38,7 @@ public class ArtigoModel extends HBox{
     private JFXButton editButton;
     private JFXButton trushButton;
 
-    public ArtigoModel(String titulo,String descricao,String escritor,String url,LocalDateTime data){
+    public ActividadeModel(String titulo,String descricao,String escritor,String url,LocalDateTime data){
         this.titulo=new Label(titulo);
         this.descricao=new Label(descricao);
         this.escritor=new Label(escritor);
@@ -80,22 +79,13 @@ public class ArtigoModel extends HBox{
         this.url.setPrefSize(tamanho, altura);
         ScheduledExecutorService service=Executors.newSingleThreadScheduledExecutor();
         service.schedule(() -> {
-            
            Platform.runLater(() -> {
-            this.url.setClip(AddRedoundImage(tamanho, altura));
             this.url.getChildren().clear();
             this.url.setStyle(this.getStyle().concat("-fx-background-image:url("+urls+")"));
             this.url.setPrefSize(tamanho, altura);
            });
            service.shutdown();
         }, 2, TimeUnit.SECONDS);
-    }
-
-    public Rectangle AddRedoundImage(double tamanho,double altura){
-        Rectangle roundRectangle = new Rectangle(tamanho, altura);
-        roundRectangle.setArcWidth(8);
-        roundRectangle.setArcHeight(8);
-        return roundRectangle;
     }
 
     public void Buttons(){

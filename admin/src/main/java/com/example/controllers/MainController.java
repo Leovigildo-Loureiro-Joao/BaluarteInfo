@@ -12,6 +12,7 @@ import com.example.components.item_list.ItemDash;
 import com.example.components.item_list.ItemNotif;
 import com.example.configs.ApiCache;
 
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -73,13 +74,13 @@ public class MainController implements Initializable{
      @Override
      public void initialize(URL arg0, ResourceBundle arg1) {
         
-        lista.getItems().add(new ItemDash("Home","home"));
-        lista.getItems().add(new ItemDash("Actividades","actividade"));
-        lista.getItems().add(new ItemDash("Artigos","artigo"));
-        lista.getItems().add(new ItemDash("Videos","video"));
-        lista.getItems().add(new ItemDash("Audios","audio"));
-        lista.getItems().add(new ItemDash("Editar site","edit"));
-        lista.getItems().add(new ItemDash("Configurações","config"));
+        lista.getItems().add(new ItemDash("Home",FontAwesomeIcon.HOME));
+        lista.getItems().add(new ItemDash("Actividades",FontAwesomeIcon.GROUP));
+        lista.getItems().add(new ItemDash("Artigos",FontAwesomeIcon.BOOK));
+        lista.getItems().add(new ItemDash("Videos",FontAwesomeIcon.FILM));
+        lista.getItems().add(new ItemDash("Audios",FontAwesomeIcon.MUSIC));
+        lista.getItems().add(new ItemDash("Editar site",FontAwesomeIcon.COGS));
+        lista.getItems().add(new ItemDash("Configurações",FontAwesomeIcon.COGS));
         loadFXMLAsync("home");
      }
 }

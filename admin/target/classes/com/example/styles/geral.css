@@ -92,12 +92,28 @@ ItemDash Label{
    -fx-font-size: 14;
 }
 
-
-ItemDash.select Label{
-    -fx-translate-y: 5;
-    -fx-text-fill: #CB2020;
+ItemDash Label{
+    -fx-text-fill: white;
     -fx-font-size: 14;
  }
+
+ ItemDash .glyph-icon{
+    -fx-fill: #ffffff;
+ }
+
+
+ .list-cell:selected ItemDash .glyph-icon{
+    -fx-fill: #CB2020;
+ }
+
+ .list-cell:selected ItemDash Label{
+    -fx-text-fill: #CB2020;
+ }
+.list-cell:selected ItemDash{
+    -fx-background-color: white;
+    -fx-border-color: #CB2020;
+    -fx-border-width: 0 0 0 2;
+}
 
 
  
@@ -172,4 +188,22 @@ ItemDash.select Label{
     -fx-border-color: transparent transparent  #c8c8c8 transparent ;
 }
 
+
+.jfx-combo-box > .input-line {
+    -fx-background-color: #c8c8c8;
+    -fx-pref-height: 1px;
+    -fx-translate-y: 1px;
+}
+
+.jfx-combo-box > .arrow-button .arrow {
+    -fx-background-color: #c8c8c8;
+}
+
+.button-toggle{
+    -fx-background-color: #fff;
+    -fx-background-radius: 6;
+    -fx-padding: 10;
+    -fx-border-color: #c8c8c8;
+    -fx-border-radius: 6;
+}
 

@@ -2,6 +2,9 @@
     -fx-background-position: center;
     -fx-background-repeat: no-repeat;
     -fx-background-size: cover;
+    -fx-arc-top-right: 16; 
+    -fx-arc-bottom-right: 16;
+    -fx-background-radius: 0 16 0 16;
 }
 
 .titleModel{
@@ -39,7 +42,7 @@
 }
 
 .rown-bold-model Label Text{
-    -fx-font-weight: regular;
+    -fx-font-weight: inherit;
     -fx-font-size: 14;
 }
 

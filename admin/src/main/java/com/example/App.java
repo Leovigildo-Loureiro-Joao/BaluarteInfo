@@ -27,7 +27,6 @@ public class App extends Application {
         this.stage.setTitle("BaluarteAdmin");
         this.stage.setMinWidth(1100);
         this.stage.setMinHeight(600);
-        System.out.println(App.class.getResourceAsStream("assets/logoP.png"));
         this.stage.getIcons().add(new Image(App.class.getResourceAsStream("assets/logoP.png")));
         scene = new Scene(loadFXML("main"), 640, 480);
         stage.setScene(scene);

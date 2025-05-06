@@ -1,6 +1,7 @@
 package com.example.components.item_list;
 
 import com.example.App;
+import com.jfoenix.controls.JFXComboBox;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
