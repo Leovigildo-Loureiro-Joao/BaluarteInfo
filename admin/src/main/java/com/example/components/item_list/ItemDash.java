@@ -15,9 +15,9 @@ public class ItemDash extends HBox{
     private String src;
 
     public ItemDash(String texto,FontAwesomeIcon icon) {
-        this.src=texto.toLowerCase();
+        this.src=texto.toLowerCase().replace(" ", "_");
         image=new FontAwesomeIconView(icon);
-        image.setGlyphSize(30);
+        image.setGlyphSize(25);
         label=new Label(texto);
         
         this.setSpacing(20);

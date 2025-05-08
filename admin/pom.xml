@@ -21,6 +21,11 @@
             <version>13</version>
         </dependency>
         <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>13</version>
+        </dependency>
+        <dependency>
             <groupId>org.rationalityfrontline.workaround</groupId>
             <artifactId>jfoenix</artifactId>
             <version>21.0.0</version>

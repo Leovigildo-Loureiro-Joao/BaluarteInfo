@@ -87,7 +87,6 @@ ItemDash{
     -fx-padding: 10;
 }
 ItemDash Label{
-   -fx-translate-y: 5;
    -fx-text-fill: white;
    -fx-font-size: 14;
 }
@@ -207,3 +206,8 @@ ItemDash Label{
     -fx-border-radius: 6;
 }
 
+.titleModel{
+    -fx-font-weight: bold;
+    -fx-font-size: 18;
+    -fx-padding: 30 0 0 0;
+}

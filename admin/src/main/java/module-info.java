@@ -5,6 +5,8 @@ module com.example {
     requires java.desktop;
     requires com.jfoenix;
     requires de.jensd.fx.glyphs.fontawesome;
+    requires javafx.media;
+    requires javafx.web;
 
 
     opens com.example to javafx.fxml;

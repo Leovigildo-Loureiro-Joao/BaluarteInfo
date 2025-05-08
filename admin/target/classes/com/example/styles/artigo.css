@@ -7,11 +7,7 @@
     -fx-background-radius: 0 16 0 16;
 }
 
-.titleModel{
-    -fx-font-weight: bold;
-    -fx-font-size: 18;
-    -fx-padding: 30 0 0 0;
-}
+
 
 .rown-bold-model Text{
     -fx-font-weight: bold;

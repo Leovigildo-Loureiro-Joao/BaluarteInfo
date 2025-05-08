@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.*?>
+<?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="667.0" prefWidth="600.0" styleClass="tela" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="667.0" prefWidth="600.0" styleClass="tela" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.AudiosController">
+<stylesheets>
+      <URL value="@../../styles/geral.css" />
+      <URL value="@../../styles/audio.css" />
+   </stylesheets>
    <children>
-      <HBox layoutY="-2.0" prefHeight="617.0" prefWidth="1200.0" spacing="150.0" AnchorPane.bottomAnchor="52.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
+      <HBox layoutY="-2.0" prefHeight="656.0" prefWidth="1200.0" spacing="150.0" AnchorPane.bottomAnchor="13.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
          <children>
             <VBox prefHeight="567.0" prefWidth="479.0">
                <children>
@@ -34,11 +39,18 @@
                         <Insets top="20.0" />
                      </VBox.margin>
                   </HBox>
-                  <JFXScrollPane prefHeight="462.0" prefWidth="479.0">
+                  <ScrollPane hbarPolicy="NEVER" prefHeight="495.0" prefWidth="479.0">
+                    <content>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="485.0" prefWidth="480.0">
+                           <children>
+                              <VBox fx:id="listAudios" prefHeight="482.0" prefWidth="479.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
+                           </children>
+                        </AnchorPane>
+                    </content>
                      <VBox.margin>
-                        <Insets top="20.0" />
+                        <Insets top="40.0" />
                      </VBox.margin>
-                  </JFXScrollPane>
+                  </ScrollPane>
                </children>
             </VBox>
             <VBox maxHeight="-Infinity" prefHeight="564.0" prefWidth="446.0" spacing="20.0" styleClass="card">
@@ -71,4 +83,5 @@
          </padding>
       </HBox>
    </children>
+   
 </AnchorPane>

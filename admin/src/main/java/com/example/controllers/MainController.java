@@ -30,15 +30,12 @@ public class MainController implements Initializable{
 
     @FXML
     private ListView<ItemDash> lista;
-
- 
-
-    private Initializable lod;
+    private Initializable controller;
+    
 
      private void loadFXMLAsync(String fxmlFile) {
         ScheduledExecutorService sheduler = Executors.newSingleThreadScheduledExecutor();
         CompletableFuture.runAsync(() -> {
-            Platform.runLater(() -> {
                 AnchorPane loadedPane=null;
                 if(!ApiCache.isTela(fxmlFile)){
                     FXMLLoader loader = new FXMLLoader(App.class.getResource("pages/components/" +fxmlFile + ".fxml"));
@@ -48,16 +45,20 @@ public class MainController implements Initializable{
                         e.printStackTrace();
                     }
                     ApiCache.addTelaCache(fxmlFile,  loader.getController(), loadedPane);
-                }else
-                loadedPane= (AnchorPane)ApiCache.getTelaCache(fxmlFile)[1];
-                if (loadedPane != null) {
-                    lod= (Initializable)ApiCache.getTelaCache(fxmlFile)[0];
-                    loadedPane.setVisible(true);
-                     // Limpa o contentPane antes de adicionar novo conteúdo
-                     box.setContent(loadedPane);
-
+                }else{
+                    Object[] cached = ApiCache.getTelaCache(fxmlFile);
+                    controller = (Initializable) cached[0];
+                    loadedPane = (AnchorPane) cached[1];
                 }
-            });
+                AnchorPane finalPane= (AnchorPane)ApiCache.getTelaCache(fxmlFile)[1];
+                Platform.runLater(() -> {
+                    if (finalPane != null) {
+                        controller= (Initializable)ApiCache.getTelaCache(fxmlFile)[0];
+                        finalPane.setVisible(true);
+                        box.setContent(finalPane);
+                    }
+                });
+                
         },sheduler).whenComplete((t, u) -> sheduler.shutdown());     
     }
 
@@ -79,7 +80,7 @@ public class MainController implements Initializable{
         lista.getItems().add(new ItemDash("Artigos",FontAwesomeIcon.BOOK));
         lista.getItems().add(new ItemDash("Videos",FontAwesomeIcon.FILM));
         lista.getItems().add(new ItemDash("Audios",FontAwesomeIcon.MUSIC));
-        lista.getItems().add(new ItemDash("Editar site",FontAwesomeIcon.COGS));
+        lista.getItems().add(new ItemDash("Editar site",FontAwesomeIcon.EDIT));
         lista.getItems().add(new ItemDash("Configurações",FontAwesomeIcon.COGS));
         loadFXMLAsync("home");
      }

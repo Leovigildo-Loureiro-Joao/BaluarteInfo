@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.example.App;
 import com.example.utils.LoadImageUtil;
+import com.example.utils.RedoundImageUtil;
 import com.jfoenix.controls.JFXButton;
 
 import javafx.application.Platform;
@@ -82,7 +83,7 @@ public class ArtigoModel extends HBox{
         service.schedule(() -> {
             
            Platform.runLater(() -> {
-            this.url.setClip(AddRedoundImage(tamanho, altura));
+            this.url.setClip(RedoundImageUtil.AddRedoundImage(tamanho, altura,10));
             this.url.getChildren().clear();
             this.url.setStyle(this.getStyle().concat("-fx-background-image:url("+urls+")"));
             this.url.setPrefSize(tamanho, altura);
@@ -91,12 +92,6 @@ public class ArtigoModel extends HBox{
         }, 2, TimeUnit.SECONDS);
     }
 
-    public Rectangle AddRedoundImage(double tamanho,double altura){
-        Rectangle roundRectangle = new Rectangle(tamanho, altura);
-        roundRectangle.setArcWidth(8);
-        roundRectangle.setArcHeight(8);
-        return roundRectangle;
-    }
 
     public void Buttons(){
 

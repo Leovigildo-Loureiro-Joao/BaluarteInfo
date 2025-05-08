@@ -23,24 +23,6 @@ public class ArtigoController implements Initializable{
                         "Event(Alfredo Asher in The Book \r\n" + //
                         "of the Application Rules)\r\n" + //
                         "", "null","",LocalDateTime.now()))    ;
-                        listArtigo.getChildren().add(new ArtigoModel("Roma da silva", "Curiously, the matter of the criterion must be compatible with The Parameter of Relational Event(Alfredo Asher in The Book of the Application Rules)", "null","",LocalDateTime.now()))    ;
-                        listArtigo.getChildren().add(new ArtigoModel("Roma da silva", "Curiously, the matter of the \r\n" + //
-                        "criterion must be compatible \r\n" + //
-                        "with The Parameter of Relational \r\n" + //
-                        "Event(Alfredo Asher in The Book \r\n" + //
-                        "of the Application Rules)\r\n" + //
-                        "", "null","",LocalDateTime.now()))    ;
-                        listArtigo.getChildren().add(new ArtigoModel("Roma da silva", "Curiously, the matter of the \r\n" + //
-                        "criterion must be compatible \r\n" + //
-                        "with The Parameter of Relational \r\n" + //
-                        "Event(Alfredo Asher in The Book \r\n" + //
-                        "of the Application Rules)\r\n" + //
-                        "", "null","",LocalDateTime.now()))    ;
-                        listArtigo.getChildren().add(new ArtigoModel("Roma da silva", "Curiously, the matter of the \r\n" + //
-                        "criterion must be compatible \r\n" + //
-                        "with The Parameter of Relational \r\n" + //
-                        "Event(Alfredo Asher in The Book \r\n" + //
-                        "of the Application Rules)\r\n" + //
-                        "", "null","",LocalDateTime.now()))    ;
+                       
     }
 }
