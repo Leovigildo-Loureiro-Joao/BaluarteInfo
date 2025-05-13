@@ -3,6 +3,8 @@ package com.example.components.calendario;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import com.example.utils.DiaUtilAnimation;
+
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -43,6 +45,7 @@ public class Calendario {
                 var dia=LocalDate.of(initYear,initMonth,index);
                 Label text=new Label(" ");
                 text.getStyleClass().add("calerdarItem");
+                DiaUtilAnimation.AnimationHover(text);
                 if (dia.getDayOfWeek().getValue()==p) {
                     ((HBox) listTr.getChildren().get(i)).getChildren().add(EstruturarDia(text, dia));
                     index++;

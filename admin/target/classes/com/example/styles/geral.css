@@ -33,7 +33,7 @@ Label,Text,TextField,ListView{
     -fx-font-size: 11;
 }
 
-.card{
+.card,.modal{
     -fx-background-radius:8;
     -fx-background-color: white;
     -fx-effect: dropshadow(three-pass-box,#e5e5e5,8,0.1,1,1);
@@ -210,4 +210,16 @@ ItemDash Label{
     -fx-font-weight: bold;
     -fx-font-size: 18;
     -fx-padding: 30 0 0 0;
+}
+
+/*Modals*/
+.content-modal{
+    -fx-background-color: rgba(0, 0, 0, 0.37);
+   
+}
+
+
+.modal-header{
+    -fx-background-color: #CB2020;
+    -fx-background-radius: 8 8 0 0;
 }

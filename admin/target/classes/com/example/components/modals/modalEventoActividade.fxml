@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="319.0" prefWidth="404.0" styleClass="modal" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox prefHeight="53.0" prefWidth="404.0">
+         <children>
+            <Label prefHeight="31.0" prefWidth="329.0" text="Marcar uma actividade" textFill="#cb2020">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="10.0" top="14.0" />
+               </HBox.margin>
+            </Label>
+            <JFXButton alignment="CENTER" contentDisplay="CENTER" prefHeight="43.0" prefWidth="59.0" text=" ">
+               <graphic>
+                  <ImageView fitHeight="25.0" fitWidth="39.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../assets/close.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <HBox.margin>
+                  <Insets top="10.0" />
+               </HBox.margin>
+            </JFXButton>
+         </children>
+         <padding>
+            <Insets left="20.0" right="10.0" />
+         </padding>
+      </HBox>
+      <AnchorPane prefHeight="312.0" prefWidth="404.0">
+         <children>
+            <Text layoutX="29.0" layoutY="35.0" strokeType="OUTSIDE" strokeWidth="0.0" text="O que deseja marcar para este data?">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Text>
+            <VBox layoutX="29.0" layoutY="54.0" prefHeight="98.0" prefWidth="149.0" spacing="15.0">
+               <children>
+                  <JFXRadioButton selected="true" text="Actividade mensal">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="typeActivy" />
+                     </toggleGroup>
+                  </JFXRadioButton>
+                  <JFXRadioButton text="Projecto" toggleGroup="$typeActivy" />
+                  <JFXRadioButton text="Actividade anual" toggleGroup="$typeActivy" />
+               </children>
+            </VBox>
+            <JFXButton layoutX="194.0" layoutY="217.0" prefHeight="37.0" prefWidth="190.0" styleClass="buttonColor" text="Continuar" />
+         </children>
+      </AnchorPane>
+   </children>
+</VBox>

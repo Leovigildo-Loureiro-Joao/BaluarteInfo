@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+
+<DialogPane minHeight="255.0" prefHeight="240.0" prefWidth="435.0" style="-fx-background-color: white;" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <graphic>
+      <StackPane prefHeight="197.0" prefWidth="150.0">
+         <children>
+            <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../../assets/Pay%20attention-amico.png" />
+               </image>
+            </ImageView>
+         </children>
+         <padding>
+            <Insets left="20.0" right="20.0" />
+         </padding>
+      </StackPane>
+   </graphic>
+   <content>
+      <AnchorPane maxHeight="200.0" minHeight="187.0" prefHeight="187.0" prefWidth="346.0">
+         <children>
+            <Label layoutX="11.0" layoutY="31.0" prefHeight="89.0" prefWidth="313.0" text="Deseja continuar com esta operaçao todos dados adicionados ou removidos serao alterados e impossivel de recuperar" textFill="#6f6f6f" wrapText="true">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <Label layoutX="11.0" layoutY="120.0" text="Deseja realmente continuar ?" textFill="#cb2020">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <JFXButton layoutX="198.0" layoutY="193.0" prefHeight="36.0" prefWidth="126.0" styleClass="buttonWhite" text="Continuar" />
+            <JFXButton fx:id="cancel" layoutX="61.0" layoutY="193.0" prefHeight="36.0" prefWidth="126.0" styleClass="buttonColor" text="Cancelar" />
+         </children>
+      </AnchorPane>
+   </content>
+   <padding>
+      <Insets top="10.0" />
+   </padding>
+</DialogPane>

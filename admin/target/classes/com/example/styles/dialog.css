@@ -1,0 +1,14 @@
+.dialog-pane{
+    -fx-primary:#CB2020;
+    -fx-background-radius: 8 8 0 0;
+}
+
+.dialog-pane .header{
+    -fx-background-color: -fx-primary;
+    -fx-background-radius: 8 8 0 0;
+}
+
+
+.dialog-pane .button{
+    
+}

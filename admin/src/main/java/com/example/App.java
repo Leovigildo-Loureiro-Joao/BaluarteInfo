@@ -4,9 +4,11 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.DialogPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,15 +21,16 @@ import java.io.IOException;
 @Getter @Setter
 public class App extends Application {
 
-    private static Scene scene;
-    private Stage stage;
+    public static Scene scene;
+    private static Stage stage;
     @Override
     public void start(Stage stage) throws IOException {
-        setStage(stage);
-        this.stage.setTitle("BaluarteAdmin");
-        this.stage.setMinWidth(1100);
-        this.stage.setMinHeight(600);
-        this.stage.getIcons().add(new Image(App.class.getResourceAsStream("assets/logoP.png")));
+        App.stage= stage;
+        App.stage.setTitle("BaluarteAdmin");
+        App.stage.setMinWidth(1100);
+        App.stage.setMinHeight(600);
+        App.stage.getIcons().add(new Image(App.class.getResourceAsStream("assets/logoP.png")));
+        stage.setMaximized(true);
         scene = new Scene(loadFXML("main"), 640, 480);
         stage.setScene(scene);
         stage.show();
@@ -37,8 +40,18 @@ public class App extends Application {
         scene.setRoot(loadFXML(fxml));
     }
 
-    private static  BorderPane loadFXML(String fxml) throws IOException {
+    private static  AnchorPane loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("pages/" +fxml + ".fxml"));
+        return fxmlLoader.load();
+    }
+
+    public static  DialogPane loadFXMLDialog(String fxml) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("components/dialogs/" +fxml + ".fxml"));
+        return fxmlLoader.load();
+    }
+
+    public static  VBox loadFXMLModal(String fxml) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("components/modals/" +fxml + ".fxml"));
         return fxmlLoader.load();
     }
 

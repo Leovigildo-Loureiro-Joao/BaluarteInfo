@@ -11,6 +11,8 @@ import com.example.App;
 import com.example.components.item_list.ItemDash;
 import com.example.components.item_list.ItemNotif;
 import com.example.configs.ApiCache;
+import com.example.utils.DialogUtil;
+import com.example.utils.ModalUtil;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import javafx.application.Platform;
@@ -18,10 +20,14 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Modality;
+import javafx.stage.StageStyle;
 
 public class MainController implements Initializable{
 
@@ -31,14 +37,18 @@ public class MainController implements Initializable{
     @FXML
     private ListView<ItemDash> lista;
     private Initializable controller;
+    private final Dialog dialog=new Dialog();
+    @FXML
+    private StackPane conteinerModal;
     
 
      private void loadFXMLAsync(String fxmlFile) {
+      
         ScheduledExecutorService sheduler = Executors.newSingleThreadScheduledExecutor();
         CompletableFuture.runAsync(() -> {
                 AnchorPane loadedPane=null;
                 if(!ApiCache.isTela(fxmlFile)){
-                    FXMLLoader loader = new FXMLLoader(App.class.getResource("pages/components/" +fxmlFile + ".fxml"));
+                    FXMLLoader loader = new FXMLLoader(App.class.getResource("pages/sub-pages/" +fxmlFile + ".fxml"));
                     try {
                         loadedPane = loader.load();
                     } catch (IOException e) {
@@ -74,7 +84,7 @@ public class MainController implements Initializable{
 
      @Override
      public void initialize(URL arg0, ResourceBundle arg1) {
-        
+        DialogUtil.DialogShow("comfirm", dialog,box);
         lista.getItems().add(new ItemDash("Home",FontAwesomeIcon.HOME));
         lista.getItems().add(new ItemDash("Actividades",FontAwesomeIcon.GROUP));
         lista.getItems().add(new ItemDash("Artigos",FontAwesomeIcon.BOOK));
