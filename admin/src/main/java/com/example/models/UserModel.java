@@ -29,7 +29,8 @@ public class UserModel extends HBox{
         this.descricao=new Label(descricao);
         blocBox=new VBox(this.name,this.descricao);
         this.getChildren().addAll(img,blocBox);
-        this.getStyleClass().add("card user-card");
+        this.getStyleClass().addAll("card","user-card");
+        this.setSpacing(10);
     }
 
 

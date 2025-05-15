@@ -37,7 +37,7 @@ public class LoadImageUtil {
         ScheduledExecutorService service=Executors.newSingleThreadScheduledExecutor();
         service.schedule(() -> {
             Platform.runLater(() -> {
-                url.setClip(circle?new Circle(altura, tamanho, 100):RedoundImageUtil.AddRedoundImage(tamanho, altura,10));
+                url.setClip(circle?new Circle(altura/2,altura/2,altura/2):RedoundImageUtil.AddRedoundImage(tamanho, altura,10));
                 url.getChildren().clear();
                 url.setStyle("-fx-background-size:cover;-fx-background-image:url("+urls+")");
                 url.setPrefSize(tamanho, altura);

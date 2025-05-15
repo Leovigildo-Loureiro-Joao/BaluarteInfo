@@ -48,8 +48,7 @@ public class ModalUtil {
             Node modal=App.loadFXMLModal(modalFxml);
             fundo.getChildren().add(modal);
             
-            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1.5), fundo);
-            fadeTransition.setDelay(Duration.seconds(1.5));
+            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), fundo);
             fadeTransition.setFromValue(0);
             fadeTransition.setToValue(1);
             fadeTransition.play();
@@ -66,7 +65,7 @@ public class ModalUtil {
 
     private static void Terminate(StackPane fundo){
       
-        FadeTransition opacityTransition = new FadeTransition(Duration.seconds(1), fundo);
+        FadeTransition opacityTransition = new FadeTransition(Duration.seconds(0.5), fundo);
         opacityTransition.setFromValue(1);
         opacityTransition.setToValue(0);
         opacityTransition.play();

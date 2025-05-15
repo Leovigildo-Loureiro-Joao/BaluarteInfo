@@ -16,6 +16,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 public class ModalActividadeDetalhesController implements Initializable{
@@ -29,6 +30,10 @@ public class ModalActividadeDetalhesController implements Initializable{
 
     @FXML
     private VBox use_box;
+
+    @FXML
+    private Text titleUser;
+
 
     @FXML
     private HBox boxSlideControl;
@@ -75,16 +80,14 @@ public class ModalActividadeDetalhesController implements Initializable{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO Auto-generated method stub
-
-        Object ob =modal.lookup(".gradiente");
-        System.out.println(ob);
-       
+        Select1(null);
     }
 
     @FXML
     public void Select1(MouseEvent event) {
         RemoveSelectCard();
         comentCard.getStyleClass().add("select");
+        titleUser.setText("Comentarios da actividade");
         use_box.getChildren().add(new UserModel("file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/user1.png","fsdfsdf","sdfsdfsdfsdfsdf"));
     }
 
@@ -98,8 +101,9 @@ public class ModalActividadeDetalhesController implements Initializable{
     @FXML
     public void Select2(MouseEvent event) {
         RemoveSelectCard();
+        titleUser.setText("Pessoas inscritas para actividade");
         inscricaoCard.getStyleClass().add("select");
-        use_box.getChildren().add(new UserModel("file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/user2.png","fsdfsdf","sdfsdfsdfsdfsdf"));
+        use_box.getChildren().add(new UserModel("file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/user2.png","fsdfsdf","d df dfsd sd fsdf sdfs dfs df sdfs dfs dfs dfs dfsdf sdf sdf sdf sdfs dfs"));
 
     }
 }

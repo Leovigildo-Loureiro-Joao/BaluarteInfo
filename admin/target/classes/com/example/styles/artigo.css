@@ -1,0 +1,64 @@
+.artigo-img{
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-arc-top-right: 16; 
+    -fx-arc-bottom-right: 16;
+    -fx-background-radius: 0 16 0 16;
+}
+
+
+
+.rown-bold-model Text{
+    -fx-font-weight: bold;
+    -fx-font-size: 14;
+}
+
+.artigo-model HBox{
+    -fx-spacing: 20;
+}
+
+.artigo-model VBox{
+    -fx-spacing: 10;
+}
+
+.artigo-model{
+    -fx-pref-height: 400;
+    -fx-min-height: 400;
+    -fx-effect: dropshadow(three-pass-box,#c5c5c5,8,0.1,1,1);
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+}
+
+
+.artigo-model{
+    -fx-pref-height: 400;
+    -fx-min-height: 400;
+    -fx-margin:20;
+}
+
+.rown-bold-model Label Text{
+    -fx-font-weight: inherit;
+    -fx-font-size: 14;
+}
+
+.col-bold-model Text{
+    -fx-font-weight: bold;
+    -fx-font-size: 14;
+}
+
+.col-bold-model{
+    -fx-wrap-text: true;
+    -fx-pref-width: 200;
+    -fx-pref-height: 200;
+    -fx-valignment: TOP;
+}
+
+.rown-blur-model Label{
+    -fx-text-fill: #777777;
+}
+
+.artigo-model .jfx-button{
+    -fx-pref-width: 100;
+    -fx-padding: 8;
+}
