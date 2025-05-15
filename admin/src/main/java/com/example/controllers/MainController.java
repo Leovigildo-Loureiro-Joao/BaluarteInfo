@@ -39,7 +39,7 @@ public class MainController implements Initializable{
     private Initializable controller;
     private final Dialog dialog=new Dialog();
     @FXML
-    private StackPane conteinerModal;
+    public StackPane conteinerModal;
     
 
      private void loadFXMLAsync(String fxmlFile) {
@@ -84,7 +84,6 @@ public class MainController implements Initializable{
 
      @Override
      public void initialize(URL arg0, ResourceBundle arg1) {
-        DialogUtil.DialogShow("comfirm", dialog,box);
         lista.getItems().add(new ItemDash("Home",FontAwesomeIcon.HOME));
         lista.getItems().add(new ItemDash("Actividades",FontAwesomeIcon.GROUP));
         lista.getItems().add(new ItemDash("Artigos",FontAwesomeIcon.BOOK));

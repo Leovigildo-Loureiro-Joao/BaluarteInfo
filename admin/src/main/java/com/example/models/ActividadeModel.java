@@ -9,12 +9,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.example.App;
 import com.example.utils.LoadImageUtil;
+import com.example.utils.ModalUtil;
 import com.example.utils.RedoundImageUtil;
 import com.jfoenix.controls.JFXButton;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -48,7 +51,7 @@ public class ActividadeModel extends VBox{
     private JFXButton addAtributos;
     
     public ActividadeModel(String titulo,String tema,String tipoEvento,String organizador,String publicoAlvo,
-            String descricao,String telefone,String email,String endereco,String imagemUrl,LocalDateTime data){
+            String descricao,String telefone,String email,String endereco,String imagemUrl,LocalDateTime data,StackPane fundo){
         this.titulo=new Label(titulo);
         this.tema=new Label(tema);
         this.tipoEvento=new Label(tipoEvento);
@@ -66,6 +69,7 @@ public class ActividadeModel extends VBox{
         OrdenarModel(imagemUrl);
         AddStyleClass();
         preocessarBackground(imagemUrl, 180, 240);
+        Buttons(fundo);
     }
 
     private void OrdenarModel(String url){
@@ -112,8 +116,10 @@ public class ActividadeModel extends VBox{
         }, 2, TimeUnit.SECONDS);
     }
 
-    public void Buttons(){
-
+    public void Buttons(StackPane parent){
+        addAtributos.setOnAction(event -> {
+            ModalUtil.Show(parent, "modalActividadeDetalhes");
+        });
     }
 
 

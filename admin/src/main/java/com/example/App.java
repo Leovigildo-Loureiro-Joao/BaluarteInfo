@@ -2,6 +2,7 @@ package com.example;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.DialogPane;
@@ -14,6 +15,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.IOException;
+
+import com.example.configs.ApiCache;
 
 /**
  * JavaFX App
@@ -31,6 +34,7 @@ public class App extends Application {
         App.stage.setMinHeight(600);
         App.stage.getIcons().add(new Image(App.class.getResourceAsStream("assets/logoP.png")));
         stage.setMaximized(true);
+      
         scene = new Scene(loadFXML("main"), 640, 480);
         stage.setScene(scene);
         stage.show();
@@ -42,7 +46,9 @@ public class App extends Application {
 
     private static  AnchorPane loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("pages/" +fxml + ".fxml"));
-        return fxmlLoader.load();
+        AnchorPane loadPane=fxmlLoader.load();
+        ApiCache.addTelaCache(fxml,  fxmlLoader.getController(), loadPane);
+        return loadPane;
     }
 
     public static  DialogPane loadFXMLDialog(String fxml) throws IOException {
@@ -50,7 +56,7 @@ public class App extends Application {
         return fxmlLoader.load();
     }
 
-    public static  VBox loadFXMLModal(String fxml) throws IOException {
+    public static  Node loadFXMLModal(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("components/modals/" +fxml + ".fxml"));
         return fxmlLoader.load();
     }

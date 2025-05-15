@@ -8,6 +8,7 @@ ScrollBar .thumb{
     -fx-background-color: #cccccc8a;
     -fx-background-radius: 45;
     -fx-background-insets: 5;
+    -fx-primary:#CB2020;
 }
 
 ListView *{
@@ -222,4 +223,32 @@ ItemDash Label{
 .modal-header{
     -fx-background-color: #CB2020;
     -fx-background-radius: 8 8 0 0;
+}
+
+.Item_Carrosel{
+    -fx-font-size: 14;
+}
+
+
+.Item_Carrosel.select Region{
+    -fx-background-color: #CB2020;
+    -fx-background-radius: 8;
+    -fx-max-height: 4;
+    -fx-max-width: 80;
+}
+
+
+.Item_Carrosel Region{
+    -fx-background-radius: 8;
+    -fx-max-height: 4;
+    -fx-max-width: 80;
+}
+
+.gradiente.select .card-gradiente{
+    -fx-background-color:  linear-gradient(transparent,transparent,#CB2020);
+}
+
+.gradiente .card-gradiente{
+    -fx-background-color:  linear-gradient(transparent,transparent,#fff);
+    -fx-background-radius: 8;
 }

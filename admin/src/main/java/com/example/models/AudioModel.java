@@ -46,9 +46,8 @@ public class AudioModel extends VBox{
     public AudioModel(String titulo,String descricao,String url,String imagem){
         this.titulo=new Label(titulo);
         this.descricao=new Label(descricao);
-        this.imageView=LoadImageUtil.ImageTimeRedound();
+        this.imageView=LoadImageUtil.ImageTimeRedound(300,300);
         this.descricao = new Label(descricao);
-        this.imageView = LoadImageUtil.ImageTimeRedound();
         // Carregar o áudio
         URI uri = URI.create(url);
         Media media = new Media(uri.toString()); // URL do arquivo de áudio

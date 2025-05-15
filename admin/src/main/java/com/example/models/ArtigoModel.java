@@ -61,7 +61,7 @@ public class ArtigoModel extends HBox{
         bloco=new VBox(this.titulo,rown_1,rown_2,vb,bt);
         bloco.setSpacing(10);
         AddStyleClass();
-        preocessarBackground("file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/pexels-felixmittermeier-2832052.jpg",200,400);
+        LoadImageUtil.preocessarBackground(this.url,"file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/pexels-felixmittermeier-2832052.jpg",200,400,false);
         this.setSpacing(20);
         this.getChildren().addAll(this.url,bloco);
     }
@@ -77,20 +77,7 @@ public class ArtigoModel extends HBox{
         editButton.getStyleClass().add("buttonWhite");
     }
 
-    public  void preocessarBackground(String urls,int tamanho,int altura){
-        this.url.setPrefSize(tamanho, altura);
-        ScheduledExecutorService service=Executors.newSingleThreadScheduledExecutor();
-        service.schedule(() -> {
-            
-           Platform.runLater(() -> {
-            this.url.setClip(RedoundImageUtil.AddRedoundImage(tamanho, altura,10));
-            this.url.getChildren().clear();
-            this.url.setStyle(this.getStyle().concat("-fx-background-image:url("+urls+")"));
-            this.url.setPrefSize(tamanho, altura);
-           });
-           service.shutdown();
-        }, 2, TimeUnit.SECONDS);
-    }
+    
 
 
     public void Buttons(){
