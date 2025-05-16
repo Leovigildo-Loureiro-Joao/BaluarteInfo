@@ -18,8 +18,8 @@
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Actividades" />
                   <HBox prefHeight="42.0" prefWidth="369.0" spacing="20.0">
                      <children>
-                        <TextField prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar actividades" styleClass="fieldTextLine" />
-                        <JFXButton prefHeight="33.0" prefWidth="25.0" text=" ">
+                        <TextField fx:id="pesqBloco" prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar actividades" styleClass="fieldTextLine" />
+                        <JFXButton onAction="#pesquisar" prefHeight="33.0" prefWidth="25.0" text=" ">
                            <HBox.margin>
                               <Insets left="-50.0" />
                            </HBox.margin>
@@ -39,12 +39,12 @@
                   </HBox>
                   <HBox prefHeight="43.0" prefWidth="479.0" spacing="20.0">
                      <children>
-                        <ToggleButton mnemonicParsing="false" selected="true" styleClass="button-toggle" text="Anual">
+                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" selected="true" styleClass="button-toggle" text="Anual">
                            <toggleGroup>
                               <ToggleGroup fx:id="selectActivy" />
                            </toggleGroup></ToggleButton>
-                        <ToggleButton mnemonicParsing="false" styleClass="button-toggle" text="Mensal" toggleGroup="$selectActivy" />
-                        <ToggleButton mnemonicParsing="false" styleClass="button-toggle" text="Projectos" toggleGroup="$selectActivy" />
+                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Mensal" toggleGroup="$selectActivy" />
+                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Projectos" toggleGroup="$selectActivy" />
                      </children>
                      <VBox.margin>
                         <Insets top="20.0" />
@@ -90,15 +90,14 @@
                                     </JFXComboBox>
                                     <DatePicker fx:id="data_hora" prefHeight="25.0" prefWidth="368.0" promptText="Infome data e hora da actividade" showWeekNumbers="true" styleClass="fieldTextLine" />
                                     <TextField fx:id="contactos" promptText="Digite aqui os seus contactos" styleClass="fieldTextLine" />
-                                    <TextArea fx:id="descricao" prefHeight="90.0" prefWidth="346.0" styleClass="border-panel" />
+                                    <TextArea fx:id="descricao" prefHeight="90.0" prefWidth="346.0" promptText="Descrição" styleClass="border-panel" />
                                     <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="border-panel">
                                        <children>
-                                          <ImageView fx:id="img" fitHeight="209.0" fitWidth="274.0" onMouseClicked="#Carregar" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="img" fitHeight="209.0" fitWidth="274.0" onMouseClicked="#CarregarImagem" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../../assets/pdf.png" />
                                              </image>
                                           </ImageView>
-                                          <JFXButton onAction="#CarregarImagem" text="Clique aqui para efectuar o upload" translateY="-20.0" />
                                        </children>
                                     </StackPane>
                                  </children>
@@ -113,7 +112,7 @@
                         <Insets bottom="40.0" />
                      </padding>
                   </ScrollPane>
-                  <JFXButton prefHeight="40.0" prefWidth="353.0" styleClass="buttonColor" text="Enviar" />
+                  <JFXButton onAction="#Enviar" prefHeight="40.0" prefWidth="353.0" styleClass="buttonColor" text="Enviar" />
                </children>
                <HBox.margin>
                   <Insets top="100.0" />

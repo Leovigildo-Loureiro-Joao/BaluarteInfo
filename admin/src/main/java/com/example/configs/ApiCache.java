@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.example.App;
 
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 
@@ -79,7 +80,7 @@ public class ApiCache {
     } 
     
 
-    public static void addTelaCache(String key, Initializable control,AnchorPane tela) {
+    public static void addTelaCache(String key, Initializable control,Parent tela) {
         Object []ob={control,tela}; 
         Telas.put(key, ob);
     }

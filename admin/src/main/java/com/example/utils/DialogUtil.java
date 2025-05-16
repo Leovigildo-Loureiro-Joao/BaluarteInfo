@@ -17,7 +17,6 @@ public class DialogUtil {
 
   public static void DialogShow (String name,Dialog dialog,Node parent) {
     try {
-        Window.getWindows();
         dialog.setDialogPane(App.loadFXMLDialog(name));
         dialog.initModality(Modality.WINDOW_MODAL);
         JFXButton botao= (JFXButton) dialog.getDialogPane().lookup("#cancel");

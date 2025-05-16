@@ -1,0 +1,18 @@
+.tela{
+    -fx-background-image: url(../assets/fundo.jpg);
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: top;
+}
+
+VBox.card{
+    -fx-background-color: rgba(0, 0, 0, 0.384);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.144), 8, 0.1, 1, 1);
+}
+
+.fieldTextLine {
+   -fx-text-fill: white;
+   -fx-prompt-text-fill: rgb(207, 207, 207);
+}
+
+

@@ -177,7 +177,7 @@ ItemNotif {
 .selectSection.sel {
     -fx-border-color: transparent transparent #CB2020 transparent;
     -fx-border-width: 2;
-    -fx-text-fill: #CB2020;
+    -fx-text-fill: #cb20208a;
 }
 
 /* Borders */

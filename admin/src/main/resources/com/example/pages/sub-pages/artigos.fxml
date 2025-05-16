@@ -8,22 +8,22 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="656.0" prefWidth="998.0" styleClass="root" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.ArtigoController">
+<AnchorPane fx:id="content" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="656.0" prefWidth="1039.0" styleClass="root" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.ArtigoController">
   <stylesheets>
       <URL value="@../../styles/geral.css" />
       <URL value="@../../styles/artigo.css" />
    </stylesheets>
   
    <children>
-      <HBox layoutY="-2.0" prefHeight="656.0" prefWidth="921.0" spacing="150.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
+      <HBox layoutY="-2.0" prefHeight="656.0" prefWidth="921.0" spacing="100.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
          <children>
             <VBox prefHeight="567.0" prefWidth="507.0">
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Artigos" />
-                  <HBox prefHeight="42.0" prefWidth="369.0">
+                  <HBox prefHeight="42.0" prefWidth="369.0" spacing="10.0">
                      <children>
-                        <TextField prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar artigo" styleClass="fieldTextLine" />
-                        <JFXButton prefHeight="33.0" prefWidth="25.0" text=" ">
+                        <TextField fx:id="pesqBlock" prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar artigo" styleClass="fieldTextLine" />
+                        <JFXButton onAction="#Pesquisar" prefHeight="33.0" prefWidth="25.0" text=" ">
                            <HBox.margin>
                               <Insets left="-50.0" />
                            </HBox.margin>
@@ -35,6 +35,7 @@
                               </ImageView>
                            </graphic>
                         </JFXButton>
+                        <JFXComboBox fx:id="filtro" focusColor="#bc3c28" prefHeight="32.0" prefWidth="98.0" promptText="Filtro" />
                      </children>
                      <VBox.margin>
                         <Insets top="20.0" />
@@ -54,29 +55,22 @@
                   </ScrollPane>
                </children>
             </VBox>
-            <VBox maxHeight="-Infinity" prefHeight="569.0" prefWidth="448.0" spacing="20.0" styleClass="card">
+            <VBox maxHeight="-Infinity" prefHeight="458.0" prefWidth="406.0" spacing="20.0" styleClass="card">
                <padding>
                   <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
                </padding>
                <children>
-                  <TextField promptText="Digite o Titulo do artigo" styleClass="fieldTextLine" />
-                  <TextField promptText="Digite o nome do escritor" styleClass="fieldTextLine" />
-                  <TextArea prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do seu artigo" styleClass="border-panel">
+                  <TextField fx:id="titulo" promptText="Digite o Titulo do artigo" styleClass="fieldTextLine" />
+                  <TextField fx:id="nome" promptText="Digite o nome do escritor" styleClass="fieldTextLine" />
+                  <JFXComboBox fx:id="tipo" focusColor="#bc3c28" prefHeight="26.0" prefWidth="344.0" promptText="   Tipo de artigo" />
+                  <TextField fx:id="upload" onAction="#CarregarPdf" prefHeight="49.0" prefWidth="319.0" styleClass="fieldTextLine" text="Clique para fazer o uplaod do artigo" />
+                  <TextArea fx:id="descricao" prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do seu artigo" styleClass="border-panel">
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </padding>
                   </TextArea>
-                  <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="border-panel">
-                     <children>
-                        <ImageView fitHeight="209.0" fitWidth="274.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../../assets/pdf.png" />
-                           </image>
-                        </ImageView>
-                        <JFXButton text="Clique aqui para efectuar o upload" translateY="-20.0" />
-                     </children>
-                  </StackPane>
-                  <JFXButton prefHeight="59.0" prefWidth="366.0" styleClass="buttonColor" text="Enviar" />
+                  <JFXDrawer prefWidth="340.0" />
+                  <JFXButton onAction="#Enviar" prefHeight="46.0" prefWidth="319.0" styleClass="buttonColor" text="Enviar" />
                </children>
                <HBox.margin>
                   <Insets top="40.0" />

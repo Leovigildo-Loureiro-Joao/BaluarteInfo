@@ -35,7 +35,7 @@ public class App extends Application {
         App.stage.getIcons().add(new Image(App.class.getResourceAsStream("assets/logoP.png")));
         stage.setMaximized(true);
       
-        scene = new Scene(loadFXML("main"), 640, 480);
+        scene = new Scene(loadFXML("login"), 640, 480);
         stage.setScene(scene);
         stage.show();
     }
@@ -44,9 +44,9 @@ public class App extends Application {
         scene.setRoot(loadFXML(fxml));
     }
 
-    private static  AnchorPane loadFXML(String fxml) throws IOException {
+    private static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("pages/" +fxml + ".fxml"));
-        AnchorPane loadPane=fxmlLoader.load();
+        Parent loadPane=fxmlLoader.load();
         ApiCache.addTelaCache(fxml,  fxmlLoader.getController(), loadPane);
         return loadPane;
     }

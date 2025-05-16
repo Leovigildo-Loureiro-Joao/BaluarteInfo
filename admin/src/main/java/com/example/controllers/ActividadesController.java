@@ -4,7 +4,9 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.example.configs.ApiCache;
+import com.example.enums.FileType;
 import com.example.models.ActividadeModel;
+import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 
@@ -15,24 +17,19 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class ActividadesController implements Initializable{
-
-    @FXML
-    private VBox listActividade;
-
-    @FXML
-    private JFXComboBox<String> filtro;
-   
-    @FXML
-    private AnchorPane content;
-
+    
     @FXML
     private TextField contactos;
+
+    @FXML
+    private AnchorPane content;
 
     @FXML
     private DatePicker data_hora;
@@ -41,7 +38,19 @@ public class ActividadesController implements Initializable{
     private TextArea descricao;
 
     @FXML
+    private JFXComboBox<String> filtro;
+
+    @FXML
+    private ImageView img;
+
+    @FXML
+    private VBox listActividade;
+
+    @FXML
     private TextField organizador;
+
+    @FXML
+    private TextField pesqBloco;
 
     @FXML
     private JFXComboBox<String> publico_alvo;
@@ -58,13 +67,24 @@ public class ActividadesController implements Initializable{
     @FXML
     private TextField titulo;
 
+
     @FXML
-    void Carregar(MouseEvent event) {
+    void CarregarImagem(MouseEvent event) {
+        UploadFiles.Uplaod(FileType.Image, img,  content); 
+    }
+
+    @FXML
+    void Enviar(ActionEvent event) {
 
     }
 
     @FXML
-    void CarregarImagem(ActionEvent event) {
+    void pesquisar(ActionEvent event) {
+
+    }
+
+    @FXML
+    void SelectSeccao(ActionEvent event) {
 
     }
 
@@ -76,8 +96,7 @@ public class ActividadesController implements Initializable{
     }
 
     private void AddDetails(){
-        filtro.getItems().addAll("Todos","Mulheres","Jovens","Pais","Adultos");
-        tipo.
+        filtro.getItems().addAll("Todos","Mulheres","Jovens","Pais","Velhos","Crianças");
     }
  
     

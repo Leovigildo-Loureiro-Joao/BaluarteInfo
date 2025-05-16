@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="591.0" prefWidth="600.0" styleClass="tela" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.LoginController">
+   <children>
+      <VBox alignment="TOP_CENTER" maxHeight="420.0" maxWidth="400.0" prefHeight="200.0" prefWidth="100.0" spacing="20.0" styleClass="card">
+         <children>
+            <ImageView fitHeight="113.0" fitWidth="103.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../assets/logoP.png" />
+               </image>
+            </ImageView>
+            <TextField fx:id="email" prefHeight="46.0" prefWidth="360.0" promptText="Informe o seu email" styleClass="fieldTextLine" />
+            <PasswordField fx:id="senha" prefHeight="38.0" prefWidth="360.0" promptText="Informe a sua senha" styleClass="fieldTextLine" />
+            <JFXButton onAction="#Entrar" prefHeight="44.0" prefWidth="360.0" ripplerFill="#d19292" styleClass="buttonColor" text="Entrar" textFill="WHITE">
+               <VBox.margin>
+                  <Insets top="40.0" />
+               </VBox.margin>
+            </JFXButton>
+         </children>
+         <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+         </padding>
+      </VBox>
+   </children>
+   <stylesheets>
+      <URL value="@../styles/geral.css" />
+      <URL value="@../styles/login.css" />
+   </stylesheets>
+</StackPane>
