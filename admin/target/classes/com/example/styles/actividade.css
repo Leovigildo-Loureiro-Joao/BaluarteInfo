@@ -5,6 +5,11 @@
     -fx-max-width: 460;
 }
 
+.actividade-model-block{
+    -fx-max-width: 460;
+    -fx-max-height: 560;
+}
+
 .actividade-model HBox{
     -fx-spacing: 10;
 }
@@ -15,6 +20,7 @@
 .actividade-model Text{
     -fx-font-weight: bold;
     -fx-font-size: 14;
+    
 }
 
 .actividade-model Label{
@@ -49,3 +55,4 @@
     -fx-arc-bottom-right: 16;
     -fx-background-radius: 0 16 0 16;
 }
+

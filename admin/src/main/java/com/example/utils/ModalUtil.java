@@ -3,40 +3,68 @@ package com.example.utils;
 import java.io.IOException;
 
 import com.example.App;
+import com.example.configs.ApiCache;
+import com.example.controllers.pages.MainController;
+import com.example.models.UserModel;
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXTextArea;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.scene.Node;
-import javafx.scene.Parent;
+import javafx.scene.control.Label;
+
 import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
 public class ModalUtil {
  
-    public static void Show(StackPane fundo,String modalFxml){
+    public static void Show(String modalFxml){
         try {
-
+            MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
+            StackPane fundo=  controller.conteinerModal ;
             fundo.setVisible(true);
-            fundo.getChildren().clear();
             Node modal=App.loadFXMLModal(modalFxml);
-            JFXButton botao= (JFXButton) modal.lookup("#cancel");
-            botao.setOnMouseClicked(event -> {
-                Terminate(fundo);
-            });
-            modal.setOpacity(0);
-            fundo.getChildren().add(modal);
-            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), modal);
-            fadeTransition.setDelay(Duration.seconds(0.5));
-            fadeTransition.setFromValue(0);
-            fadeTransition.setToValue(1);
-            fadeTransition.play();
+            ShowMethod(modal, fundo);
             
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void ShowMethod(Node modal,StackPane fundo){
+       Platform.runLater(() -> {
+        fundo.setMouseTransparent(false); // 🔥 Permite clique novamente
+        if (!fundo.getChildren().contains(modal)) {
+            // Em vez de fundo.getChildren().clear(), você pode só remover o modal anterior, se quiser
+            fundo.getChildren().removeIf(node -> node.getId() != null && node.getId().equals("modal"));
+        }
+        JFXButton botao= (JFXButton) modal.lookup("#cancel");
+        botao.setOnMouseClicked(event -> {
+            Terminate(fundo);
+        });
+        fundo.setOpacity(0);
+        fundo.getChildren().add(modal);
+        FadeTrasitionUtil.Fade(0.5, fundo, 1, 0);
+       });
+    }
+
+    public static void ShowComentario(StackPane fundo,String modalFxml,UserModel model){
+        try {
+            Node modal=App.loadFXMLModal(modalFxml);
+            StackPane image=(StackPane) modal.lookup("#imagemCircular");
+            image.setStyle(model.getImg().getStyle());
+            image.setPrefSize(100, 100);
+            image.setClip(new Circle(100/2,50/2,100/2));
+            ((Label)modal.lookup("#nome")).setText(model.getName().getText());
+            ((JFXTextArea)modal.lookup("#descricao")).setText(model.getDescricao().getText());
+            ShowMethod(modal, fundo);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
 
 
@@ -71,6 +99,7 @@ public class ModalUtil {
         opacityTransition.play();
         opacityTransition.setOnFinished(e -> {
             fundo.setVisible(false);
+            fundo.setMouseTransparent(true); // 🔥 Isso impede que ele bloqueie cliques
             fundo.getChildren().clear();
         });
     }

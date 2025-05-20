@@ -30,6 +30,10 @@ public class UploadFiles {
                     break;
                 case Audio:
                     imageFilter = new FileChooser.ExtensionFilter("Audios", "*.mp3", "*.wav");
+                    f.getExtensionFilters().add(imageFilter);
+                    select = f.showOpenDialog(parent.getScene().getWindow());
+                    TextField textFields=(TextField)node;
+                    textFields.setText(select.getPath());
                     break;
                 default:
                     imageFilter = new FileChooser.ExtensionFilter("Documentos", "*.pdf");

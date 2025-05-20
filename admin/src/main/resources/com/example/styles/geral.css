@@ -232,6 +232,10 @@ ItemNotif {
     -fx-background-radius: 8 8 0 0;
 }
 
+.infoControl label{
+
+}
+
 /* Carousel Items */
 .Item_Carrosel {
     -fx-font-size: 14;
@@ -260,6 +264,15 @@ ItemNotif {
     -fx-background-radius: 8;
 }
 
+.gradiente.select .circle-rotate{
+    -fx-stroke: #CB2020;
+}
+
+.gradiente .circle-rotate{
+    -fx-stroke-dash-array: 25, 44.58, 25, 44.58, 25, 44.58;
+}
+
+
 /* User Cards */
 .user-card {
     -fx-padding: 5;
@@ -275,10 +288,56 @@ ItemNotif {
 .user-card Label {
     -fx-font-size: 12;
     -fx-wrap-text: true;
-    -fx-max-width: 170;
+    -fx-max-width: 150;
+}
+
+.coment-model Label{
+    -fx-max-width: 300;
+    -fx-min-width: 300;
+    -fx-wrap-text: true;
+    -fx-padding: 10;
 }
 
 
+.control-model{
+    -fx-background-color: rgba(0, 0, 0, 0.61);
+    -fx-background-radius: 8;
+}
+
+.control-model HBox{
+    -fx-max-width: 70;
+    -fx-max-height: 25;
+    -fx-spacing: 20;
+
+}
+
+
+.control-model .jfx-button *{
+   -fx-fill: #fff;
+   -fx-text-fill: #fff;
+
+}
+
+
+.control-model .jfx-button{
+   -fx-background-color: #CB2020;
+   -fx-background-radius: 100;
+   -fx-padding: 10;
+   -fx-pref-width: 45;
+   -fx-pref-height: 45;
+   -fx-min-width: 45;
+   -fx-min-height: 45;
+   -fx-max-width: 45;
+   -fx-max-height: 45;
+ 
+ }
 
 
 
+.button{
+    -fx-cursor: HAND;
+}
+
+.list-cell{
+    -fx-cursor: HAND;
+}

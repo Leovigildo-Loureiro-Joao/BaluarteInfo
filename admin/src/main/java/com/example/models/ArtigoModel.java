@@ -30,20 +30,23 @@ public class ArtigoModel extends HBox{
     private Label titulo;
     private Label descricao;
     private Label escritor;
+    private Label tipo;
     private Label data;
     private Label hora;
     private VBox bloco;
     private HBox rown_1;
     private HBox rown_2;
+    private HBox rown_3;
     private VBox vb;
     private StackPane url=new StackPane();
     private JFXButton editButton;
     private JFXButton trushButton;
 
-    public ArtigoModel(String titulo,String descricao,String escritor,String url,LocalDateTime data){
+    public ArtigoModel(String titulo,String descricao,String escritor,String url,String tipo,LocalDateTime data){
         this.titulo=new Label(titulo);
         this.descricao=new Label(descricao);
         this.escritor=new Label(escritor);
+        this.tipo=new Label(tipo);
         this.data=new Label(data.toLocalDate().toString());
         this.hora=new Label(data.toLocalTime().toString());
         this.url.getChildren().add(LoadImageUtil.ImageTime());
@@ -52,13 +55,14 @@ public class ArtigoModel extends HBox{
 
     private void OrdenarModel(String url){
         rown_1=new HBox(new Text("Escritor: "),this.escritor);
+        rown_3=new HBox(new Text("Tipo de Artigo: "),this.tipo);
         vb=new VBox(new Text("Descrição: "),this.descricao);
         rown_2=new HBox(data,hora);
         trushButton=new JFXButton("Apagar");
         editButton=new JFXButton("Editar");
         HBox bt=new HBox(editButton,trushButton);
         bt.setSpacing(5);
-        bloco=new VBox(this.titulo,rown_1,rown_2,vb,bt);
+        bloco=new VBox(this.titulo,rown_1,rown_2,rown_3,vb,bt);
         bloco.setSpacing(10);
         AddStyleClass();
         LoadImageUtil.preocessarBackground(this.url,"file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/pexels-felixmittermeier-2832052.jpg",200,400,false);
@@ -72,6 +76,7 @@ public class ArtigoModel extends HBox{
         this.rown_2.getStyleClass().add("rown-blur-model");
         this.vb.getStyleClass().add("col-bold-model");
         this.rown_1.getStyleClass().add("rown-bold-model");
+        this.rown_3.getStyleClass().add("rown-bold-model");
         this.url.getStyleClass().add("artigo-img");
         trushButton.getStyleClass().add("buttonColor");
         editButton.getStyleClass().add("buttonWhite");

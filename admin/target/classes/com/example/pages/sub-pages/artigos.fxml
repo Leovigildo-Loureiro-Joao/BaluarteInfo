@@ -3,12 +3,13 @@
 <?import com.jfoenix.controls.*?>
 <?import java.net.*?>
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="content" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="656.0" prefWidth="1039.0" styleClass="root" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.ArtigoController">
+<AnchorPane fx:id="content" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="656.0" prefWidth="1039.0" styleClass="root" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.ArtigoController">
   <stylesheets>
       <URL value="@../../styles/geral.css" />
       <URL value="@../../styles/artigo.css" />
@@ -63,7 +64,10 @@
                   <TextField fx:id="titulo" promptText="Digite o Titulo do artigo" styleClass="fieldTextLine" />
                   <TextField fx:id="nome" promptText="Digite o nome do escritor" styleClass="fieldTextLine" />
                   <JFXComboBox fx:id="tipo" focusColor="#bc3c28" prefHeight="26.0" prefWidth="344.0" promptText="   Tipo de artigo" />
-                  <TextField fx:id="upload" onAction="#CarregarPdf" prefHeight="49.0" prefWidth="319.0" styleClass="fieldTextLine" text="Clique para fazer o uplaod do artigo" />
+                  <TextField fx:id="upload" editable="false" onAction="#CarregarPdf" prefHeight="49.0" prefWidth="319.0" promptText="Clique para fazer o uplaod do artigo" styleClass="fieldTextLine">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor></TextField>
                   <TextArea fx:id="descricao" prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do seu artigo" styleClass="border-panel">
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

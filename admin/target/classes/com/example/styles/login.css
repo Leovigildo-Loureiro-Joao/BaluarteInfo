@@ -6,7 +6,7 @@
 }
 
 VBox.card{
-    -fx-background-color: rgba(0, 0, 0, 0.384);
+    -fx-background-color: rgba(0, 0, 0, 0.5);
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.144), 8, 0.1, 1, 1);
 }
 

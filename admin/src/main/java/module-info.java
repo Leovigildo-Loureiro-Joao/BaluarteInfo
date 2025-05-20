@@ -10,7 +10,9 @@ module com.example {
 
 
     opens com.example to javafx.fxml;
-    opens com.example.controllers to javafx.fxml;
+    opens com.example.controllers.modal to javafx.fxml;
+    opens com.example.controllers.pages to javafx.fxml;
     exports com.example;
-    exports com.example.controllers;
+    exports com.example.controllers.modal;
+    exports com.example.controllers.pages;
 }
