@@ -1,11 +1,17 @@
 package com.igreja.api.services;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,13 +55,24 @@ public class MidiaService {
     }
 
 
-    public MidiaModel save(MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException { 
+    public MidiaModel save(MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException { 
         MidiaModel midia= new MidiaModel();
         midia.setDataPublicacao(LocalDate.now());
         upload.generateUniqueName(midiaDto.url().getOriginalFilename());
         midia.setUrl(upload.uploadFileAsync(midiaDto.url(),"image"));
+        AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(midiaDto.url().getInputStream());
+        Map<String, Object> props = baseFileFormat.properties();
+        long microsegundos = (long) props.get("duration");
+        double segundos = microsegundos / 1_000_000.0;
+        midia.setTempo(formatarDuracao((int) segundos));
         BeanUtils.copyProperties(midiaDto, midia);
         return midiaRepository.save(midia);
+    }
+
+    private String formatarDuracao(int totalSegundos) {
+        int minutos = totalSegundos / 60;
+        int segundos = totalSegundos % 60;
+        return String.format("%02d:%02d", minutos, segundos);
     }
 
     public MidiaModel Select(int id)  {

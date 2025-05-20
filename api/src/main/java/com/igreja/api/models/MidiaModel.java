@@ -39,8 +39,10 @@ public class MidiaModel {
     @NotBlank
     private String descricao;
 
-    @NotBlank
     private String titulo;
+
+    @NotBlank
+    private String tempo;
 
     @NotBlank(message = "URL é obrigatória")  // Não pode ser vazio
     @Pattern(
