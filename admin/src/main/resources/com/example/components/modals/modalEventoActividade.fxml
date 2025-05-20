@@ -19,7 +19,7 @@
                   <Insets left="10.0" top="14.0" />
                </HBox.margin>
             </Label>
-            <JFXButton alignment="CENTER" contentDisplay="CENTER" prefHeight="43.0" prefWidth="59.0" text=" ">
+            <JFXButton fx:id="cancel" alignment="CENTER" contentDisplay="CENTER" prefHeight="43.0" prefWidth="59.0" text=" ">
                <graphic>
                   <ImageView fitHeight="25.0" fitWidth="39.0" pickOnBounds="true" preserveRatio="true">
                      <image>

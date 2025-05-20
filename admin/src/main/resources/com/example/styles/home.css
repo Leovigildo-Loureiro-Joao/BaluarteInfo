@@ -10,6 +10,13 @@ Label.calerdarItem{
     -fx-min-width: 50;
     -fx-padding: 0 5;
     -fx-alignment: CENTER;
+    -fx-cursor: HAND;
+}
+
+Label.calerdarItem.use:hover{
+    -fx-background-color: #CB2020;
+    -fx-text-fill: white;
+    -fx-fill: white;
 }
 
 

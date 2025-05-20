@@ -87,6 +87,11 @@ public class MainController implements Initializable{
         App.setRoot("login");
     }
 
+    @FXML
+    public void MudarSenha(ActionEvent event) {
+        ModalUtil.Show("modalSenha");
+    }
+
      @Override
      public void initialize(URL arg0, ResourceBundle arg1) {
         lista.getItems().add(new ItemDash("Home",FontAwesomeIcon.HOME));

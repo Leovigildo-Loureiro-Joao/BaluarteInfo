@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import com.example.utils.DiaUtilAnimation;
+import com.example.utils.ModalUtil;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -45,8 +46,8 @@ public class Calendario {
                 var dia=LocalDate.of(initYear,initMonth,index);
                 Label text=new Label(" ");
                 text.getStyleClass().add("calerdarItem");
-                DiaUtilAnimation.AnimationHover(text);
                 if (dia.getDayOfWeek().getValue()==p) {
+                    text.getStyleClass().add("use");
                     ((HBox) listTr.getChildren().get(i)).getChildren().add(EstruturarDia(text, dia));
                     index++;
                     
@@ -89,13 +90,19 @@ public class Calendario {
     public Label EstruturarDia(Label text,LocalDate dia){
         text.setText(dia.getDayOfMonth()+"");
         text.setOnMouseClicked(event -> {
+            ModalUtil.Show("modalEventoActividade");
             if (!text.getStyleClass().contains("select")) {
                 text.getStyleClass().add("select");
             }else text.getStyleClass().remove("select");
+            
         });
         return text;
     }
 
+
+    public void AddFuncion(Label text){
+       
+    }
    
 
     

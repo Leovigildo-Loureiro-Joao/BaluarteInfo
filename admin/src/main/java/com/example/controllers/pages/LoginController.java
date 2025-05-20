@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.example.App;
+import com.example.utils.PasswordHiddenText;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -43,23 +44,7 @@ public class LoginController implements Initializable{
 
     @FXML
     void Ocultar(ActionEvent event) {
-        if (eye.getAccessibleText().equals("see")) {
-            eye.setImage(new Image(App.class.getResourceAsStream("assets/eye-closed.png")));
-            senha.setText(senhaText.getText());
-            senhaText.setVisible(false);
-            senhaText.setManaged(false);
-            senha.setVisible(true);
-            senha.setManaged(true);
-            eye.setAccessibleText("not see");    
-        }else {
-            eye.setImage(new Image(App.class.getResourceAsStream("assets/eye.png")));
-            senhaText.setText(senha.getText());
-            senha.setVisible(false);
-            senha.setManaged(false);
-            senhaText.setVisible(true);
-            senhaText.setManaged(true);
-            eye.setAccessibleText("see");    
-        }
+        PasswordHiddenText.Ocultar(senha, senhaText, eye,false);
         
     }
 
