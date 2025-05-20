@@ -19,16 +19,25 @@
             <TextField fx:id="email" prefHeight="46.0" prefWidth="360.0" promptText="Informe o seu email" styleClass="fieldTextLine" />
             <HBox prefHeight="42.0" prefWidth="360.0">
                <children>
-                  <PasswordField fx:id="senha" prefHeight="38.0" prefWidth="360.0" promptText="Informe a sua senha" styleClass="fieldTextLine">
-                     <padding>
-                        <Insets left="10.0" right="20.0" />
-                     </padding>
-                  </PasswordField>
+                  <StackPane prefHeight="42.0" prefWidth="373.0">
+                     <children>
+                        <TextField fx:id="senhaText" prefHeight="36.0" prefWidth="353.0" promptText="Informe a sua senha" styleClass="fieldTextLine" visible="false">
+                           <padding>
+                              <Insets left="10.0" right="20.0" />
+                           </padding>
+                        </TextField>
+                        <PasswordField fx:id="senha" prefHeight="38.0" prefWidth="264.0" promptText="Informe a sua senha" styleClass="fieldTextLine">
+                           <padding>
+                              <Insets left="10.0" right="20.0" />
+                           </padding>
+                        </PasswordField>
+                     </children>
+                  </StackPane>
                   <JFXButton contentDisplay="CENTER" onAction="#Ocultar" prefHeight="37.0" prefWidth="37.0" text=" ">
                      <graphic>
-                        <ImageView fx:id="eye" accessibleText="see" fitHeight="31.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="eye" accessibleText="not see" fitHeight="31.0" fitWidth="19.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@../assets/eye.png" />
+                              <Image url="@../assets/eye-closed.png" />
                            </image>
                         </ImageView>
                      </graphic>

@@ -27,6 +27,9 @@ public class LoginController implements Initializable{
     private PasswordField senha;
 
     @FXML
+    private TextField senhaText;
+
+    @FXML
     void Entrar(ActionEvent event) {
         try {
             App.setRoot("main");
@@ -42,9 +45,19 @@ public class LoginController implements Initializable{
     void Ocultar(ActionEvent event) {
         if (eye.getAccessibleText().equals("see")) {
             eye.setImage(new Image(App.class.getResourceAsStream("assets/eye-closed.png")));
+            senha.setText(senhaText.getText());
+            senhaText.setVisible(false);
+            senhaText.setManaged(false);
+            senha.setVisible(true);
+            senha.setManaged(true);
             eye.setAccessibleText("not see");    
         }else {
             eye.setImage(new Image(App.class.getResourceAsStream("assets/eye.png")));
+            senhaText.setText(senha.getText());
+            senha.setVisible(false);
+            senha.setManaged(false);
+            senhaText.setVisible(true);
+            senhaText.setManaged(true);
             eye.setAccessibleText("see");    
         }
         
