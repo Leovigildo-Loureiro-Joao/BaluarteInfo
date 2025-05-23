@@ -2,6 +2,14 @@ import { BiPointer } from "react-icons/bi"
 import { LiaEye, LiaFacebook, LiaShareSolid, LiaShareSquare } from "react-icons/lia"
 
 export const MinArticle=({titulo,descricao,img})=>{
+     const { openModal } = useModal();
+        function OpenModal() {
+            openModal("modalActividade", {
+                titulo: titulo,
+                src: img,
+                descricao: descricao
+            })
+        }
     return <article className="artigo flex flex-col w-[300px] shadow-black/20 shadow-md rounded-xl">
         <figure className="">
             <img src={img} alt="" className="rounded-t-xl cursor-pointer h-[200px] object-cover w-[400px]"/>

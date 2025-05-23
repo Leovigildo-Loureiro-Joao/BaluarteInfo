@@ -28,7 +28,7 @@ module.exports = {
         'h1-title': "2.5rem",
         'h2-title': "1.5rem",
         'h2-title-big': "1.8rem",
-        'text-pargh': "1.3rem",
+        'text-pargh': "1.35rem",
         'html-size': "62.5%",
       },boxShadow:{
         'sombra-vermelha': "0px 0px 20px 0px #540000",

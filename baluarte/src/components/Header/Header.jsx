@@ -3,7 +3,7 @@ import {icone, perfil, quemsomos} from "../../assets/Assets"
 import {Link, useNavigate} from 'react-router-dom'
 
 export const Header=()=>{
-    const [select,setSelect]=useState(["","","","",""]);
+    const [select,setSelect]=useState(["","","","","","",""]);
     return <section className={`relative bg-cover z-10 bg-center h-[28rem] bg-fundo-baluarte `} >
     <div className="absolute z-0 inset-0 bg-sombra-vermelha/40"></div> 
     <div className="z-10 relative flex flex-col"> 
@@ -27,9 +27,12 @@ export const Header=()=>{
         </div>
         <nav className="flex justify-end px-20 relative -top-5"> 
             <ul className="flex justify-center gap-10">
-                <Link to="/"><li onClick={()=>{setSelect(["selected","","",""])}} className={"liNavBar "+(select[0])}><span></span><p>Pagina Inical</p></li></Link>
-                <Link to="/Actividade"><li onClick={()=>{setSelect(["","selected","",""])}} className={"liNavBar "+(select[1])}><span></span><p>Actividades</p></li></Link>
-                <Link to="/Destaque"><li onClick={()=>{setSelect(["","","selected",""])}} className={"liNavBar "+(select[2])}><span></span><p>Destaque</p></li></Link>                <li className={"liNavBar"}><span></span><p>Contactos</p></li>
+                <Link to="/"><li onClick={()=>{setSelect(["selected","","","","",""])}} className={"liNavBar "+(select[0])}><span></span><p>Pagina Inical</p></li></Link>
+                <Link to="/Actividade"><li onClick={()=>{setSelect(["","selected","","",""])}} className={"liNavBar "+(select[1])}><span></span><p>Actividades</p></li></Link>
+                <Link to="/Artigos"><li onClick={()=>{setSelect(["","","selected","","",""])}} className={"liNavBar "+(select[2])}><span></span><p>Artigos</p></li></Link>                
+                <Link to="/Audios"><li onClick={()=>{setSelect(["","","","selected","",""])}} className={"liNavBar "+(select[3])}><span></span><p>Audios</p></li></Link>                
+                <Link to="/Videos"><li onClick={()=>{setSelect(["","","","","selected",""])}} className={"liNavBar "+(select[4])}><span></span><p>Videos</p></li></Link>                
+                <li className={"liNavBar"}><span></span><p>Contactos</p></li>
              
             </ul>
         </nav>

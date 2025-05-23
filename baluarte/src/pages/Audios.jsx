@@ -5,11 +5,11 @@ import { ListItem } from "../components/items-list/ListItem";
 import { SlidesActiviy } from "../components/cards/Actividade/slides-active";
 import { LiaSearchSolid } from "react-icons/lia";
 
-export const Midia=()=>{
+export const Audios=()=>{
     return <>
         <section className="m-32">
             <div className="h2-title sec">
-                    <h1>Actividades</h1>
+                    <h1>Audios</h1>
                     <span></span>
                 </div>
             <div className="flex items-center pb-32">

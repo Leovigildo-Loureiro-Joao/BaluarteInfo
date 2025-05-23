@@ -6,11 +6,14 @@ import { Home } from './pages/Home.jsx'
 import { Actividade } from './pages/Actividade.jsx'
 import React from 'react';
 import "./style/index.css"
+import "./style/all.min.css"
 import { Destaque } from './pages/Destaque.jsx';
-import { Midia } from './pages/Midia.jsx';
 import { Perfil } from './pages/Perfil.jsx';
 import { QuemSomos } from './pages/QuemSomos.jsx';
 import { Salvacao } from './pages/Salvacao.jsx';
+import { Artigo } from './pages/Artigos.jsx';
+import { Audios } from './pages/Audios.jsx';
+import { ActiviComplete } from './components/cards/Actividade/activeComplete.jsx';
 
 const router=createBrowserRouter([{
   path: "/",
@@ -42,8 +45,12 @@ const router=createBrowserRouter([{
       element: <Destaque/>
     },
     {
-      path: "/Midia",
-      element: <Midia/>
+      path: "/Audios",
+      element: <Audios/>
+    }, 
+    {
+      path: "/Artigos",
+      element: <Artigo/>
     },
     {
       path: "/QuemSomos",

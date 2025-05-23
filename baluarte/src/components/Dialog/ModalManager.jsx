@@ -4,10 +4,12 @@ import { useModal } from "./ModalContext";
 import { ModalVideo } from "./modal_video";
 import { ModalAudio } from "./modal_audio";
 import { ModalComentar } from "./modal_comentar";
+import { ModalActividade } from "./modal_actividade";
 
 const modals = {
     modalAudio: ModalAudio,
     modalVideo: ModalVideo,
+    modalActividade: ModalActividade,
     modalComentar: ModalComentar,
 };
 

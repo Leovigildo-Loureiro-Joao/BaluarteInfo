@@ -2,7 +2,7 @@
 export const Retrato_Article=({titulo,descricao,img})=>{
     return <>
         <article className="w-[600px] flex bg-secondary rounded-xl shadow-md p-10 shadow-black/30">
-        <figure className="w-[250px]">
+        <figure className="w-[250px] section-img">
             
             <img src={img} alt="" className="rounded-xl cursor-pointer h-[400px] object-cover w-[250px]"/>
         </figure>

@@ -22,6 +22,38 @@
         --width:250px;
     }
 
+    .section-img:hover img {
+        @apply transform scale-105
+      }
+      .section-img {
+        @apply  rounded-[10px] overflow-hidden [box-shadow:0_10px_30px_rgba(0,_0,_0,_0.1)] h-full
+      }
+      
+      .section-img img {
+        @apply  w-full h-full object-cover [transition:transform_0.5s]
+      }
+
+    .grid-active{
+        @apply grid grid-cols-3 gap-10 w-[900px] min-w-[900px] h-[380px]
+    }
+
+    .buttonRectangle:hover {
+        transform: scale(1.05);
+        background-color: #1e293b; /* cor escura elegante */
+        color: white;
+      }
+
+    .buttonRectangle,.buttonRectangle-white {
+        transition: all 0.3s ease-in-out;
+    }
+
+
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
     p,h3{
         @apply text-text-pargh
     }

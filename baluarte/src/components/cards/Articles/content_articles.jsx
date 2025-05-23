@@ -1,7 +1,7 @@
 import { LiaArrowAltCircleLeft, LiaArrowAltCircleRight } from "react-icons/lia"
 import { SlideArticle } from "./slideArticle"
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight, FaArrowLeft, FaArrowRight } from "react-icons/fa"
-import { RxArrowLeft, RxArrowRight } from "react-icons/rx"
+import { RxArrowLeft, RxArrowRight, RxChevronLeft, RxChevronRight } from "react-icons/rx"
 import { useState } from "react"
 
 export const ContentArticle=()=>{
@@ -23,9 +23,9 @@ export const ContentArticle=()=>{
 
             </div>
             <div className="my-10  w-[685px] flex items-center gap-5">
-                <RxArrowLeft  className="text-4xl text-primary/50 cursor-pointer" onClick={Volta}/>
+                <RxChevronLeft  className="text-5xl text-primary/50 cursor-pointer relative -top-20" onClick={Volta}/>
                 <SlideArticle index={pos}/>
-                <RxArrowRight className="text-4xl text-primary/50 cursor-pointer" onClick={Proximo}/>
+                <RxChevronRight className="text-5xl text-primary/50 cursor-pointer relative -top-20" onClick={Proximo}/>
             </div>
 
         </section>

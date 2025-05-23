@@ -29,7 +29,7 @@ export const Home=()=>{
                     <div className="flex justify-center"><Link to={"/QuemSomos"}><button className="buttonRectangle min">Saber mais</button></Link></div>
                 </div>
             </div>
-            <figure className="ml-[10%] w-2/5">
+            <figure className="ml-[10%] w-2/5 section-img">
                 <img src={quemsomos} alt="" />
             </figure>
        </section>

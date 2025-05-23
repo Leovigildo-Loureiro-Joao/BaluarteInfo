@@ -8,17 +8,7 @@ import { useParams } from "react-router-dom";
 export const SlidesActiviy = ({data}) => {
     const [select,setSelect]=useState(1);
     const id=useParams("id").id
-    const complete={
-        descricao:"Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure est adipisci consequuntur ipsam rerum, saepe id ratione molestiae architecto velit sit tempore debitis tempora vitae laudantium praesentium earum pariatur aliquid.",
-        tema:"Envangelho",
-        titulo:"Nao perca a esperanca",
-        tipoEvento:"Envagelismo",
-        publicoAlvo:"Todos",
-        Organizador:"Leovigildo",
-        dataEvento:"2025-12-02T02:00:00",
-        contactos:"955383237",
-        img:activi
-    }
+ 
     const Box=()=>{
         return  
     }
@@ -38,17 +28,17 @@ export const SlidesActiviy = ({data}) => {
                     transform: `translateX(${select * 1000}px)`,
                     transition: "transform 0.5s ease-in-out"
                 }}>
-                <div className="grid grid-cols-3 gap-10 w-[900px] min-w-[900px]">
-                    <MinActive titulo={"Envangelho!!!"} dataSelect={setData} img={activi} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
-                    <MinActive titulo={"Envangelho!!!"} dataSelect={setData} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
-                    <MinActive titulo={"Envangelho!!!"} dataSelect={setData} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
+                <div className="grid-active">
+                    <MinActive titulo={"Envangelho!!!"} data={"Domingo, 23 Jun – 19h  "} dataSelect={setData} img={activi} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
+                    <MinActive titulo={"Envangelho!!!"} data={"Domingo, 23 Jun – 19h  "} dataSelect={setData} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
+                    <MinActive titulo={"Envangelho!!!"} data={"Domingo, 23 Jun – 19h  "} dataSelect={setData} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
                 </div>
-                <div className="grid grid-cols-3 gap-10 w-[900px] min-w-[900px]">
+                <div className="grid-active">
                     <MinActive titulo={"Envangelho!!!"} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
                     <MinActive titulo={"Envangelho!!!"} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
                     <MinActive titulo={"Envangelho!!!"} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
                 </div>
-                <div className="grid grid-cols-3 gap-10 w-[900px] min-w-[900px]">
+                <div className="grid-active">
                     <MinActive titulo={"Envangelho!!!"} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
                     <MinActive titulo={"Envangelho!!!"} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
                     <MinActive titulo={"Envangelho!!!"} img={quemsomos} descricao={"Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias quae debitis quas modi amet quaerat tempore, quis nihil nulla placeat a expedita dolores dicta excepturi dolore dolorum veniam ducimus magni!"}/>
