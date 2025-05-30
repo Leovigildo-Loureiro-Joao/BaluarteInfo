@@ -2,8 +2,12 @@ import { salvacao } from "../assets/Assets"
 
 export const Salvacao=()=>{
     return <>
-        <section id="quemsomos" className="px-40 flex py-32">
-            <div className="flex flex-col w-1/2">
+        <section  className=" flex flex-col-reverse 
+    md:flex-row
+    px-4 sm:px-10 md:px-16 lg:px-24 
+    py-10 sm:py-20 lg:py-32
+    gap-10">
+            <div className="flex flex-col w-full md:w-1/2">
                 <div className="h2-title sec">
                     <h1>Salvação hoje</h1>
                     <span></span>
@@ -15,7 +19,7 @@ export const Salvacao=()=>{
                 </div>
 
             </div>
-            <figure className="ml-[10%] w-2/5">
+            <figure className="ml-0 md:ml-[10%] w-full md:w-2/5 section-img">
                 <img src={salvacao} alt="" />
             </figure>
         </section>

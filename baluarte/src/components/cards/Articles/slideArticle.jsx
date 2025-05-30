@@ -2,9 +2,9 @@ import { artigo } from "../../../assets/Assets"
 import { Retrato_Article } from "./retrato_article"
 
 export const SlideArticle=({index})=>{
-    return <section className="w-[620px] flex overflow-hidden">
-        <div className="w-auto flex gap-[20px] pb-10"  style={{
-            transform: `translateX(-${index * 615}px)`,
+    return <section className="lg:max-w-[620px] w-full flex overflow-hidden">
+        <div className="w-full flex gap-[20px] pb-10"  style={{
+             transform: `translateX(-${index * 100}%)`,
             transition: "transform 0.5s ease-in-out"
         }}>
             <Retrato_Article img={artigo} 

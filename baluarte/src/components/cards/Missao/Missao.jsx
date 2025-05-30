@@ -26,35 +26,19 @@ export const Missao = ({ frazes = [] }) => {
     }, [frazes.length]);
     
     return (
-        <section id="missao" className=" bg-no-repeat bg-cover h-full flex justify-center flex-col py-40 w-screen">
-            <div className="px-20 relative -top-10 z-10 flex flex-col justify-center items-center w-screen">
-                <div className="h2-title sec">
-                    <h1>Missão e Visão</h1>
+        <section id="missao" className=" relative -top-10  h-full flex justify-center flex-col py-40">
+            <div className="flex flex-col md:flex-row justify-center items-center gap-10 px-4 py-8">
+                <div className="bg-white/10 backdrop-blur p-10 rounded-xl shadow-xl max-w-2xl w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/30">
+                    <h2 className="text-2xl font-bold text-primary mb-4">Nossa Missão</h2>
+                    <p className="text-black/70 leading-relaxed ">
+                    A missão será colocada aqui pelo administrador. Ela precisa inspirar, informar e mobilizar.
+                    </p>
                 </div>
-                <div className="flex w-11/12 overflow-hidden relative h-40">
-                    <div 
-                        id="carrosel" 
-                        className="flex w-screen absolute pl-20 gap-[30vw]" 
-                        style={{
-                            transform: `translateX(-${cont * 100}%)`,
-                            transition: "transform 0.5s ease-in-out"
-                        }}
-                    >
-                        {frazes.map((value, o) => (
-                            <div key={o} className={`${select[o]} w-[70vw]`}>
-                                <p dangerouslySetInnerHTML={{ __html: value }}/>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                
-                <div id="painel-corresel" className="flex gap-2 mt-4">
-                    {frazes.map((_, o) => (
-                        <i 
-                            key={o} 
-                            className={`w-3 h-3 rounded-full ${select[o]}`}
-                        ></i>
-                    ))}
+                <div className="bg-white/10 backdrop-blur p-10 rounded-xl shadow-xl max-w-2xl w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/30">
+                    <h2 className="text-2xl text-primary font-bold  sec mb-4">Nossa Visão</h2>
+                    <p className="text-black/70 leading-relaxed">
+                    A visão será colocada aqui pelo administrador. Pode incluir metas futuras ou direção espiritual.
+                    </p>
                 </div>
             </div>
         </section>

@@ -14,6 +14,11 @@ import { Salvacao } from './pages/Salvacao.jsx';
 import { Artigo } from './pages/Artigos.jsx';
 import { Audios } from './pages/Audios.jsx';
 import { ActiviComplete } from './components/cards/Actividade/activeComplete.jsx';
+import { Videos } from './pages/Videos.jsx';
+import AuthLayout from './layouts/authLayout.jsx';
+
+import Register from './pages/Register.jsx';
+import Login from './pages/Login.jsx';
 
 const router=createBrowserRouter([{
   path: "/",
@@ -21,6 +26,9 @@ const router=createBrowserRouter([{
   children:[
     {
       path: "/",
+      element: <Home/>
+    },{
+      path: "/Home",
       element: <Home/>
     },
     {
@@ -49,6 +57,10 @@ const router=createBrowserRouter([{
       element: <Audios/>
     }, 
     {
+      path: "/Videos",
+      element: <Videos/>
+    }, 
+    {
       path: "/Artigos",
       element: <Artigo/>
     },
@@ -61,7 +73,18 @@ const router=createBrowserRouter([{
       element: <Salvacao/>
     }
   ]
-}])
+},
+,
+  {
+    path: "/auth",
+    element: <AuthLayout />,
+    
+    children: [
+      {path: "/auth", element: <Login /> },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> }
+    ]
+  }])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -5,21 +5,21 @@ import { Link } from 'react-router-dom';
 export const Footer=()=>{
     return <footer className="">
        <img src={wave}/> 
-       <div className="bg-min-white  h-96">
-            <div className="flex justify-around items-center relative -top-5">
-                <div className="flex flex-col justify-around">
+       <div className="bg-min-white  min-h-96">
+            <div className="flex gap-10 justify-around flex-wrap-reverse items-center relative -top-5">
+                <div className="flex flex-col justify-around lg:w-1/2 w-[80%] ">
                     <h2 className="h2-title">Inscreva-se já</h2>
-                    <div className="flex flex-col justify-around gap-5 w-[400px]">
+                    <div className="flex flex-col justify-around gap-5 w-full">
                         <input type="text"  className="inputRectangle" placeholder="Nome"/>
                         <input type="email" className="inputRectangle" placeholder="Email"/>
                         <button className="buttonRectangle">Enviar</button>
                     </div>
                 </div>
-                <div className="flex justify-between flex-col w-1/3 gap-10"> 
+                <div className="flex justify-between flex-col lg:w-1/3  min-w-[250px]  w-[80%] gap-10"> 
                     <div>
                         <h2 className="h2-title">Destaque</h2>
                         <nav >
-                            <ul className="flex gap-5">
+                            <ul className="flex gap-5 flex-wrap">
                                 <li><Link to="/Destaque/Artigos">Artigos</Link></li>
                                 <li><Link to="/Destaque/Videos">Videos</Link></li>
                                 <li><Link to="/Destaque/Audios">Audios</Link></li>

@@ -1,22 +1,20 @@
-import { useNavigate } from "react-router-dom";
-import { activi, artigo } from "../../../assets/Assets";
-import { ActiviComplete } from "./activeComplete";
+import { activi } from "../../../assets/Assets";
 import { MinActivyStyled } from "./Actividade.styled";
 import { useModal } from "../../Dialog/ModalContext";
 
 export const MinActive = ({titulo,descricao,img,data,width=350}) => {
-    const nav=useNavigate()
-    const complete={
-        descricao:"Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure est adipisci consequuntur ipsam rerum, saepe id ratione molestiae architecto velit sit tempore debitis tempora vitae laudantium praesentium earum pariatur aliquid.",
-        tema:"Envangelho",
-        titulo:"Não perca a esperança  ",
-        tipoEvento:"Envagelismo",
-        publicoAlvo:"Todos",
-        Organizador:"Leovigildo",
-        dataEvento:"2025-12-02T02:00:00",
-        contactos:"955383237",
-        img:activi
+    const complete = {
+        descricao: "Um encontro especial para refletirmos sobre a fé que move montanhas, com mensagens inspiradoras, louvor e oração em comunidade.",
+        tema: "Fé em Tempos Difíceis",
+        titulo: "Confia Mesmo no Vale",
+        tipoEvento: "Culto Especial",
+        publicoAlvo: "Famílias e jovens",
+        organizador: "Norman & Equipe de Fé",
+        dataEvento: "2025-11-15T19:30:00",
+        contactos: "923456789",
+        img: img // substitua `novaImg` pela imagem desejada
     }
+    
      const { openModal } = useModal();
         function OpenModal() {
             openModal("modalActividade", {
@@ -24,8 +22,8 @@ export const MinActive = ({titulo,descricao,img,data,width=350}) => {
             })
         }
     return (
-        <MinActivyStyled className="activy-min  flex flex-wrap flex-col ">
-            <div id="capsula" className={`bg-no-repeat w-full min-w-[180px] max-w-[350px] max-h-[${width}px] min-h-[220px] h-full bg-cover rounded-xl flex flex-col justify-end`} style={{backgroundImage :`url(${img})`}} >
+        <MinActivyStyled className="activy-min w-full h-full flex flex-wrap flex-col ">
+            <div id="capsula" className={`bg-no-repeat h-auto w-full min-w-[180px] min-h-[350px] bg-cover rounded-xl flex flex-col justify-end`} style={{backgroundImage :`url(${img})`}} >
                 <div className="opacity-1 textoBox bg-black/80 relative mt-10 flex flex-col gap-5 rounded-xl ">
                     <div id="texto" className="p-10 flex flex-col gap-5">
                         <h2 className="text-white text-h2-title font-bold">{titulo}</h2>

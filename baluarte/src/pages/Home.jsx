@@ -16,24 +16,37 @@ export const Home=()=>{
         "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Reprehenderit eligendi unde saepe voluptate corporis quibusdam optio autem cupiditate, dolore cum id maxime doloremque quos veniam culpa dicta. Mollitia, autem velit.",
         "Ola vida ipsum dolor sit amet consectetur adipisicing elit. Iste fuga corrupti, impedit ullam labore molestias cum sit vero consequatur necessitatibus atque laboriosam, eum ab commodi eligendi nam sed itaque debitis."];
     return <>
-       <section id="quemsomos" className="px-40 flex py-32">
-            <div className="flex flex-col w-1/2">
-                <div className="h2-title sec">
-                    <h1>Quem somos</h1>
-                    <span></span>
-                </div>
-                <div className=" gap-10 flex flex-col">
-                    <p >Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur doloribus cupiditate sit fugit facilis, incidunt possimus reiciendis laboriosam molestias et deserunt obcaecati saepe quam commodi, minus tempora id minima expedita!
-                        <br/> <br/>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, incidunt debitis aut quaerat ratione, et commodi pariatur repudiandae recusandae quas, animi autem explicabo veritatis ducimus atque! Magni dolore voluptatibus quaerat.
-                    </p>
-                    <div className="flex justify-center"><Link to={"/QuemSomos"}><button className="buttonRectangle min">Saber mais</button></Link></div>
-                </div>
+<section
+  id="quemsomos"
+  className="
+    flex flex-col-reverse 
+    md:flex-row
+    px-4 sm:px-10 md:px-16 lg:px-24 
+    py-10 sm:py-20 lg:py-32
+    gap-10
+  "
+>
+    <div className="flex flex-col w-full md:w-1/2">
+        <div className="h2-title sec">
+            <h1>Quem somos</h1>
+            <span></span>
+        </div>
+        <div className="gap-10 flex flex-col">
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur doloribus cupiditate sit fugit facilis, incidunt possimus reiciendis laboriosam molestias et deserunt obcaecati saepe quam commodi, minus tempora id minima expedita!
+                <br /> <br />Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae, incidunt debitis aut quaerat ratione, et commodi pariatur repudiandae recusandae quas, animi autem explicabo veritatis ducimus atque! Magni dolore voluptatibus quaerat.
+            </p>
+            <div className="flex justify-center">
+                <Link to={"/QuemSomos"}>
+                    <button className="buttonRectangle min">Saber mais</button>
+                </Link>
             </div>
-            <figure className="ml-[10%] w-2/5 section-img">
-                <img src={quemsomos} alt="" />
-            </figure>
-       </section>
-       
+        </div>
+    </div>
+    <figure className="ml-0 md:ml-[10%] w-full md:w-2/5 section-img">
+        <img src={quemsomos} alt="" />
+    </figure>
+</section>
+
         <Missao frazes={frazes}/>
         <div className="mt-10 flex flex-col justify-center items-center">
             <div className="h2-title sec flex flex-col font-extrabold">
@@ -43,18 +56,18 @@ export const Home=()=>{
             <SlidesActiviyMin/>
         </div>
         <ContentArticle/>
-        <section className="pb-40 px-52">
+        <section className="pb-40 xl:px-52 lg:px-20 px-10">
            
             <section className="flex justify-center flex-col items-center">
-                <nav className="flex w-[990px] justify-start pb-5 -ml-5">
+                <nav className="flex max-w-[990px] w-full justify-start pb-5 -ml-5">
                     <ul className="flex w-1/2 gap-5 tema">
                         <ListItem text={"Audios"} classe={select==0?"selected":""} setValue={setSelect} value={0} />
                         <ListItem text={"Videos"} classe={select==1?"selected":""} setValue={setSelect} value={1}/>     
                     </ul>
                 </nav>
-                <section className="w-[990px] overflow-hidden">
-                    <section className="flex  gap-20" style={{
-                                    transform: `translateX(-${select * 990}px)`,
+                <section className="w-full max-w-[990px] overflow-hidden  ">
+                    <section className="flex transition-transform duration-500 ease-in-out flex-shrink-0" style={{
+                                   transform: `translateX(-${select * 100}%)`,
                                     transition: "transform 0.5s ease-in-out"
                                 }}>
                         <ContentAudios/>
