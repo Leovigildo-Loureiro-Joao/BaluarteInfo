@@ -42,6 +42,9 @@ public class MidiaModel {
     @NotBlank
     private String titulo;
 
+    @NotBlank
+    private String tempo;
+
     @NotBlank(message = "URL é obrigatória")  // Não pode ser vazio
     @Pattern(
         regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$",  // Regex para URLs

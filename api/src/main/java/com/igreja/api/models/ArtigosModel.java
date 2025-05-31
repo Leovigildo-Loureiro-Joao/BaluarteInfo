@@ -34,6 +34,9 @@ public class ArtigosModel {
 
     @NotBlank
     private String titulo;
+    
+    @NotBlank
+    private int Npagina;
 
     @NotNull
     private LocalDate dataPublicacao;

@@ -1,0 +1,27 @@
+.cardValue{
+    -fx-border-color: #CB2020;
+    -fx-border-radius: 4;
+    -fx-pref-width: 60;
+    -fx-pref-height: 30;
+}
+
+Label.calerdarItem{
+    -fx-min-height: 40;
+    -fx-min-width: 50;
+    -fx-padding: 0 5;
+    -fx-alignment: CENTER;
+    -fx-cursor: HAND;
+}
+
+Label.calerdarItem.use:hover{
+    -fx-background-color: #CB2020;
+    -fx-text-fill: white;
+    -fx-fill: white;
+}
+
+
+.jfx-combo-box > .input-focused-line {
+    -fx-background-color: -jfx-focus-color;
+    -fx-pref-height: 2px;
+}
+

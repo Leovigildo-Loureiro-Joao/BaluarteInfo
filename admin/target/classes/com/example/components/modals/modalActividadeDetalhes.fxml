@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
+
+<VBox fx:id="modal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="491.0" prefWidth="699.0" styleClass="modal" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.ModalActividadeDetalhesController">
+   <children>
+      <HBox prefHeight="36.0" prefWidth="401.0">
+         <children>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="    Detalhes da actividade" wrappingWidth="258.1840057373047">
+               <HBox.margin>
+                  <Insets bottom="5.0" left="10.0" right="5.0" top="5.0" />
+               </HBox.margin>
+            </Text>
+            <Region prefHeight="30.0" prefWidth="358.0" />
+            <JFXButton fx:id="cancel" contentDisplay="CENTER" text=" ">
+               <graphic>
+                  <ImageView fitHeight="22.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../assets/close.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </JFXButton>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="15.0" />
+         </padding>
+      </HBox>
+      <VBox prefHeight="444.0" prefWidth="699.0" spacing="20.0">
+         <children>
+            <HBox fx:id="boxSlideControl" prefHeight="40.0" prefWidth="639.0">
+               <children>
+                  <VBox alignment="CENTER" onMouseClicked="#Deslisa" prefHeight="33.0" prefWidth="100.0">
+                     <children>
+                        <Label text="Analise" />
+                        <Region prefHeight="11.0" prefWidth="100.0" />
+                     </children>
+                     <styleClass>
+                        <String fx:value="Item_Carrosel" />
+                        <String fx:value="select" />
+                     </styleClass>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </VBox>
+                  <VBox alignment="CENTER" onMouseClicked="#Deslisa1" prefHeight="33.0" prefWidth="100.0" styleClass="Item_Carrosel">
+                     <children>
+                        <Label text="Galeria" />
+                        <Region prefHeight="11.0" prefWidth="100.0" />
+                     </children>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </VBox>
+                  <VBox alignment="CENTER" onMouseClicked="#Deslisa2" prefHeight="40.0" prefWidth="143.0">
+                     <children>
+                        <Label text="Videos/Traillers" />
+                        <Region prefHeight="11.0" prefWidth="100.0" />
+                     </children>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <styleClass>
+                        <String fx:value="Item_Carrosel" />
+                        <String fx:value="sel" />
+                     </styleClass>
+                  </VBox>
+               </children>
+            </HBox>
+            <ScrollPane fx:id="overflowScroll" hbarPolicy="NEVER" hmax="2.0" prefHeight="350.0" prefWidth="639.0" vbarPolicy="NEVER">
+               <content>
+                  <HBox prefHeight="340.0" prefWidth="639.0">
+                     <children>
+                        <AnchorPane fx:id="title" minWidth="640.0" prefHeight="331.0" prefWidth="640.0">
+                           <children>
+                              <HBox layoutX="14.0" layoutY="33.0" prefHeight="293.0" prefWidth="628.0" spacing="20.0">
+                                 <children>
+                                    <AnchorPane fx:id="comentCard" minHeight="200.0" minWidth="174.0" onMouseClicked="#Select1" prefHeight="270.0" prefWidth="174.0">
+                                       <children>
+                                          <StackPane layoutX="38.0" layoutY="43.0" prefHeight="86.0" prefWidth="100.0">
+                                             <children>
+                                                <Circle fx:id="circle1" fill="WHITE" radius="38.0" stroke="#686868" strokeMiterLimit="5.0" strokeType="INSIDE" styleClass="circle-rotate" />
+                                                <Circle fill="WHITE" radius="32.0" stroke="#686868" strokeMiterLimit="2.0" strokeType="INSIDE" styleClass="circle-rotate-inverse" />
+                                                <Label styleClass="titulo" text="150">
+                                                   <font>
+                                                      <Font name="System Bold" size="19.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </StackPane>
+                                          <ImageView fitHeight="137.0" fitWidth="164.0" layoutY="149.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../assets/6199003_3156814.jpg" />
+                                             </image>
+                                          </ImageView>
+                                          <AnchorPane layoutX="-2.0" layoutY="-2.0" prefHeight="296.0" prefWidth="178.0" styleClass="card-gradiente">
+                                             <children>
+                                                <Label layoutX="47.0" layoutY="22.0" styleClass="textSubtitle" text="Comentarios">
+                                                   <font>
+                                                      <Font name="System Bold Italic" size="15.0" />
+                                                   </font>
+                                                </Label>
+                                             </children></AnchorPane>
+                                       </children>
+                                       <effect>
+                                          <InnerShadow />
+                                       </effect>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <styleClass>
+                                          <String fx:value="card" />
+                                          <String fx:value="gradiente" />
+                                          <String fx:value="select" />
+                                       </styleClass></AnchorPane>
+                                    <AnchorPane fx:id="inscricaoCard" minHeight="200.0" minWidth="174.0" onMouseClicked="#Select2" prefHeight="200.0" prefWidth="174.0">
+                                       <children>
+                                          <StackPane layoutX="38.0" layoutY="43.0" prefHeight="86.0" prefWidth="100.0">
+                                             <children>
+                                                <Circle fx:id="circle2" fill="WHITE" radius="38.0" stroke="#686868" strokeMiterLimit="2.0" strokeType="INSIDE" styleClass="circle-rotate" />
+                                                <Circle fill="WHITE" radius="32.0" stroke="#686868" strokeMiterLimit="2.0" strokeType="INSIDE" styleClass="circle-rotate-inverse" />
+                                                <Label styleClass="titulo" text="150">
+                                                   <font>
+                                                      <Font name="System Bold" size="19.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </StackPane>
+                                          <ImageView fitHeight="127.0" fitWidth="119.0" layoutX="30.0" layoutY="149.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../../assets/5995357.jpg" />
+                                             </image>
+                                          </ImageView>
+                                          <AnchorPane layoutX="-2.0" layoutY="-2.0" prefHeight="296.0" prefWidth="178.0" styleClass="card-gradiente">
+                                             <children>
+                                                <Label layoutX="60.0" layoutY="22.0" styleClass="textSubtitle" text="Inscritos">
+                                                   <font>
+                                                      <Font name="System Bold Italic" size="15.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </AnchorPane>
+                                       </children>
+                                       <effect>
+                                          <InnerShadow />
+                                       </effect>
+                                       <cursor>
+                                          <Cursor fx:constant="HAND" />
+                                       </cursor>
+                                       <styleClass>
+                                          <String fx:value="card" />
+                                          <String fx:value="gradiente" />
+                                       </styleClass>
+                                    </AnchorPane>
+                                    <VBox alignment="CENTER" prefHeight="293.0" prefWidth="241.0" spacing="10.0">
+                                       <children>
+                                          <Text fx:id="titleUser" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Title" />
+                                          <VBox fx:id="use_box" prefHeight="293.0" prefWidth="242.0" spacing="10.0" />
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </HBox>
+                              <Text layoutX="14.0" layoutY="14.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Clique nos cards para visualizar os comentarios e os inscritos da actividade" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane minWidth="640.0" prefHeight="324.0" prefWidth="646.0">
+                           <children>
+                              <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="339.0" prefWidth="639.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0">
+                                <content>
+                                  <AnchorPane minWidth="0.0" prefHeight="146.0" prefWidth="623.0">
+                                       <children>
+                                          <GridPane prefHeight="339.0" prefWidth="639.0" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="50.0" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                             </columnConstraints>
+                                             <rowConstraints>
+                                                <RowConstraints minHeight="180.0" prefHeight="100.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="180.0" prefHeight="100.0" vgrow="SOMETIMES" />
+                                                <RowConstraints />
+                                             </rowConstraints>
+                                             <children>
+                                                <AnchorPane prefHeight="173.0" prefWidth="159.0">
+                                                   <children>
+                                                      <ImageView fitHeight="205.0" fitWidth="159.0" layoutX="-4.0" onMouseClicked="#AddimageGaleria" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@../../assets/foto2.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </children>
+                                                </AnchorPane>
+                                                <AnchorPane prefHeight="173.0" prefWidth="159.0" GridPane.rowIndex="2">
+                                                   <children>
+                                                      <ImageView fitHeight="205.0" fitWidth="159.0" layoutX="-4.0" pickOnBounds="true" preserveRatio="true">
+                                                         <image>
+                                                            <Image url="@../../assets/foto2.png" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </children>
+                                                </AnchorPane>
+                                             </children>
+                                          </GridPane>
+                                       </children>
+                                    </AnchorPane>
+                                </content>
+                              </ScrollPane>
+                           </children></AnchorPane>
+                        <AnchorPane minWidth="640.0" prefHeight="324.0" prefWidth="646.0">
+                           <children>
+                              <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="339.0" prefWidth="639.0">
+                                 <content>
+                                    <AnchorPane minWidth="0.0" prefHeight="146.0" prefWidth="623.0">
+                                       <children>
+                                          <GridPane hgap="5.0" prefHeight="339.0" prefWidth="639.0" vgap="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="50.0" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                             </columnConstraints>
+                                             <rowConstraints>
+                                                <RowConstraints minHeight="180.0" prefHeight="100.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="180.0" prefHeight="100.0" vgrow="SOMETIMES" />
+                                                <RowConstraints />
+                                             </rowConstraints>
+                                             <children>
+                                                <AnchorPane prefHeight="173.0" prefWidth="159.0" styleClass="card">
+                                                   <children>
+                                                      <JFXButton layoutX="20.0" layoutY="77.0" onAction="#AddTrailer" prefHeight="30.0" prefWidth="114.0" styleClass="buttonColor" text="Adicionar Video" />
+                                                   </children>
+                                                </AnchorPane>
+                                             </children>
+                                             <padding>
+                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                             </padding>
+                                          </GridPane>
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </ScrollPane>
+                           </children></AnchorPane>
+                     </children>
+                  </HBox>
+               </content>
+            </ScrollPane>
+         </children>
+         <padding>
+            <Insets left="30.0" right="30.0" />
+         </padding>
+      </VBox>
+   </children>
+</VBox>
