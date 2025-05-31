@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 py-10">
+  <div class="max-w-5xl mx-auto px-4">
+    <h2 class="text-2xl font-bold text-center mb-6">Actividades da Igreja</h2>
+
+    <!-- Carrossel -->
+    <div class="relative overflow-hidden">
+      <div id="carouselWrapper" class="flex transition-transform duration-500">
+        <!-- Página 1 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-shrink-0 w-full">
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 1</h3>
+            <p>Domingo, 19h</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 2</h3>
+            <p>Segunda, 20h</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 3</h3>
+            <p>Terça, 18h</p>
+          </div>
+        </div>
+
+        <!-- Página 2 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-shrink-0 w-full">
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 4</h3>
+            <p>Quarta, 19h</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 5</h3>
+            <p>Quinta, 20h</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 6</h3>
+            <p>Sexta, 21h</p>
+          </div>
+        </div>
+
+        <!-- Página 3 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-shrink-0 w-full">
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 7</h3>
+            <p>Sábado, 19h</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 8</h3>
+            <p>Domingo, 20h</p>
+          </div>
+          <div class="bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Evangelho 9</h3>
+            <p>Segunda, 22h</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botões -->
+    <div class="flex justify-between items-center mt-6">
+      <button id="prev" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">← Anterior</button>
+      <button id="next" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Próximo →</button>
+    </div>
+
+    <!-- Bolinhas -->
+    <div class="flex justify-center mt-4 space-x-2">
+      <div class="dot w-3 h-3 bg-blue-400 rounded-full cursor-pointer opacity-50"></div>
+      <div class="dot w-3 h-3 bg-blue-400 rounded-full cursor-pointer opacity-50"></div>
+      <div class="dot w-3 h-3 bg-blue-400 rounded-full cursor-pointer opacity-50"></div>
+    </div>
+  </div>
+
+  <script>
+    const wrapper = document.getElementById('carouselWrapper');
+    const dots = document.querySelectorAll('.dot');
+    const next = document.getElementById('next');
+    const prev = document.getElementById('prev');
+
+    let page = 0;
+    const totalPages = 3;
+
+    function updateCarousel() {
+      wrapper.style.transform = `translateX(-${page * 100}%)`;
+      dots.forEach((dot, index) => {
+        dot.style.opacity = index === page ? '1' : '0.5';
+      });
+    }
+
+    next.onclick = () => {
+      if (page < totalPages - 1) {
+        page++;
+        updateCarousel();
+      }
+    };
+
+    prev.onclick = () => {
+      if (page > 0) {
+        page--;
+        updateCarousel();
+      }
+    };
+
+    dots.forEach((dot, index) => {
+      dot.onclick = () => {
+        page = index;
+        updateCarousel();
+      };
+    });
+
+    updateCarousel();
+  </script>
+</body>
+</html>
