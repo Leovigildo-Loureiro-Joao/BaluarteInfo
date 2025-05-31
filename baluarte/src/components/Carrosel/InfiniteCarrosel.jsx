@@ -1,32 +1,52 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const InfiniteCarousel = ({ images, width = 250, height = 150, autoPlayInterval = 3000 }) => {
-  const [currentIndex, setCurrentIndex] = useState(1); // Começa no "meio" virtual
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [transitionEnabled, setTransitionEnabled] = useState(true);
   const total = images.length;
   const autoPlayRef = useRef();
   const trackRef = useRef(null);
 
-  // Duplica as imagens para criar efeito infinito
-  const extendedImages = [...images, ...images, ...images];
+  // Duplica as imagens apenas uma vez (original + cópia)
+  const extendedImages = [...images, ...images];
 
-  // Avança o slide com reset invisível quando necessário
   const nextSlide = () => {
-    setCurrentIndex((prev) => {
+    setCurrentIndex(prev => {
       if (prev >= total * 2 - 1) {
-        // Reset suave sem animação
-        setTimeout(() => {
-          setCurrentIndex(total); // Volta para o "meio"
-        }, 50);
-        return total * 2; // Vai até o final
+        // Desativa temporariamente a transição para o reset
+        setTransitionEnabled(false);
+        return 0;
       }
       return prev + 1;
     });
   };
 
-  // Ir para slide específico (ajustado para o array extendido)
-  const goToSlide = (index) => {
-    setCurrentIndex(index + total); // Centraliza no array extendido
+  const prevSlide = () => {
+    setCurrentIndex(prev => {
+      if (prev <= 0) {
+        setTransitionEnabled(false);
+        return total * 2 - 1;
+      }
+      return prev - 1;
+    });
   };
+
+  // Ir para slide específico
+  const goToSlide = (index) => {
+    setTransitionEnabled(true);
+    setCurrentIndex(index);
+  };
+
+  // Reativa a transição após reset
+  useEffect(() => {
+    if (!transitionEnabled) {
+      const timer = setTimeout(() => {
+        setTransitionEnabled(true);
+        setCurrentIndex(prev => (prev >= total ? prev - total : prev + total));
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [transitionEnabled, total]);
 
   // Configura autoplay
   useEffect(() => {
@@ -38,7 +58,7 @@ const InfiniteCarousel = ({ images, width = 250, height = 150, autoPlayInterval 
 
   // Estilo para cada slide
   const getSlideStyle = (index) => {
-    const offset = index - currentIndex;
+    const offset = (index - currentIndex + total) % total;
     const isCenter = offset === 0;
     
     return {
@@ -57,11 +77,12 @@ const InfiniteCarousel = ({ images, width = 250, height = 150, autoPlayInterval 
         className="flex transition-transform duration-500 ease-in-out"
         style={{
           transform: `translateX(calc(50% - ${currentIndex * (width + 32)}px))`,
+          transition: transitionEnabled ? 'transform 0.5s ease-in-out' : 'none',
         }}
       >
         {extendedImages.map((img, idx) => (
           <div
-            key={`${img}-${idx}`}
+            key={`${img}-${idx % total}`}
             className="mx-4 flex-shrink-0"
             style={{ 
               width: `${width}px`, 
@@ -82,7 +103,7 @@ const InfiniteCarousel = ({ images, width = 250, height = 150, autoPlayInterval 
 
       {/* Controles */}
       <button 
-        onClick={() => setCurrentIndex(prev => prev - 1)}
+        onClick={prevSlide}
         className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 text-white p-2 rounded-full hover:bg-black/80 transition-colors"
       >
         &lt;
@@ -94,7 +115,7 @@ const InfiniteCarousel = ({ images, width = 250, height = 150, autoPlayInterval 
         &gt;
       </button>
 
-      {/* Indicadores (usando apenas as imagens originais) */}
+      {/* Indicadores */}
       <div className="flex justify-center mt-6 space-x-3">
         {images.map((_, idx) => (
           <button

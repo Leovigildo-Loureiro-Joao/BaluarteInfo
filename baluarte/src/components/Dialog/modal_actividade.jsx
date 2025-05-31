@@ -2,11 +2,17 @@ import { FaMessage, FaXmark } from "react-icons/fa6";
 import { icone, activi, quemsomos } from "../../assets/Assets";
 import { Galeria } from "../cards/Actividade/Galeria";
 import { MinActive } from "../cards/Actividade/min-active";
+import { useState } from "react";
+import CommentInput from "../cards/Comentario/CommentInput";
+import { CommentList } from "../cards/Comentario/gridComentario";
 
 
 
-export const ModalActividade = ({ data, closeModal }) => {
+export const ModalActividade = ({ data, relacionados=[],closeModal }) => {
+  const [showComments, setShowComments] = useState(false);
+
   return (
+
     <div className="bg-white w-screen  lg:max-w-[900px] min-h-[400px] bottom-0 absolute max-h-[90vh] rounded-xl flex flex-col gap-5 p-10 pt-5 overflow-y-auto">
 
       {/* Cabeçalho */}
@@ -54,40 +60,46 @@ export const ModalActividade = ({ data, closeModal }) => {
       </div>
 
       {/* Comentários */}
-      <p className="cursor-pointer mt-5 transition-all duration-100 hover:text-primary flex gap-2 items-center">
-        <FaMessage /> Ver comentários (10)
-      </p>
+    
+<div className="mt-5 border-t pt-5">
+  <button 
+    onClick={() => setShowComments(!showComments)}
+    className="flex items-center gap-2 text-gray-700 hover:text-primary transition-colors"
+  >
+    <FaMessage /> 
+    {showComments ? 'Ocultar comentários' : `Ver comentários (${data.commentsCount || 0})`}
+  </button>
+
+  {showComments && (
+    <div className="mt-4 animate-fadeIn">
+      <CommentInput 
+        onSubmit={(comment) => console.log('Novo comentário:', comment)} 
+      />
+      <CommentList comments={data.comments} />
+    </div>
+  )}
+</div>
 
       {/* Galeria */}
       <Galeria />
 
       {/* Eventos semelhantes */}
       <div className="mb-10">
-        <div className="h2-title sec py-5">
+        <div className="text-h2-title sec py-5">
           <h1>Eventos semelhantes:</h1>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MinActive
-            width={200}
-            titulo={"Evangelho!!!"}
-            data={"Domingo, 23 Jun – 19h"}
-            img={activi}
-            descricao={"Exemplo de descrição de evento."}
-          />
-          <MinActive
-            width={200}
-            titulo={"Evangelho!!!"}
-            data={"Domingo, 23 Jun – 19h"}
-            img={quemsomos}
-            descricao={"Exemplo de descrição de evento."}
-          />
-          <MinActive
-            width={200}
-            titulo={"Evangelho!!!"}
-            data={"Domingo, 23 Jun – 19h"}
-            img={quemsomos}
-            descricao={"Exemplo de descrição de evento."}
-          />
+        {relacionados.map((item, index) => (
+            <div
+              key={index}
+              className="bg-gray-100 p-3 rounded-lg shadow hover:shadow-lg cursor-pointer transition-all"
+              onClick={() => console.log("Selecionado:", item.titulo)}
+            >
+              <h5 className="font-bold text-md">{item.titulo}</h5>
+              <p className="text-sm text-gray-600">por {item.escritor}</p>
+              <span className="text-xs text-primary">{item.tipo}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>

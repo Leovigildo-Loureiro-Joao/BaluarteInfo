@@ -26,7 +26,7 @@ export const Missao = ({ frazes = [] }) => {
     }, [frazes.length]);
     
     return (
-        <section id="missao" className=" relative -top-10  h-full flex justify-center flex-col py-40">
+        <section id="missao" className=" relative -top-10  h-full flex justify-center flex-col lg:py-40 md:py-20 py-10">
             <div className="flex flex-col md:flex-row justify-center items-center gap-10 px-4 py-8">
                 <div className="bg-white/10 backdrop-blur p-10 rounded-xl shadow-xl max-w-2xl w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/30">
                     <h2 className="text-2xl font-bold text-primary mb-4">Nossa Missão</h2>

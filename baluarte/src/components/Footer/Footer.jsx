@@ -5,11 +5,11 @@ import { Link } from 'react-router-dom';
 export const Footer=()=>{
     return <footer className="">
        <img src={wave}/> 
-       <div className="bg-min-white  min-h-96">
+       <div className="bg-min-white  min-h-96 lg:pb-52">
             <div className="flex gap-10 justify-around flex-wrap-reverse items-center relative -top-5">
                 <div className="flex flex-col justify-around lg:w-1/2 w-[80%] ">
                     <h2 className="h2-title">Inscreva-se já</h2>
-                    <div className="flex flex-col justify-around gap-5 w-full">
+                    <div className="flex flex-col justify-around gap-5 w-full lg:w-2/3">
                         <input type="text"  className="inputRectangle" placeholder="Nome"/>
                         <input type="email" className="inputRectangle" placeholder="Email"/>
                         <button className="buttonRectangle">Enviar</button>
@@ -32,9 +32,9 @@ export const Footer=()=>{
                         <div>
                             <h2 className="h2-title">Links uteis</h2>
                             <ul className='gap-2 flex flex-col'>
-                                <li><a href="#quemsomos">Quem somos</a></li>
-                                <li><a href="#missao">Missão e Visão</a></li>
-                                <li><a href="#actividades">Actividades em destaque</a></li>
+                                <li><a href="/QuemSomos">Quem somos</a></li>
+                                <li><a href="/#missao">Missão e Visão</a></li>
+                                <li><a href="/#actividades">Actividades em destaque</a></li>
                                 <li><a href="#">Contactos</a></li>
                             </ul>
                         </div>

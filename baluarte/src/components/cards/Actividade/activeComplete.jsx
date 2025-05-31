@@ -2,7 +2,7 @@ import { FaArrowLeft } from "react-icons/fa6"
 import { GridVideos } from "../Videos/GridVideos"
 import { Galeria } from "./Galeria"
 import { Link } from "react-router-dom"
-import { GridComentario } from "../Comentario/gridComentario"
+
 import { useModal } from "../../Dialog/ModalContext"
 
 

@@ -208,11 +208,11 @@
     }
     
     ul.tema li{
-        @apply  md:text-subtitle text-base text-black tracking-[2px] leading-[30px] lg:px-5 px-2 flex flex-col cursor-pointer;
+        @apply  md:text-li-nav text-base text-black tracking-[2px] leading-[30px] lg:px-5 px-2 flex flex-col cursor-pointer;
     }
 
     ul.tema li p{
-        @apply  md:text-subtitle text-base;
+        @apply  md:text-li-nav text-base  py-[5px];
     }
 
     ul.tema li span{
@@ -309,5 +309,21 @@
             opacity: 0.50;
         }
     }
-
+    .comment-input-container {
+        @apply mb-4;
+      }
+      
+      .comment-input-container textarea {
+        min-height: 40px;
+        max-height: 150px;
+        scrollbar-width: thin;
+      }
+      
+      .comment-input-container textarea::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      .comment-input-container textarea::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 rounded-full;
+      }
 }

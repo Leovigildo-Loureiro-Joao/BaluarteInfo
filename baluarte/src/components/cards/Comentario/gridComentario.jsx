@@ -1,7 +1,7 @@
 import { ComentarioMin } from "./comentario_min"
 
-export const GridComentario=()=>{
-    return <div className="grid grid-cols-3 gap-10 w-[70vw] max-w-[900px]">
+export const CommentList=()=>{
+    return <div className="flex flex-col m-10 gap-10 w-[70vw] max-w-[900px]">
         <ComentarioMin/>
     </div>
 }

@@ -40,7 +40,7 @@ export const Galeria=()=>{
 
     return  <div>
                 <div>
-                    <div className="h2-title sec py-5">
+                    <div className="text-h2-title sec py-5">
                         <h1>Galeria de fotos</h1>
                     </div>
                 </div>

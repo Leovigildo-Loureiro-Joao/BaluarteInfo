@@ -14,11 +14,16 @@ export const MinActive = ({titulo,descricao,img,data,width=350}) => {
         contactos: "923456789",
         img: img // substitua `novaImg` pela imagem desejada
     }
-    
+    const relacionados=[
+        { titulo: "Luz no Caminho", escritor: "Pr. João", tipo: "Devocional" },
+        { titulo: "O Verbo se fez Carne", escritor: "Ir. Maria", tipo: "Comentário" },
+        { titulo: "Verdade que Liberta", escritor: "Ev. Paulo", tipo: "Estudo" }
+    ];
      const { openModal } = useModal();
         function OpenModal() {
             openModal("modalActividade", {
-                data: complete
+                data: complete,
+                relacionados:relacionados
             })
         }
     return (
