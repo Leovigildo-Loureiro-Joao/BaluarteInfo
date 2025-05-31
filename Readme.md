@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # BaluarteInfo
  Site informativo da Igreja Baluarte.
  
@@ -24,6 +25,8 @@
 ## Criado
 - Leovigildo João(**FullStack**)
 =======
+=======
+>>>>>>> admin
 # Baluarte backend
 Cada dependencia colocada foi apenas para garintir um sistema forte com alta capacidade
 
@@ -76,4 +79,7 @@ Usou-se  Cloudinary
 A Deus primeiramente pois ele foi quem despertou tamanha motivacao para continuar e a igreja pelo apoio inderencto e directo para conclusao do prototipo 
 
 
+<<<<<<< HEAD
 >>>>>>> Frontend
+=======
+>>>>>>> admin

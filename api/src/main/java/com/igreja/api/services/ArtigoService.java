@@ -13,10 +13,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
+<<<<<<< HEAD
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+=======
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.cloudinary.Url;
+>>>>>>> admin
 import com.igreja.api.dto.ArtigoDto;
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
@@ -53,10 +64,40 @@ public class ArtigoService{
       artigosM.setImg(cloudinaryService.uploadImageAsync(PdfUtils.extractCoverImageAsync(artigo.pdf().getInputStream()), "image"));
       BeanUtils.copyProperties(artigo, artigosM);
       artigosM.setDataPublicacao(LocalDate.now());
+<<<<<<< HEAD
       
       return artigoRepository.save(artigosM);
   }
 
+=======
+      artigosM.setNpagina(BuscarNPagina(artigo.pdf()));
+      return artigoRepository.save(artigosM);
+  }
+
+  public int BuscarNPagina(MultipartFile file) throws IOException {
+        // Cria um executor para executar tarefas em paralelo
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        // Submete a tarefa de contagem de páginas
+        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+            try (PDDocument document = PDDocument.load(file.getInputStream())) {
+                return document.getNumberOfPages();
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao carregar o PDF", e);
+            }
+        }, executor);
+
+        // Aguarda a conclusão da tarefa e obtém o resultado
+        try {
+            int totalPaginas = future.get();
+            return totalPaginas;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Erro ao contar páginas", e);
+        } finally {
+            executor.shutdown();
+        } 
+   }
+
+>>>>>>> admin
    public List<ArtigosModel> AllData() {
       return artigoRepository.findAll();
    }

@@ -35,6 +35,12 @@ public class ArtigosModel {
     @NotBlank
     private String titulo;
 
+<<<<<<< HEAD
+=======
+    @NotBlank
+    private int Npagina;
+
+>>>>>>> admin
     @NotNull
     private LocalDate dataPublicacao;
 
