@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.example.App;
+import com.example.models.UsuarioModel;
+import com.example.services.LoginService;
 import com.example.utils.PasswordHiddenText;
 
 import javafx.event.ActionEvent;
@@ -31,9 +33,10 @@ public class LoginController implements Initializable{
     private TextField senhaText;
 
     @FXML
-    void Entrar(ActionEvent event) {
+    void Entrar(ActionEvent event) throws Exception {
         try {
-            App.setRoot("main");
+           UsuarioModel usuario = new LoginService().autenticar(email.getText(), senha.getText());
+            System.out.println("Login com sucesso: " + usuario.getNome());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

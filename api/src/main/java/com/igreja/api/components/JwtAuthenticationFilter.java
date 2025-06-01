@@ -25,11 +25,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwUtil jwtUtil;
 
+    // Rotas que não precisam de autenticação JWT
+    private static final String[] PUBLIC_URLS = {
+        "/auth/",
+        "/swagger-ui/",
+        "/v3/api-docs/",
+        "/test/"
+    };
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // TODO Auto-generated method stub
-       final String authHeader = request.getHeader("Authorization");
+
+        String path = request.getServletPath();
+
+        // Ignorar autenticação JWT para rotas públicas
+        for (String publicPath : PUBLIC_URLS) {
+            if (path.startsWith(publicPath)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+
+        final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -37,19 +55,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String username = jwtUtil.extractUsername(token);
+        String username = null;
+
+        try {
+            username = jwtUtil.extractUsername(token);
+        } catch (Exception e) {
+            // Token inválido, retorne 403 imediatamente
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Token JWT inválido ou expirado.");
+            return;
+        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
-                );
+                        userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Token JWT inválido.");
+                return;
             }
         }
+
         filterChain.doFilter(request, response);
     }
-    
 }

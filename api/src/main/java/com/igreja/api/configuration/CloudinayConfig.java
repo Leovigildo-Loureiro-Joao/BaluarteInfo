@@ -1,5 +1,6 @@
 package com.igreja.api.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,13 +11,23 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 @Configuration
 public class CloudinayConfig {
+
+    @Value("${cloudinary.cloud_name}")
+    private String cloudName;
+
+    @Value("${cloudinary.api_key}")
+    private String apiKey;
+
+    @Value("${cloudinary.api_secret}")
+    private String apiSecret;
+
     @Bean
     public Cloudinary cloudinary() {
-        Dotenv dotenv = Dotenv.load();
+      
         return new Cloudinary(ObjectUtils.asMap(
-            "cloud_name", dotenv.get("CLOUD_NAME"),
-            "api_key", dotenv.get("API_KEY"),
-            "api_secret", dotenv.get("API_SECRET")
+            "cloud_name", cloudName,
+            "api_key", apiKey,
+            "api_secret", apiSecret
         ));
     }
 }

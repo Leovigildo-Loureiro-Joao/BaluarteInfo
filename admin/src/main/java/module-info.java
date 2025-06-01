@@ -7,6 +7,9 @@ module com.example {
     requires de.jensd.fx.glyphs.fontawesome;
     requires javafx.media;
     requires javafx.web;
+    requires java.net.http;
+    requires com.google.gson;
+    requires com.fasterxml.jackson.databind;
 
 
     opens com.example to javafx.fxml;
