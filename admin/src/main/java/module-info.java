@@ -11,10 +11,13 @@ module com.example {
     requires com.google.gson;
     requires com.fasterxml.jackson.databind;
 
-
     opens com.example to javafx.fxml;
     opens com.example.controllers.modal to javafx.fxml;
     opens com.example.controllers.pages to javafx.fxml;
+
+    opens com.example.models to com.fasterxml.jackson.databind;
+    opens com.example.models.user to com.fasterxml.jackson.databind; // ✅ ESSENCIAL
+
     exports com.example;
     exports com.example.controllers.modal;
     exports com.example.controllers.pages;

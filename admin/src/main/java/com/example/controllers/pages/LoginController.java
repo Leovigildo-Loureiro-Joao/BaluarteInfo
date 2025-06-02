@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.example.App;
-import com.example.models.UsuarioModel;
+import com.example.models.user.UsuarioModel;
 import com.example.services.LoginService;
 import com.example.utils.PasswordHiddenText;
 
@@ -19,6 +19,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class LoginController implements Initializable{
+
+    private LoginService service=new LoginService();
 
     @FXML
     private TextField email;
@@ -35,8 +37,10 @@ public class LoginController implements Initializable{
     @FXML
     void Entrar(ActionEvent event) throws Exception {
         try {
-           UsuarioModel usuario = new LoginService().autenticar(email.getText(), senha.getText());
-            System.out.println("Login com sucesso: " + usuario.getNome());
+            if (service.autenticar(email.getText(), senha.getText())!=null) {
+                App.setRoot("main");
+            }
+            
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

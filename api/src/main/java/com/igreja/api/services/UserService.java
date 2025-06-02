@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.user.UserDto;
+import com.igreja.api.dto.user.UserDtoData;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.utils.GravatarUtils;
@@ -34,6 +35,11 @@ public class UserService implements UserDetailsService{
         .build();
     }
 
+    public UserModel loadUserByEmail(String username) {
+        UserModel user=userRepository.findByEmail(username).orElseThrow(()->new UsernameNotFoundException("User not found"));
+        return user;
+    }
+
     public String[] Roles(UserModel user){
         if (user.getRoles()==null) {
             return new String[]{"USER"};
@@ -49,6 +55,11 @@ public class UserService implements UserDetailsService{
 
     public UserModel findById(long id){
         return userRepository.findById(id).orElseThrow(()->new NoSuchElementException("It is user not exists"));
+    }
+
+    public UserDtoData findByIdData(String username){
+        UserModel user=loadUserByEmail(username);
+        return new UserDtoData(user.getId(), user.getNome(), user.getUsername(), user.getImg(), user.getRoles());
     }
 
 

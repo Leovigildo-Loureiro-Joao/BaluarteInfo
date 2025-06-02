@@ -1,10 +1,11 @@
 package com.example.utils;
 
-import com.example.models.UsuarioModel;
+import com.example.models.user.UserDtoData;
+import com.example.models.user.UsuarioModel;
 
 public class TokenSeccao {
     private static String token;
-    private static UsuarioModel usuarioLogado;
+    private static UserDtoData usuarioLogado;
 
 
     public static String getToken() {
@@ -23,7 +24,7 @@ public class TokenSeccao {
         token = null;
     }
    
-    public static void setUsuarioLogado(UsuarioModel usuario) {
+    public static void setUsuarioLogado(UserDtoData usuario) {
         TokenSeccao.usuarioLogado = usuario;
     }
 

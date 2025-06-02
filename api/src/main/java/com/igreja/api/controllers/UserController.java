@@ -15,12 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.components.JwUtil;
 import com.igreja.api.dto.user.UserDto;
+import com.igreja.api.dto.user.UserDtoData;
 import com.igreja.api.dto.user.UserLoginDto;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.services.UserService;
 
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
@@ -48,8 +50,7 @@ public class UserController {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDto.password()));
         // Generate JWT token
         String token = jwtUtil.generateToken(userDetails);
-
-        return ResponseEntity.ok(token); 
+        return ResponseEntity.ok(Map.of("token", token,"user",userService.findByIdData(userDto.email()))); 
     }
 
     @PostMapping("/auth/register")
