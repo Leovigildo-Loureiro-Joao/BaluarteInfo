@@ -28,7 +28,7 @@ public class TokenSeccao {
         TokenSeccao.usuarioLogado = usuario;
     }
 
-    public static UsuarioModel getUsuarioLogado() {
+    public static UserDtoData getUsuarioLogado() {
         return usuarioLogado;
     }
 }
