@@ -55,9 +55,9 @@ public class ActividadeController {
     }
 
     @GetMapping(value = "/admin/actividade/all")
-    public ResponseEntity<?> AllArtigos() throws IOException {
+    public ResponseEntity<?> AllActividades() throws IOException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(actividadeService.AllData());
+            return ResponseEntity.status(HttpStatus.OK).body(actividadeService.AllDataSimple());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -67,6 +67,15 @@ public class ActividadeController {
     public ResponseEntity<?> SelectArigo(@PathVariable int id) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(actividadeService.Select(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/admin/actividade/datas")
+    public ResponseEntity<?> DatasMarcadas() throws IOException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(actividadeService.AllDataActividade());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

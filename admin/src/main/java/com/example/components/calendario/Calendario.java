@@ -1,8 +1,11 @@
 package com.example.components.calendario;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+import com.example.services.ActividadeService;
 import com.example.utils.DiaUtilAnimation;
 import com.example.utils.ModalUtil;
 
@@ -17,6 +20,8 @@ import lombok.Setter;
 public class Calendario {
 
     private ArrayList<Label> list=new ArrayList<>();
+    private ArrayList<LocalDateTime> datas=new ArrayList<>();
+    
     private VBox listTr;
     private Label mes;
  
@@ -29,13 +34,37 @@ public class Calendario {
         this.mes=mes;
     }
 
+    public void SelectActividade(Label dia,LocalDate date){
+       for (LocalDateTime localDateTime : datas) {
+            if (localDateTime.getDayOfMonth()==date.getDayOfMonth()) {
+                dia.getStyleClass().add("event");
+            }
+       } 
+    }
+
+    public void AddDatas(LocalDate data){
+        datas.clear();
+        ActividadeService actividadeService=new ActividadeService();
+        try {
+            for (LocalDateTime t : actividadeService.DataActividade()) {
+                 if (t.getMonth().equals(data.getMonth())) {
+                    datas.add(t);
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public void GerarCalendario(LocalDate dat){
+        AddDatas(dat);
         for (var i = 0; i < listTr.getChildren().size(); i++) {
             for (var b = 0; b < ((HBox) listTr.getChildren().get(i)).getChildren().size(); b++) {
                 ((HBox) listTr.getChildren().get(i)).getChildren().clear();
             }
-            
         }
+
         var initMonth=dat.getMonthValue();
         var initYear=dat.getYear();
         
@@ -47,6 +76,7 @@ public class Calendario {
                 Label text=new Label(" ");
                 text.getStyleClass().add("calerdarItem");
                 if (dia.getDayOfWeek().getValue()==p) {
+                    SelectActividade(text, dia);
                     text.getStyleClass().add("use");
                     ((HBox) listTr.getChildren().get(i)).getChildren().add(EstruturarDia(text, dia));
                     index++;

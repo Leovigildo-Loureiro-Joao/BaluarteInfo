@@ -4,6 +4,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
 
+import com.example.controllers.Controller;
 import com.example.enums.FileType;
 import com.example.models.ArtigoModel;
 import com.example.utils.UploadFiles;
@@ -19,7 +20,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 
-public class ArtigoController implements Initializable{
+public class ArtigoController implements Controller{
 
    
     @FXML
@@ -85,6 +86,12 @@ public class ArtigoController implements Initializable{
     private void AddDetails(){
         tipo.getItems().addAll("Estudo Bíblico","Devocional","Histórico","Doutrinário","Testemunho","Apologética","Profético","Teológico");
         filtro.getItems().addAll("Estudo Bíblico","Devocional","Histórico","Doutrinário","Testemunho","Apologética","Profético","Teológico");
+    }
+
+    @Override
+    public void Show() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'Show'");
     }
 
 }

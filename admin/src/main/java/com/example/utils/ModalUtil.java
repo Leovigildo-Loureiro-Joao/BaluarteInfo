@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.example.App;
 import com.example.configs.ApiCache;
 import com.example.controllers.pages.MainController;
-import com.example.models.UserModel;
+import com.example.models.user.UserModel;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextArea;
 
@@ -68,15 +68,15 @@ public class ModalUtil {
     }
 
 
-    public static void ShowTemporary(StackPane fundo,String modalFxml){
+    public static void ShowTemporary(StackPane fundo,String modalFxml,String info,String info1){
         try {
             fundo.setOpacity(0);
             fundo.setVisible(true);
             fundo.getChildren().clear();
-            Node modal=App.loadFXMLModal(modalFxml);
+            Node modal=App.loadFXMLModalTempory(modalFxml,info,info1);
             fundo.getChildren().add(modal);
             
-            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), fundo);
+            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1.3), fundo);
             fadeTransition.setFromValue(0);
             fadeTransition.setToValue(1);
             fadeTransition.play();

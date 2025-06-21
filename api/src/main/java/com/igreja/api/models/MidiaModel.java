@@ -7,6 +7,7 @@ import java.util.List;
 import com.igreja.api.enums.MidiaType;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -51,6 +52,9 @@ public class MidiaModel {
         message = "URL inválida! Ex: http://exemplo.com"
     )
     private String url;
+
+    @Column(nullable = true)
+    private String imagem;
 
     private LocalDate dataPublicacao;
 

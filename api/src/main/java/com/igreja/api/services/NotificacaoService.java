@@ -3,6 +3,7 @@ package com.igreja.api.services;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,8 @@ import com.igreja.api.enums.NotificacaoType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigosModel;
 import com.igreja.api.models.NotificacaoModel;
+import com.igreja.api.repositories.ComentarioRepository;
+import com.igreja.api.repositories.InscritosRepository;
 import com.igreja.api.repositories.NotificacaoRepository;
 
 @Service
@@ -36,17 +39,42 @@ public class NotificacaoService {
     @Autowired
     private MensagemService mensagemService;
 
+    @Autowired
+    private InscritosRepository inscritosRepository;
+
+    @Autowired
+    private ComentarioRepository comentarioRepository;
+
+
+
+    public List<NotificacaoModel> Lido(){
+        return notificacaoRepository.findByLido(false);
+    }
+
+    public String ApagarLido(){
+        for (NotificacaoModel notificacaoModel : notificacaoRepository.findByLido(true)) {
+            notificacaoRepository.deleteById(notificacaoModel.getId());
+        }
+        return "Deletado com sucesso";   
+    }
 
     public List<NotificacaoModel> All(){
-        return notificacaoRepository.findByLido(true);
+        return notificacaoRepository.findAll();
+    }
+
+
+    public NotificacaoModel Ler(int id){
+        NotificacaoModel notificacao=notificacaoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Notificacao inixistente"));
+        notificacao.setLido(true);
+        return notificacaoRepository.save(notificacao);
     }
 
     public void NotifyActividadeGaleria(){
         //Quando a muitos comentarios
         //Quando a actividade ja encerrou para marcar momentos
         service.AllData().forEach(t -> {
-            int comentarios = t.getComentarios().size();
-            if (comentarios >= configService.SelectByType(ConfigType.ComentarioLimiteActividade).getValue() && t.getDataEvento().isAfter(LocalDateTime.now())) {
+            int comentarios = comentarioRepository.findByActividade(t).size();
+            if (comentarios >= configService.SelectByType(ConfigType.ComentarioLimiteActividade).getValue() && t.getDataEvento().isBefore(LocalDateTime.now())) {
                 String descricao = "A actividade " + t.getTema() + " ja tem " + comentarios + " comentarios e ja foi encerrada actualize a galeria de modo a marcar momentos"; 
                 if (notificacaoRepository.findByDescricao(descricao).isEmpty()) {
                     NotificacaoModel notificacao = new NotificacaoModel();
@@ -64,9 +92,9 @@ public class NotificacaoService {
     public void NotifyActividadeLimiteInscritos(){
          //Quando aos incritos previstos excederam para lancar um trailler ou uma mensagem para todos
         //Quando a actividade ja encerrou para marcar momentos
-        int totalIncritos = configService.SelectByType(ConfigType.IncritosLimiteActividade).getValue();
+        double totalIncritos = configService.SelectByType(ConfigType.IncritosLimiteActividade).getValue();
          service.AllData().forEach(t -> {
-            int inscritos = t.getInscritos().size();
+            int inscritos = inscritosRepository.findByActividade(t).size();
             if (inscritos >= totalIncritos-5 && t.getDataEvento().isAfter(LocalDateTime.now()) && t.getDataEvento().isBefore(LocalDateTime.now())) {
                 String descricao = "A actividade " + t.getTema() + " ja tem " + inscritos + " incritos";
                 if (notificacaoRepository.findByDescricao(descricao).isEmpty()) {
@@ -131,7 +159,7 @@ public class NotificacaoService {
     }
 
     public void NotifyArtigo(List<ArtigosModel> artigos){
-        //Quando muitos viram ou acederam muito um artigo ou um video
+        //Quando muitos viram ou acederam muito um artigo ou um video 
         userService.findAll().forEach(use -> {
             artigos.forEach(t -> {
                 String descricao = "Ola " + use.getUsername() + " a nosso novo artigo " + t.getTitulo() + " ja esta disponivel, aceda a nossa plataforma para mais detalhes";

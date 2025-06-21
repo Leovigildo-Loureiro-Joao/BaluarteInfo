@@ -53,7 +53,6 @@ public class CloudDinaryService {
     public String uploadFileAsync(MultipartFile file, String resourceType) throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
             try {
-                System.out.println(this.uniqueName);
               String encodedPublicId = URLEncoder.encode(this.uniqueName.trim(), StandardCharsets.UTF_8.toString())
                 .replace("+", "_");
             
@@ -66,9 +65,9 @@ public class CloudDinaryService {
                     "public_id", encodedPublicId,  // Usa o nome normalizado
                     "filename_override", encodedPublicId // Força o nome do arquivo
                 ));
-                    System.out.println(this.uniqueName); 
                 return uploadResult.get("url").toString();
             } catch (IOException e) {
+                
                 throw new RuntimeException("Falha no upload do arquivo", e);
             }
         }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado

@@ -15,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.actividade.ActividadeDto;
+import com.igreja.api.dto.actividade.ActividadeDtoSimple;
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.enums.ActividadeType;
+import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigosModel;
 import com.igreja.api.models.ComentarioModel;
@@ -88,6 +91,28 @@ public class ActividadeService {
         return actividadeRepository.findAll();
     }
 
+    public List<ActividadeDtoSimple> AllDataSimple() {
+        List<ActividadeDtoSimple> dtoSimples=new ArrayList<>();
+        for (Object[] value :  actividadeRepository.AllActividadeSimple()) {
+            dtoSimples.add(new ActividadeDtoSimple(
+                (String)value[0], 
+                (String)value[1],
+                (String) value[2],
+                (String)value[3],  
+                ActividadeType.valueOf((String)value[4]) , 
+                PublicoAlvoType.valueOf((String)value[5]),
+                (String) value[6], 
+                (LocalDateTime)value[7], 
+                (LocalDateTime)value[8], 
+                (String) value[9],
+                (String) value[10]));
+        }
+        return dtoSimples;
+    }
+
+    public List<LocalDateTime> AllDataActividade() {
+        return actividadeRepository.DatasMarcadas();
+    }
    
 
 }

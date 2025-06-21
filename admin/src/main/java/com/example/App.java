@@ -15,8 +15,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.example.configs.ApiCache;
+import com.example.controllers.modal.ModalCorretErrorController;
 
 /**
  * JavaFX App
@@ -58,14 +61,34 @@ public class App extends Application {
 
     public static  Node loadFXMLModal(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("components/modals/" +fxml + ".fxml"));
-        return fxmlLoader.load();
+         Parent loadPane=fxmlLoader.load();
+         ApiCache.addTelaCache(fxml,  fxmlLoader.getController(), loadPane);
+        return loadPane;
     }
 
-
+    public static  Node loadFXMLModalTempory(String fxml,String info,String info1) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("components/modals/" +fxml + ".fxml"));
+        Parent loadPane=fxmlLoader.load();
+        ModalCorretErrorController controller=((ModalCorretErrorController)fxmlLoader.getController());
+        controller.getInfo().setText(info);
+        controller.getInfo1().setText(info1);
+        ApiCache.addTelaCache(fxml,  fxmlLoader.getController(), loadPane);
+        return loadPane;
+    }
     
 
     public static void main(String[] args) {
         launch();
+    }
+
+    public static Executor getExecutorService() {
+       return Executors.newSingleThreadScheduledExecutor(
+                runnable -> {
+                    Thread thread = new Thread(runnable);
+                    thread.setDaemon(true); // Set the thread as a daemon thread
+                    return thread;
+                }
+        );
     }
 
 }

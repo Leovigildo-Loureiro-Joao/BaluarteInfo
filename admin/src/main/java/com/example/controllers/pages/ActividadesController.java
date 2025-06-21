@@ -1,15 +1,25 @@
 package com.example.controllers.pages;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
+import com.example.App;
+import com.example.components.item_list.CardProcess;
 import com.example.configs.ApiCache;
+import com.example.controllers.Controller;
 import com.example.enums.FileType;
 import com.example.models.ActividadeModel;
+import com.example.models.actividade.ActividadeDtoSimple;
+import com.example.services.ActividadeService;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,7 +33,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class ActividadesController implements Initializable{
+public class ActividadesController implements Controller{
     
     @FXML
     private TextField contactos;
@@ -67,6 +77,9 @@ public class ActividadesController implements Initializable{
     @FXML
     private TextField titulo;
 
+      public CardProcess card = null;
+    private ActividadeService actividadeService=new ActividadeService();
+
 
     @FXML
     void CarregarImagem(MouseEvent event) {
@@ -91,14 +104,44 @@ public class ActividadesController implements Initializable{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
       
-        listActividade.getChildren().add(new ActividadeModel("Actividade 1", "Tema 1", "Tipo 1", "Organizador 1", "Publico Alvo 1", "Up to a certain time, a equivalent action of efforts of the global management concepts the preliminary action plan the commitment to quality assurance and The Program of Restricted Service", "Telefone 1", "Email 1", "Endereco 1", "file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/pexels-felixmittermeier-2832052.jpg", java.time.LocalDateTime.now()));
+      
         AddDetails();
+    }
+
+    void LoadActividades(){
+        card=new CardProcess("Buscando as Actividades");
+        listActividade.getChildren().add(card);
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return actividadeService.allActividades();    
+            } catch (Exception e) {
+                card.Error("Erro ao buscar actividades");
+                return null;
+            }
+        },App.getExecutorService()).thenAccept(t -> {
+            Platform.runLater(() -> {
+                if (t.isEmpty()) {
+                    card.Vazio("Sem Actividades");
+                }else{
+                    listActividade.getChildren().clear();
+                    for (ActividadeDtoSimple actividadeDtoSimple : t) {
+                        listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple));
+                    }
+                }
+            });
+        });
+        
     }
 
     private void AddDetails(){
         filtro.getItems().addAll("Todos","Mulheres","Jovens","Pais","Velhos","Crianças");
         publico_alvo.getItems().addAll("Todos","Mulheres","Jovens","Pais","Velhos","Crianças");
         tipo.getItems().addAll("Anual","Mensal","Projecto");
+    }
+
+    @Override
+    public void Show() {
+       LoadActividades();
     }
  
     

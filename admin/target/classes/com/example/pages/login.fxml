@@ -57,6 +57,7 @@
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
       </VBox>
+      <StackPane fx:id="conteinerModal" mouseTransparent="true" prefHeight="600.0" prefWidth="992.0" style="-fx-opacity: 0;" styleClass="content-modal" visible="false" />
    </children>
    <stylesheets>
       <URL value="@../styles/geral.css" />

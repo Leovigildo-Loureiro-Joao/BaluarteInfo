@@ -68,6 +68,19 @@ Label, Text, TextField, ListView {
     -fx-font-size: 12;
 }
 
+.textDataL {
+    -fx-fill: #ffff;
+    -fx-font-size: 12;
+}
+
+.textDesig {
+    -fx-background-color: #3cf8233f;
+    -fx-text-fill: rgb(135, 255, 165);
+    -fx-font-size: 12;
+    -fx-background-radius: 10;
+    -fx-padding: 2 10;
+}
+
 .textDataG {
     -fx-fill: #5a5a5a;
     -fx-font-size: 13;
@@ -92,7 +105,7 @@ ItemDash .glyph-icon {
     -fx-fill: #ffffff;
 }
 
-.list-cell:selected ItemDash .glyph-icon {
+.list-cell:selected ItemDash .glyph-icon,.list-cell:selected ItemNotif .glyph-icon {
     -fx-fill: #CB2020;
 }
 
@@ -319,6 +332,7 @@ ItemNotif {
 }
 
 
+
 .control-model .jfx-button{
    -fx-background-color: #CB2020;
    -fx-background-radius: 100;
@@ -340,4 +354,23 @@ ItemNotif {
 
 .list-cell{
     -fx-cursor: HAND;
+}
+
+.bord{
+    -fx-border-color: #CB2020;
+    -fx-border-width: 0 0 2;
+    -fx-border-radius: 8;
+}
+
+.notif-read {
+    -fx-opacity: 0.5;
+}
+
+.notif-unread {
+    -fx-opacity: 1;
+}
+
+TextField.error {
+    -fx-border-color: red;
+    -fx-border-width: 1px;
 }

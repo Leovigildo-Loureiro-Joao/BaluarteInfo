@@ -30,7 +30,7 @@ public class MidiaController {
     private MidiaService midiaService;
 
 
-    @PostMapping("/admin/midia/register")
+    @PostMapping("/admin/midia/register/video")
     public ResponseEntity<?> REgisterMidia(@RequestBody @Valid MidiaDto midiaDto) {    
        try {
             return ResponseEntity.ok(midiaService.save(midiaDto));
@@ -39,7 +39,7 @@ public class MidiaController {
         }
     }
 
-    @PostMapping(value = "/admin/midia/registerFile",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/admin/midia/register/audio",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> REgisterMidiaFile(@ModelAttribute @Valid MidiaFile midiaDto) {    
        try {
             return ResponseEntity.ok(midiaService.save(midiaDto));
@@ -48,10 +48,19 @@ public class MidiaController {
         }
     }
 
-    @GetMapping("/admin/midia/All")
-    public ResponseEntity<?> AllData() {    
+    @GetMapping("/admin/midia/videos")
+    public ResponseEntity<?> AllDataVideo() {    
        try {
-            return ResponseEntity.ok(midiaService.AllData());
+            return ResponseEntity.ok(midiaService.AllVideo());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/admin/midia/audios")
+    public ResponseEntity<?> AllDataAudios() {    
+       try {
+            return ResponseEntity.ok(midiaService.AllAudio());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

@@ -9,6 +9,7 @@ import com.igreja.api.enums.ActividadeType;
 import com.igreja.api.enums.PublicoAlvoType;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,11 +30,19 @@ public class ActividadeModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+   
     @NotBlank
+    @Column(columnDefinition = "TEXT") // Informa ao JPA que deve usar o tipo TEXT no banco
     private String descricao;
 
     @NotBlank
     private String tema;
+
+     @NotBlank
+    private String titulo;
+
+    @NotBlank
+    private String endereco;
 
     @Enumerated(EnumType.STRING)
     private ActividadeType tipoEvento;

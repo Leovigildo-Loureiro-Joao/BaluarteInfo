@@ -22,6 +22,7 @@ import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
+import com.igreja.api.dto.midia.VideoDto;
 import com.igreja.api.enums.MidiaType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigosModel;
@@ -59,8 +60,10 @@ public class MidiaService {
     public MidiaModel save(MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException { 
         MidiaModel midia = new MidiaModel();
         midia.setDataPublicacao(LocalDate.now());
+        upload.generateUniqueName(midiaDto.imagem().getOriginalFilename());
+        midia.setImagem(upload.uploadFileAsync(midiaDto.imagem(), "image"));
         upload.generateUniqueName(midiaDto.url().getOriginalFilename());
-        midia.setUrl(upload.uploadFileAsync(midiaDto.url(), "image"));
+        midia.setUrl(upload.uploadFileAsync(midiaDto.url(), "raw"));
     
         // Extração da duração do áudio
         AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(midiaDto.url().getInputStream());
@@ -136,8 +139,12 @@ public class MidiaService {
         midiaRepository.delete(midia);
     }
 
-    public List<MidiaModel> AllData() {
-      return midiaRepository.findAll();
+    public List<VideoDto> AllVideo() {
+        return midiaRepository.VideosAll();
+    }
+
+    public List<VideoDto> AllAudio() {
+    return midiaRepository.VideosAll();
     }
 
     public String ConnectActividade(ConnectMidiaDto connect) {

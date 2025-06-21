@@ -5,5 +5,6 @@ public enum ConfigType {
     ActividadeLimite,
     IncritosLimiteActividade,
     VisitasLimite,
-    MembrosLimite
+    MembrosLimite,
+    NewlesterLimite
 }

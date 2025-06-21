@@ -2,6 +2,7 @@ package com.igreja.api.models;
 
 import com.igreja.api.enums.InfoType;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -25,6 +26,7 @@ public class InfoIgrejaModel {
     private InfoType type;
 
     @NotBlank
+    @Column(columnDefinition = "TEXT")
     private String descricao;
 
     private String img;

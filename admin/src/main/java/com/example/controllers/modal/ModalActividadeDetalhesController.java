@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 import com.example.configs.ApiCache;
 import com.example.controllers.pages.MainController;
 import com.example.enums.UserDataType;
-import com.example.models.UserModel;
+import com.example.models.user.UserModel;
 import com.example.utils.ModalUtil;
 import com.jfoenix.controls.JFXButton;
 

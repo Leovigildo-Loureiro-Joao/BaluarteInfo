@@ -16,3 +16,8 @@ VBox.card{
 }
 
 
+
+.fieldTextLine.error {
+    -fx-border-color: transparent transparent red ;
+    -fx-border-width: 1px;
+}

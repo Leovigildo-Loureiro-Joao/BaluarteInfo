@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface InscritosRepository extends JpaRepository<InscritosModel, Long> {
     List<InscritosModel> findByActividade(ActividadeModel actividade);
+    
 }

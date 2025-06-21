@@ -10,8 +10,12 @@ export const Footer=()=>{
                 <div className="flex flex-col justify-around lg:w-1/2 w-[80%] ">
                     <h2 className="h2-title">Inscreva-se já</h2>
                     <div className="flex flex-col justify-around gap-5 w-full lg:w-2/3">
-                        <input type="text"  className="inputRectangle" placeholder="Nome"/>
-                        <input type="email" className="inputRectangle" placeholder="Email"/>
+                        <input type="text"  className="inputRectangle text-text-pargh" placeholder="Seu nome (opcional)"/>
+                        <input type="email" className="inputRectangle text-text-pargh" placeholder="Digite seu e-mail" />
+                        <label className='text-text-pargh flex gap-5'>
+                            <input type="checkbox" name="consentimento" />
+                            Quero receber novidades
+                        </label>
                         <button className="buttonRectangle">Enviar</button>
                     </div>
                 </div>

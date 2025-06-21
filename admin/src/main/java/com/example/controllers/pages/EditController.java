@@ -3,6 +3,7 @@ package com.example.controllers.pages;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.example.controllers.Controller;
 import com.example.utils.ModalUtil;
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXToggleNode;
@@ -14,7 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 
-public class EditController implements Initializable{
+public class EditController implements Controller{
 
   
     @FXML
@@ -75,6 +76,13 @@ public class EditController implements Initializable{
     @FXML
     public void EditeVBiblico(ActionEvent event) {
         ModalUtil.Show("modalVersiculo");
+    }
+
+
+    @Override
+    public void Show() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'Show'");
     }
     
 }

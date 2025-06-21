@@ -3,13 +3,14 @@ package com.example.controllers.pages;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.example.models.VideoModel;
+import com.example.controllers.Controller;
+import com.example.models.video.VideoModel;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.VBox;
 
-public class VideosController implements Initializable {
+public class VideosController implements Controller {
 
     @FXML
     private VBox listVideos;
@@ -17,6 +18,12 @@ public class VideosController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         listVideos.getChildren().add(new VideoModel("sasdasd asda sdas das dasd asdas das dasda sdas das dasda sd asdasda sdasd asd","L9hagULsPtk"));
+    }
+
+    @Override
+    public void Show() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'Show'");
     }
 
    

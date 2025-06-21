@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.*?>
 <?import java.lang.*?>
 <?import java.net.*?>
 <?import javafx.geometry.*?>
@@ -8,7 +9,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="690.0" prefWidth="1334.0"  xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.HomeController">
+<AnchorPane fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="748.0" prefWidth="1334.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.HomeController">
    <stylesheets>
       <URL value="@../../styles/home.css" />
       <URL value="@../../styles/geral.css" />
@@ -18,33 +19,40 @@
       <String fx:value="root" />
    </styleClass>
    <children>
-      <HBox layoutY="40.0" prefHeight="182.0" prefWidth="1200.0" spacing="30.0">
+      <HBox fx:id="blocoTop" layoutY="40.0" prefHeight="182.0" prefWidth="1200.0" spacing="30.0">
          <children>
             <AnchorPane prefHeight="162.0" stylesheets="@../../styles/home.css">
                <styleClass>
                   <String fx:value="card" />
                   <String fx:value="percentagem" />
+                  <String fx:value="bord" />
                </styleClass>
                <children>
                   <AnchorPane fx:id="circlePro_Ins" layoutX="20.0" layoutY="64.0" prefHeight="89.0" prefWidth="89.0" />
                   <Text layoutX="20.0" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Inscrições" />
                   <StackPane layoutX="167.0" layoutY="16.0" prefHeight="40.0" prefWidth="68.0" styleClass="cardValue">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
+                        <Text fx:id="inscriCont" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
                      </children>
                   </StackPane>
+                  <ImageView fitHeight="60.0" fitWidth="75.0" layoutX="167.0" layoutY="79.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../assets/Shape.png" />
+                     </image>
+                  </ImageView>
                </children>
             </AnchorPane>
             <AnchorPane prefHeight="198.0" prefWidth="266.0" stylesheets="@../../styles/home.css">
                <styleClass>
                   <String fx:value="card" />
                   <String fx:value="percentagem" />
+                  <String fx:value="bord" />
                </styleClass>
                <children>
                   <Text layoutX="25.0" layoutY="35.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Actividades" />
                   <AnchorPane fx:id="circlePro_act_ins" layoutX="38.0" layoutY="56.0" prefHeight="49.0" prefWidth="50.0" />
                   <AnchorPane fx:id="circlePro_act_com" layoutX="113.0" layoutY="56.0" prefHeight="49.0" prefWidth="50.0" />
-                  <Text fontSmoothingType="LCD" layoutX="106.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="minText" text="Comentarios">
+                  <Text fontSmoothingType="LCD" layoutX="104.0" layoutY="118.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="minText" text="Comentarios">
                      <font>
                         <Font size="11.0" />
                      </font>
@@ -56,7 +64,7 @@
                   </Text>
                   <StackPane layoutX="174.0" layoutY="16.0" prefHeight="40.0" prefWidth="68.0" styleClass="cardValue">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
+                        <Text fx:id="activiCont" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
                      </children>
                   </StackPane>
                </children>
@@ -65,15 +73,42 @@
                <styleClass>
                   <String fx:value="card" />
                   <String fx:value="percentagem" />
+                  <String fx:value="bord" />
                </styleClass>
                <children>
                   <AnchorPane fx:id="circlePro_visit" layoutX="20.0" layoutY="64.0" prefHeight="89.0" prefWidth="89.0" />
                   <Text layoutX="20.0" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Visitas" />
                   <StackPane layoutX="168.0" layoutY="15.0" prefHeight="40.0" prefWidth="68.0" styleClass="cardValue">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
+                        <Text fx:id="visitasCont" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
                      </children>
                   </StackPane>
+                  <ImageView fitHeight="60.0" fitWidth="75.0" layoutX="168.0" layoutY="79.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../assets/Shape.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </AnchorPane>
+            <AnchorPane prefHeight="162.0" stylesheets="@../../styles/home.css">
+               <styleClass>
+                  <String fx:value="card" />
+                  <String fx:value="percentagem" />
+                  <String fx:value="bord" />
+               </styleClass>
+               <children>
+                  <Text layoutX="20.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textSubtitle" text="Usuarios" />
+                  <ImageView fitHeight="40.0" fitWidth="42.0" layoutX="178.0" layoutY="96.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../assets/user-group.png" />
+                     </image>
+                  </ImageView>
+                  <StackPane layoutX="169.0" layoutY="18.0" prefHeight="40.0" prefWidth="68.0" styleClass="cardValue">
+                     <children>
+                        <Text fx:id="userCont" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
+                     </children>
+                  </StackPane>
+                  <AnchorPane fx:id="circlePro_user" layoutX="20.0" layoutY="64.0" prefHeight="89.0" prefWidth="89.0" />
                </children>
             </AnchorPane>
          </children>
@@ -81,21 +116,30 @@
             <Insets bottom="10.0" left="40.0" right="10.0" top="10.0" />
          </padding>
       </HBox>
-      <HBox layoutY="266.0" prefHeight="421.0" prefWidth="1200.0" spacing="80.0">
+      <HBox fx:id="blocoBottom" layoutY="266.0" prefHeight="476.0" prefWidth="1200.0" spacing="80.0">
          <children>
-            <VBox prefHeight="421.0" prefWidth="411.0" spacing="20.0">
+            <VBox prefHeight="464.0" prefWidth="411.0" spacing="20.0">
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Notificações" />
-                  <ListView fx:id="notif" onMouseClicked="#Select" prefHeight="357.0" prefWidth="411.0" styleClass="card">
+                  <ListView fx:id="notif" onMouseClicked="#Select" prefHeight="420.0" prefWidth="411.0" styleClass="card">
                      <opaqueInsets>
                         <Insets left="25.0" right="25.0" />
                      </opaqueInsets>
                      <padding>
-                        <Insets top="20.0" />
+                        <Insets bottom="45.0" top="20.0" />
                      </padding></ListView>
+                  <HBox maxHeight="28.0" minHeight="28.0" prefHeight="28.0" prefWidth="411.0" translateY="-60.0">
+                     <children>
+                        <JFXButton onAction="#viewAll" text=" Ver todas" />
+                        <JFXButton onAction="#cleanView" text="Limpar lidas" />
+                     </children>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                  </HBox>
                </children>
             </VBox>
-            <AnchorPane prefHeight="261.0" prefWidth="388.0" styleClass="card">
+            <AnchorPane maxHeight="350.0" prefHeight="342.0" prefWidth="388.0" styleClass="card">
                <HBox.margin>
                   <Insets bottom="20.0" top="40.0" />
                </HBox.margin>
@@ -124,7 +168,7 @@
                         </ImageView>
                      </children>
                   </HBox>
-                  <VBox layoutX="18.0" layoutY="67.0" prefHeight="287.0" prefWidth="348.0">
+                  <VBox layoutX="18.0" layoutY="67.0" prefHeight="236.0" prefWidth="348.0">
                      <children>
                         <HBox prefHeight="32.0" prefWidth="348.0">
                            <children>

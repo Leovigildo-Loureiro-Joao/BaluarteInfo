@@ -3,8 +3,8 @@ package com.example.services;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.example.models.UserModel;
 import com.example.models.user.UserDtoData;
+import com.example.models.user.UserModel;
 import com.example.models.user.UsuarioModel;
 import com.example.utils.TokenSeccao;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 
 public class LoginService {
     
-    public UserDtoData autenticar(String email, String senha) throws Exception {
+    public boolean autenticar(String email, String senha) throws Exception {
         Map<String, String> body = new HashMap<>();
         body.put("email", email);
         body.put("password", senha);
@@ -21,9 +21,8 @@ public class LoginService {
         
         String respostaJson = ApiService.post("/auth/login", body);
         Map<String,Object> resultado=respostGson.fromJson(respostaJson,Map.class);
-        System.out.println(resultado);
         if (respostaJson == null || respostaJson.isEmpty()) {
-            throw new Exception("Erro ao autenticar: resposta vazia do servidor.");
+           return false;
         }
         // Guarda na sessão
         TokenSeccao.setToken(resultado.get("token").toString());
@@ -31,6 +30,9 @@ public class LoginService {
         ObjectMapper mapper = new ObjectMapper();
         UserDtoData usuario = mapper.convertValue(resultado.get("user"), UserDtoData.class);
         TokenSeccao.setUsuarioLogado(usuario);
-        return usuario;
+        if (!TokenSeccao.getUsuarioLogado().roles().contains("ADMIN")) {
+            return false;
+        }
+        return true;
     }
 }

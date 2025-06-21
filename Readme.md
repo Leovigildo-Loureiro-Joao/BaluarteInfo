@@ -1,52 +1,80 @@
-# Baluarte backend
-Cada dependencia colocada foi apenas para garintir um sistema forte com alta capacidade
+# 🙌 Site Oficial da Igreja Baluarte
+🚧 Projeto em Desenvolvimento | Última atualização: 21/06/2025
+> “Transformar fé em presença digital — com excelência, segurança e propósito.”
 
-### Reference Documentation
-For further reference, please consider the following sections: 
+---
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/maven-plugin/build-image.html)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/reference/using/devtools.html)
-* [Spring Data JPA](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/reference/data/sql.html#data.sql.jpa-and-spring-data)
-* [Validation](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/reference/io/validation.html)
-* [Spring Web](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/reference/web/servlet.html)
-* [Spring HATEOAS](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/reference/web/spring-hateoas.html)
-* [Thymeleaf](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/reference/web/servlet.html#web.servlet.spring-mvc.template-engines)
-* [Spring Security](https://docs.spring.io/spring-boot/3.5.0-SNAPSHOT/reference/web/spring-security.html)
+## 🛠️ Ferramentas Utilizadas
 
-### Guides
-The following guides illustrate how to use some features concretely:
+- **VS Code** – Edição e desenvolvimento geral
+- **Lunacy** – Prototipagem visual e design de interface
+- **Postman** – Testes de endpoints da API
+- **SceneBuilder** – Interface gráfica para o painel administrativo (JavaFX)
 
-* [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-* [Validation](https://spring.io/guides/gs/validating-form-input/)
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
-* [Accessing data with MySQL](https://spring.io/guides/gs/accessing-data-mysql/)
-* [Building a Hypermedia-Driven RESTful Web Service](https://spring.io/guides/gs/rest-hateoas/)
-* [Handling Form Submission](https://spring.io/guides/gs/handling-form-submission/)
-* [Securing a Web Application](https://spring.io/guides/gs/securing-web/)
-* [Spring Boot and OAuth2](https://spring.io/guides/tutorials/spring-boot-oauth2/)
-* [Authenticating a User with LDAP](https://spring.io/guides/gs/authenticating-ldap/)
+---
 
-### Maven Parent overrides
+## 💡 Tecnologias e Arquitetura
 
-Due to Maven's design, elements are inherited from the parent POM to the project POM.
-While most of the inheritance is fine, it also inherits unwanted elements like `<license>` and `Leovigildo Loureiro João` from the parent.
-To prevent this, the project POM contains empty overrides for these elements.
-If you manually switch to a different parent and actually want the inheritance, you need to remove those overrides.
+- **Spring Boot** – Backend com API RESTful, autenticação via JWT e Spring Security
+- **ReactJS** – Interface web para membros e visitantes da igreja
+- **JavaFX** – Painel administrativo desktop (uso interno)
+- **Cloudinary** – Armazenamento de artigos e áudios da igreja (nuvem)
+- **ZuluJDK** – Ambiente de execução robusto para backend em produção
 
-### Cache em nuvem
+---
 
-Usou-se  Cloudinary
+## 📱 Dispositivos Atendidos
 
+- 🖥️ **Desktop**: Administração interna (JavaFX)
+- 📲 **Mobile & Web**: Usuário final (ReactJS responsivo)
 
-## Dispositivos selecionados
-- Desktop: Admin e User
-- Mobile: User
+---
 
-### Agredecimentos
-A Deus primeiramente pois ele foi quem despertou tamanha motivacao para continuar e a igreja pelo apoio inderencto e directo para conclusao do prototipo 
+## 📅 Planeamento da Implementação
 
+### ✅ Fase 1: Preparação
+- [x] Criação do protótipo (Lunacy)
+- [x] Definição das funcionalidades essenciais
+
+### ✅ Fase 2: Desenvolvimento
+- [x] Criação da API REST (Spring Boot)
+- [x] Criação do Frontend:
+  - [x] ReactJS (usuário)
+  - [x] JavaFX (administração)
+
+### 🔄 Fase 3: Integração da API
+- [ ] Consumo da API no painel do **admin**
+  - [ ] Models
+  - [ ] Services
+  - [ ] Fetch de dados
+  - [ ] Testes de inserção
+- [ ] Consumo da API no **site do usuário**
+  - [ ] Models
+  - [ ] Services
+  - [ ] Fetch de dados
+  - [ ] Testes de inserção
+
+### 🔬 Fase 4: Testes & Validação
+- [ ] Testes de fluxo e usabilidade
+- [ ] Revisão com equipe da igreja
+
+### 🚀 Fase 5: Lançamento
+- [ ] Apresentação oficial
+- [ ] Documentação do sistema
+- [ ] Publicação online
+
+---
+
+## 🙏 Agradecimentos
+
+A Deus, por ter despertado a visão e mantido acesa a chama da motivação — mesmo nos dias mais difíceis.  
+À Igreja Baluarte, por todo apoio direto e indireto, por cada palavra, oração e espaço dado para que este projeto florescesse.
+
+---
+
+## 🧭 Reflexão Final
+
+> “Programar para Deus é mais do que código — é plantar presença no digital onde vidas podem ser tocadas.”  
+>  
+> — *Leovigildo João, Fase do Flow, Junho 2025*
 

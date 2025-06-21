@@ -40,7 +40,7 @@ public class Circle_progress  extends Group{
             PseudoClass.getPseudoClass("indeterminate");
     
 
-    public Circle_progress(int radius,int size,double translate,int values){
+    public Circle_progress(int radius,int size,double translate,float values){
         ar = Arco(radius,0);
         value = new Label("0%");
         value.setPrefWidth(size);

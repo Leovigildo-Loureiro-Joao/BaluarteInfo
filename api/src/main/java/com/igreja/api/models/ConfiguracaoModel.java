@@ -29,7 +29,7 @@ public class ConfiguracaoModel {
     @Enumerated(EnumType.STRING)
     private ConfigType type;
 
-    private int value;
+    private double value;
 
     private LocalDateTime editado;
 

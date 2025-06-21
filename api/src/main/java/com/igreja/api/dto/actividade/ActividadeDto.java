@@ -18,6 +18,9 @@ public record ActividadeDto(
 
    @NotBlank String tema,
 
+    @NotBlank  String titulo,
+   @NotBlank String endereco,
+
    @Enumerated(EnumType.STRING) ActividadeType tipoEvento,
 
    @Enumerated(EnumType.STRING) PublicoAlvoType publicoAlvo,

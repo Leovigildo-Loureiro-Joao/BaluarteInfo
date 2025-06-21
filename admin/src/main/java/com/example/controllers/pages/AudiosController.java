@@ -3,6 +3,7 @@ package com.example.controllers.pages;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.example.controllers.Controller;
 import com.example.enums.FileType;
 import com.example.models.AudioModel;
 import com.example.utils.UploadFiles;
@@ -18,7 +19,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 
-public class AudiosController implements Initializable{
+public class AudiosController implements Controller{
 
     @FXML
     private TextArea descricao;
@@ -55,6 +56,12 @@ public class AudiosController implements Initializable{
     @FXML
     void CarregarImagem(MouseEvent event) {
         UploadFiles.Uplaod(FileType.Image, imgSrc, content);
+    }
+
+    @Override
+    public void Show() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'Show'");
     }
     
 }
