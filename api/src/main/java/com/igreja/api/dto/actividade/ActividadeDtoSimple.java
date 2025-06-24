@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public record ActividadeDtoSimple(
+    @NotNull int id,
     @NotBlank String descricao,
     @NotBlank String tema,
     @NotBlank  String titulo,
@@ -23,7 +24,7 @@ public record ActividadeDtoSimple(
 
     @Enumerated(EnumType.STRING) PublicoAlvoType publicoAlvo,
 
-    @NotBlank String Organizador,
+    @NotBlank String organizador,
 
     @NotNull LocalDateTime dataEvento,
     @NotNull LocalDateTime dataPublicacao,

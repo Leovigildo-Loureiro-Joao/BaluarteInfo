@@ -1,4 +1,4 @@
-package com.example.models;
+package com.example.models.comentario;
 
 import com.jfoenix.controls.JFXButton;
 

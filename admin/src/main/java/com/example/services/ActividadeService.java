@@ -18,7 +18,7 @@ public class ActividadeService {
     }
 
     public List<ActividadeDtoSimple> allActividades() throws IOException, InterruptedException{
-        String resposta=ApiService.get("/admin/actividade/all");
+        String resposta=ApiService.get("/user/actividade"); 
         return ListUtil.fromJsonList(resposta, ActividadeDtoSimple.class);
     }
 

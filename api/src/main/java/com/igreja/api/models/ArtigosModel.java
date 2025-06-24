@@ -1,6 +1,7 @@
 package com.igreja.api.models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,16 +36,20 @@ public class ArtigosModel {
     @NotBlank
     private String titulo;
     
-    @NotBlank
-    private int Npagina;
+    @NotNull
+    private int nPagina;
 
     @NotNull
-    private LocalDate dataPublicacao;
+    private LocalDateTime dataPublicacao;
 
     @NotBlank
-    private String Escritor;
+    private String escritor;
     @NotBlank
     private String img;
+
+    @Enumerated(EnumType.STRING)
+    private ArtigosType tipo;
+    
     @NotBlank
     private String pdf;
 

@@ -48,7 +48,7 @@ public class MidiaController {
         }
     }
 
-    @GetMapping("/admin/midia/videos")
+    @GetMapping("/user/midia/video")
     public ResponseEntity<?> AllDataVideo() {    
        try {
             return ResponseEntity.ok(midiaService.AllVideo());
@@ -57,7 +57,7 @@ public class MidiaController {
         }
     }
 
-    @GetMapping("/admin/midia/audios")
+    @GetMapping("/user/midia/audio")
     public ResponseEntity<?> AllDataAudios() {    
        try {
             return ResponseEntity.ok(midiaService.AllAudio());

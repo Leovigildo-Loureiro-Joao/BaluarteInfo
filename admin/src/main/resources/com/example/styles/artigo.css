@@ -42,6 +42,13 @@
     -fx-font-size: 14;
 }
 
+.titleModel{
+   -fx-font-weight: bold;
+    -fx-font-size: 18;
+    -fx-wrap-text: true;
+
+}
+
 .col-bold-model Text{
     -fx-font-weight: bold;
     -fx-font-size: 14;
@@ -50,7 +57,7 @@
 .col-bold-model{
     -fx-wrap-text: true;
     -fx-pref-width: 200;
-    -fx-pref-height: 200;
+    -fx-pref-height: 150;
     -fx-valignment: TOP;
 }
 

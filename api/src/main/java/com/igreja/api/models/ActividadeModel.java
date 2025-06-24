@@ -51,7 +51,7 @@ public class ActividadeModel {
     private PublicoAlvoType publicoAlvo;
 
     @NotBlank
-    private String Organizador;
+    private String organizador;
 
     private LocalDateTime dataPublicacao;
 

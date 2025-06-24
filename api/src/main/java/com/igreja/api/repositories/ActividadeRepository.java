@@ -11,9 +11,8 @@ import com.igreja.api.dto.actividade.ActividadeDtoSimple;
 import com.igreja.api.models.ActividadeModel;
 
 public interface ActividadeRepository extends JpaRepository<ActividadeModel,Integer>{
-   
-    @Query(value = "SELECT (descricao,tema,titulo,endereco,tipoEvento,publicoAlvo,Organizador,dataEvento,dataPublicacao,contactos, img) FROM ActividadeModel")
-    List<Object[]> AllActividadeSimple();
+    @Query(value = "SELECT new com.igreja.api.dto.actividade.ActividadeDtoSimple(id, descricao, tema, titulo, endereco, tipoEvento, publicoAlvo, organizador, dataEvento, dataPublicacao, contactos, img) FROM ActividadeModel")
+    List<ActividadeDtoSimple> AllActividadeSimple();
 
     @Query("Select dataEvento from ActividadeModel")
      List<LocalDateTime> DatasMarcadas();

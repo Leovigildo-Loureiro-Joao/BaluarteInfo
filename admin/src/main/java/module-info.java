@@ -11,22 +11,26 @@ module com.example {
     requires java.net.http;
     requires com.google.gson;
     requires com.fasterxml.jackson.databind;
+    requires uk.co.caprica.vlcj;
 
     opens com.example to javafx.fxml;
     opens com.example.controllers.modal to javafx.fxml;
     opens com.example.controllers.pages to javafx.fxml;
 
-    opens com.example.models to com.fasterxml.jackson.databind;
     opens com.example.models.user to com.fasterxml.jackson.databind; // ✅ ESSENCIAL
     opens com.example.models.config to com.fasterxml.jackson.databind; // ✅ ESSENCIAL
     opens com.example.models.notification to com.fasterxml.jackson.databind; // ✅ ESSENCIAL
     opens com.example.models.actividade to com.fasterxml.jackson.databind; // ✅ ESSENCIAL
+    opens com.example.models.audio to com.fasterxml.jackson.databind; // ✅ ESSENCIAL
 
     exports com.example.enums to com.google.gson;
-    exports com.example.models to com.google.gson;
     exports com.example.models.config to com.google.gson;
     exports com.example.models.notification to com.google.gson;
     exports com.example.models.actividade to com.google.gson;
+    exports com.example.models.artigo to com.google.gson;
+    exports com.example.models.video to com.google.gson;
+    exports com.example.models.audio to com.google.gson;
+    exports com.example.models.comentario to com.google.gson;
 
     exports com.example.components.notificacao to de.jensd.fx.glyphs.fontawesome;
     

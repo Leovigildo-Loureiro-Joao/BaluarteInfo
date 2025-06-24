@@ -25,7 +25,7 @@ public record ActividadeDto(
 
    @Enumerated(EnumType.STRING) PublicoAlvoType publicoAlvo,
 
-   @NotBlank String Organizador,
+   @NotBlank String organizador,
 
    @NotNull LocalDateTime dataEvento,
 

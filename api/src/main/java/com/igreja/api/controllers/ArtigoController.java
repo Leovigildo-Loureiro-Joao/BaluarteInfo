@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import com.igreja.api.dto.ArtigoDto;
+import com.igreja.api.dto.artigo.*;
 import com.igreja.api.services.ArtigoService;
 
 import jakarta.validation.Valid;
@@ -58,7 +58,7 @@ public class ArtigoController {
         }
     }
 
-    @GetMapping(value = "/admin/artigo/all")
+    @GetMapping(value = "/user/artigo")
     public ResponseEntity<?> AllArtigos() throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(artigoService.AllData());

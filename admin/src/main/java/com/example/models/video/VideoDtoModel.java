@@ -1,5 +1,5 @@
 package com.example.models.video;
 
-public record VideoDtoModel() {
+public record VideoDtoModel( int id,String descricao,String youtubeID) {
     
 }

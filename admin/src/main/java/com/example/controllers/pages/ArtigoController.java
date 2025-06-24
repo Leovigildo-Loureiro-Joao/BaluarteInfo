@@ -3,13 +3,21 @@ package com.example.controllers.pages;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 
+import com.example.App;
+import com.example.components.item_list.CardProcess;
 import com.example.controllers.Controller;
 import com.example.enums.FileType;
-import com.example.models.ArtigoModel;
+import com.example.models.actividade.ActividadeDtoSimple;
+import com.example.models.actividade.ActividadeModel;
+import com.example.models.artigo.ArtigoDto;
+import com.example.models.artigo.ArtigoModel;
+import com.example.services.ArtigoService;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXComboBox;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -52,6 +60,8 @@ public class ArtigoController implements Controller{
 
     @FXML
     private TextField titulo;
+    private ArtigoService artigoService = new ArtigoService();
+     public CardProcess card = null;
 
 
     @FXML
@@ -74,12 +84,9 @@ public class ArtigoController implements Controller{
     public void initialize(URL location, ResourceBundle resources) {
         AddDetails();
 
-        listArtigo.getChildren().add(new ArtigoModel("Roma da silva", "Curiously, the matter of the \r\n" + //
-                        "criterion must be compatible \r\n" + //
-                        "with The Parameter of Relational \r\n" + //
-                        "Event(Alfredo Asher in The Book \r\n" + //
-                        "of the Application Rules)\r\n" + //
-                        "", "null","","Estudo Bíblico",LocalDateTime.now()))    ;
+        upload.setOnMouseClicked((MouseEvent e) -> {
+            UploadFiles.Uplaod(FileType.Pdf, upload, content);
+        });
                        
     }
 
@@ -90,8 +97,41 @@ public class ArtigoController implements Controller{
 
     @Override
     public void Show() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'Show'");
+      loadArtigo();
+    }
+
+    private void ClearFields() {
+        nome.clear();
+        titulo.clear();
+        descricao.clear();
+        upload.clear();
+        img.setImage(null);
+        tipo.getSelectionModel().clearSelection();
+    }
+
+    private void loadArtigo(){
+        card=new CardProcess("Buscando as Actividades");
+        listArtigo.getChildren().add(card);
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return artigoService.allArtigos();
+            } catch (Exception e) {
+                card.Error("Erro ao buscar artigos");
+                return null;
+            }
+        },App.getExecutorService()).thenAccept(t -> {
+            Platform.runLater(() -> {
+                if (t.isEmpty()) {
+                    card.Vazio("Sem Actividades");
+                }else{
+                    listArtigo.getChildren().clear();
+                    for (ArtigoDto artigoDto : t) {
+                        listArtigo.getChildren().addAll(new ArtigoModel(artigoDto));
+                    }
+                }
+            });
+        });
+        
     }
 
 }

@@ -3,7 +3,7 @@ package com.example.controllers.modal;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.example.models.ComentModel;
+import com.example.models.comentario.ComentModel;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextArea;
 

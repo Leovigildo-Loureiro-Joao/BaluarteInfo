@@ -24,9 +24,9 @@ public class VideoModel extends VBox{
     private JFXButton trushButton;
 
 
-    public VideoModel (String descricao,String videoId) {
-        this.videoId=videoId;
-        OrdenarModel(descricao);
+    public VideoModel (VideoDtoModel video) {
+        this.videoId=video.youtubeID();
+        OrdenarModel(video.descricao());
         AddStyleClass();
         LoadVideo();
     }

@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -22,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Url;
 
-import com.igreja.api.dto.ArtigoDto;
+import com.igreja.api.dto.artigo.*;
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.models.ArtigosModel;
@@ -58,11 +59,10 @@ public class ArtigoService{
       artigosM.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
       artigosM.setImg(cloudinaryService.uploadImageAsync(PdfUtils.extractCoverImageAsync(artigo.pdf().getInputStream()), "image"));
       BeanUtils.copyProperties(artigo, artigosM);
-      artigosM.setDataPublicacao(LocalDate.now());
+      artigosM.setDataPublicacao(LocalDateTime.now());
       
       // Adicionado da branch admin
-      artigosM.setNpagina(BuscarNPagina(artigo.pdf()));
-  
+      artigosM.setNPagina(BuscarNPagina(artigo.pdf()));
       return artigoRepository.save(artigosM);
   }
   
@@ -86,8 +86,9 @@ public class ArtigoService{
       }
   }
   
-   public List<ArtigosModel> AllData() {
-      return artigoRepository.findAll();
+   public List<ArtigoDataDto> AllData() {
+   
+      return  artigoRepository.findAllData();
    }
    
    public ArtigosModel Select(int id)  {

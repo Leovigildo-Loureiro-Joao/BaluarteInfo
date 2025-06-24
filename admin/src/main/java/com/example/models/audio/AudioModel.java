@@ -1,4 +1,4 @@
-package com.example.models;
+package com.example.models.audio;
 
 import java.lang.ModuleLayer.Controller;
 import java.net.URI;
@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.example.models.artigo.ArtigoDto;
+import com.example.utils.AudioMidiaUtil;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.RedoundImageUtil;
@@ -26,10 +28,10 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.scene.text.Text;
 import lombok.Getter;
 import lombok.Setter;
+import uk.co.caprica.vlcj.player.base.MediaPlayer;
 
 @Getter @Setter
 public class AudioModel extends StackPane{
@@ -37,7 +39,7 @@ public class AudioModel extends StackPane{
     private Label titulo;
     private Label descricao;
     private ImageView imageView;
-    private MediaPlayer mediaPlayer;
+    private AudioMidiaUtil mediaPlayer;
     private HBox header;
     private HBox containerMidiaController;
     private JFXButton more=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.ELLIPSIS_H,"25"));
@@ -50,17 +52,20 @@ public class AudioModel extends StackPane{
     private JFXButton trash=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.TRASH,"20"));
     
    
-    public AudioModel(String titulo,String descricao,String url,String imagem){
-        this.titulo=new Label(titulo);
-        this.descricao=new Label(descricao);
-        this.imageView=LoadImageUtil.ImageTimeRedound(300,300);
-        this.descricao = new Label(descricao);
+    public AudioModel(AudioDto audioDto){
+        this.titulo=new Label(audioDto.titulo());
+        this.descricao=new Label(audioDto.descricao());
+        this.imageView=LoadImageUtil.ImageTimeRedound(200,200);
+        imageView.setPreserveRatio(false);
         // Carregar o áudio
-        URI uri = URI.create(url);
-        Media media = new Media(uri.toString()); // URL do arquivo de áudio
-        this.mediaPlayer = new MediaPlayer(media);
-        OrdenarModel(url);
-        carregarImagem(imagem);
+        try {
+            this.mediaPlayer = new AudioMidiaUtil(audioDto.url());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        
+        OrdenarModel(audioDto.url());
+        carregarImagem(audioDto.imagem());
     }
 
     public void CriarControl(){
@@ -98,10 +103,10 @@ public class AudioModel extends StackPane{
         containerMidiaController=new HBox(before,play,after);
         play.setOnAction(event -> start());
         after.setOnAction(event -> {
-            mediaPlayer.seek(mediaPlayer.getCurrentTime().add(javafx.util.Duration.seconds(5)));
+            mediaPlayer.forward();
         });
         before.setOnAction(event -> {
-            mediaPlayer.seek(mediaPlayer.getCurrentTime().subtract(javafx.util.Duration.seconds(5)));
+            mediaPlayer.backward();
         });
     }
 
@@ -141,13 +146,7 @@ public class AudioModel extends StackPane{
 
 
     public void start(){
-        if (mediaPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
-            mediaPlayer.pause();
-            play.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.PLAY,"15"));
-        } else {
-            mediaPlayer.play();
-            play.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.PAUSE,"15"));
-        }
+        mediaPlayer.toggle();  
     }
 
     public void stop(){
@@ -155,8 +154,13 @@ public class AudioModel extends StackPane{
     }
 
     public void pause(){
-        mediaPlayer.pause();    
+        mediaPlayer.toggle();    
     }
 
+    @Override
+    public void finalize() throws Throwable {
+        if (mediaPlayer != null) mediaPlayer.release();
+        super.finalize();
+    }
 
 }

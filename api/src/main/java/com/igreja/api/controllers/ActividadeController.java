@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.igreja.api.dto.ArtigoDto;
+import com.igreja.api.dto.artigo.*;
 import com.igreja.api.dto.actividade.ActividadeDto;
 import com.igreja.api.services.ActividadeService;
 
@@ -54,7 +54,7 @@ public class ActividadeController {
         }
     }
 
-    @GetMapping(value = "/admin/actividade/all")
+    @GetMapping(value = "/user/actividade")
     public ResponseEntity<?> AllActividades() throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(actividadeService.AllDataSimple());

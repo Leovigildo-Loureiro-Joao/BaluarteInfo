@@ -1,4 +1,4 @@
-package com.example.models;
+package com.example.models.actividade;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import com.example.App;
 import com.example.configs.ApiCache;
 import com.example.controllers.pages.MainController;
-import com.example.models.actividade.ActividadeDtoSimple;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.ModalUtil;
@@ -65,7 +64,7 @@ public class ActividadeModel extends StackPane{
         this.titulo=new Label(data.titulo());
         this.tema=new Label(data.tema());
         this.tipoEvento=new Label(data.tipoEvento().name());
-        this.organizador=new Label(data.Organizador());
+        this.organizador=new Label(data.organizador());
         this.publicoAlvo=new Label(data.publicoAlvo().name());
         this.descricao=new Label(data.descricao());
         this.telefone=new Label(data.contactos());

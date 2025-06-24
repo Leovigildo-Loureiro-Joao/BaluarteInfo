@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioSystem;
@@ -19,13 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.dto.midia.AudioDto;
 import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
 import com.igreja.api.dto.midia.VideoDto;
 import com.igreja.api.enums.MidiaType;
 import com.igreja.api.models.ActividadeModel;
-import com.igreja.api.models.ArtigosModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
@@ -53,7 +55,24 @@ public class MidiaService {
         MidiaModel midia= new MidiaModel();
         midia.setDataPublicacao(LocalDate.now());
         BeanUtils.copyProperties(midiaDto, midia);
+        String videoId = extractYoutubeId(midiaDto.url());
+        midia.setUrl(videoId); //
         return midiaRepository.save(midia);
+    }
+
+    public String extractYoutubeId(String url) {
+        if (url == null || url.isEmpty()) return null;
+
+        Pattern pattern = Pattern.compile(
+            "(?:youtube\\.com\\/(?:watch\\?v=|embed\\/)|youtu\\.be\\/)([\\w-]{11})",
+            Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(url);
+
+        if (matcher.find()) {
+            return matcher.group(1); // O ID do vídeo
+        }
+
+        throw new IllegalArgumentException("URL do YouTube inválida: " + url);
     }
 
 
@@ -66,11 +85,20 @@ public class MidiaService {
         midia.setUrl(upload.uploadFileAsync(midiaDto.url(), "raw"));
     
         // Extração da duração do áudio
-        AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(midiaDto.url().getInputStream());
-        Map<String, Object> props = baseFileFormat.properties();
-        long microsegundos = (long) props.get("duration");
-        double segundos = microsegundos / 1_000_000.0;
-        midia.setTempo(formatarDuracao((int) segundos));
+        try {
+            AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(midiaDto.url().getInputStream());
+            Map<String, Object> props = baseFileFormat.properties();
+            Object durationObj = props.get("duration");
+            if (durationObj != null) {
+                long microsegundos = (long) durationObj;
+                double segundos = microsegundos / 1_000_000.0;
+                midia.setTempo(formatarDuracao((int) segundos));
+            } else {
+                midia.setTempo("00:00"); // ou outro valor padrão
+            }
+        } catch (Exception e) {
+            midia.setTempo("00:00"); // ou trate/log o erro conforme necessário
+        }
     
         BeanUtils.copyProperties(midiaDto, midia);
         return midiaRepository.save(midia);
@@ -143,8 +171,8 @@ public class MidiaService {
         return midiaRepository.VideosAll();
     }
 
-    public List<VideoDto> AllAudio() {
-    return midiaRepository.VideosAll();
+    public List<AudioDto> AllAudio() {
+        return midiaRepository.AudioAll();
     }
 
     public String ConnectActividade(ConnectMidiaDto connect) {

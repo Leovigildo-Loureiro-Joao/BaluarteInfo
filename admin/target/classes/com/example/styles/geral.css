@@ -233,6 +233,7 @@ ItemNotif {
     -fx-font-weight: bold;
     -fx-font-size: 18;
     -fx-padding: 30 0 0 0;
+    -fx-wrap-text: true;
 }
 
 /* Modals */

@@ -7,13 +7,14 @@ import com.example.enums.PublicoAlvoType;
 
 
 public record ActividadeDtoSimple(
+    int id,
     String descricao,
     String tema,
     String titulo,
     String endereco,
     ActividadeType tipoEvento,
     PublicoAlvoType publicoAlvo,
-    String Organizador,
+    String organizador,
     LocalDateTime dataEvento,
     LocalDateTime dataPublicacao,
     String contactos,
