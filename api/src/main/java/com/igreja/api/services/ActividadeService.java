@@ -12,17 +12,19 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.actividade.ActividadeDto;
-import com.igreja.api.dto.actividade.ActividadeDtoSimple;
 import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.enums.ActividadeType;
 import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.models.ActividadeModel;
-import com.igreja.api.models.ArtigosModel;
+import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.UserModel;
+import com.igreja.api.projection.ActividadeProjection;
 import com.igreja.api.repositories.ActividadeRepository;
 
 @Service
@@ -91,9 +93,8 @@ public class ActividadeService {
         return actividadeRepository.findAll();
     }
 
-    public List<ActividadeDtoSimple> AllDataSimple() {
-
-        return actividadeRepository.AllActividadeSimple();
+    public List<ActividadeProjection> AllDataSimple(int page, int size) {
+        return actividadeRepository.findAllByOrderByIdDesc(PageRequest.of(page, size)).getContent();
     }
 
     public List<LocalDateTime> AllDataActividade() {

@@ -20,6 +20,7 @@
 - **JavaFX** – Painel administrativo desktop (uso interno)
 - **Cloudinary** – Armazenamento de artigos e áudios da igreja (nuvem)
 - **ZuluJDK** – Ambiente de execução robusto para backend em produção
+- **Maven**
 
 ---
 
@@ -44,7 +45,7 @@
 
 ### 🔄 Fase 3: Integração da API
 - [ ] Consumo da API no painel do **admin**
-  - [ ] Models
+  - [x] Models
   - [ ] Services
   - [ ] Fetch de dados
   - [ ] Testes de inserção
@@ -64,6 +65,13 @@
 - [ ] Publicação online
 
 ---
+### Como rodar api
+``` bash
+mvn spring-boot:run -f api/pom.xml \
+  -Dspring-boot.run.jvmArguments="-Xms256m -Xmx512m"
+  ```
+
+
 
 ## 🙏 Agradecimentos
 

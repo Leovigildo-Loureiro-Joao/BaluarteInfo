@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.midia.ConnectMidiaDto;
@@ -30,7 +31,7 @@ public class MidiaController {
     private MidiaService midiaService;
 
 
-    @PostMapping("/admin/midia/register/video")
+    @PostMapping("/admin/midia/video")
     public ResponseEntity<?> REgisterMidia(@RequestBody @Valid MidiaDto midiaDto) {    
        try {
             return ResponseEntity.ok(midiaService.save(midiaDto));
@@ -39,7 +40,7 @@ public class MidiaController {
         }
     }
 
-    @PostMapping(value = "/admin/midia/register/audio",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/admin/midia/audio",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> REgisterMidiaFile(@ModelAttribute @Valid MidiaFile midiaDto) {    
        try {
             return ResponseEntity.ok(midiaService.save(midiaDto));
@@ -49,18 +50,20 @@ public class MidiaController {
     }
 
     @GetMapping("/user/midia/video")
-    public ResponseEntity<?> AllDataVideo() {    
+    public ResponseEntity<?> AllDataVideo(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {    
        try {
-            return ResponseEntity.ok(midiaService.AllVideo());
+            return ResponseEntity.ok(midiaService.AllVideo(page, size));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     @GetMapping("/user/midia/audio")
-    public ResponseEntity<?> AllDataAudios() {    
+    public ResponseEntity<?> AllDataAudios(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {    
        try {
-            return ResponseEntity.ok(midiaService.AllAudio());
+            return ResponseEntity.ok(midiaService.AllAudio(page, size));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

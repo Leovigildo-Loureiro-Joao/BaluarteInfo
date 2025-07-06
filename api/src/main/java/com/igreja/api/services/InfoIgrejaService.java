@@ -11,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.enums.InfoType;
-import com.igreja.api.models.ArtigosModel;
+import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.repositories.InfoIgrejaRepository;
 import com.mchange.v2.beans.BeansUtils;

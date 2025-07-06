@@ -24,6 +24,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -87,6 +88,8 @@ public class HomeController implements Controller{
     Circle_progress progressActCom;
     Circle_progress progressActIns;
     Circle_progress progressVisit;
+
+    private StackPane fundo;
 
 
     @Override
@@ -195,4 +198,9 @@ public class HomeController implements Controller{
       }
     }
     
+      @Override
+      public void Fundo(StackPane fundo,Label info,ImageView img) {
+        this.fundo=fundo;
+      }
+   
 }

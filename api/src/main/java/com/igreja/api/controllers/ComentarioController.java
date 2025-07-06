@@ -25,7 +25,7 @@ public class ComentarioController {
     @Autowired
     private ComentarioService comentarioService; 
 
-    @PostMapping("/user/comentario/register")
+    @PostMapping("/user/comentario")
     public ResponseEntity<?> REgisterComentario(@RequestBody @Valid ComentarioDto comentarioDto) {    
        try {
             return ResponseEntity.ok(comentarioService.save(comentarioDto));

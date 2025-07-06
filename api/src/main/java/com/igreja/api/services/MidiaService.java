@@ -1,5 +1,6 @@
 package com.igreja.api.services;
 
+import java.awt.print.Pageable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,20 +19,22 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioResult;
-import com.igreja.api.dto.midia.AudioDto;
 import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
-import com.igreja.api.dto.midia.VideoDto;
 import com.igreja.api.enums.MidiaType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.models.VistosModel;
+import com.igreja.api.projection.midia.AudioProjection;
+import com.igreja.api.projection.midia.VideoProjection;
 import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.VistosRepository;
@@ -167,12 +170,12 @@ public class MidiaService {
         midiaRepository.delete(midia);
     }
 
-    public List<VideoDto> AllVideo() {
-        return midiaRepository.VideosAll();
+    public List<VideoProjection> AllVideo(int page,int size) {
+        return midiaRepository.findAllVideoByTypeOrderByIdDesc(MidiaType.VIDEO, PageRequest.of(page, size)).getContent();
     }
 
-    public List<AudioDto> AllAudio() {
-        return midiaRepository.AudioAll();
+    public List<AudioProjection> AllAudio(int page, int size) {
+        return midiaRepository.findAllAudioByTypeOrderByIdDesc(MidiaType.AUDIO, PageRequest.of(page, size)).getContent();
     }
 
     public String ConnectActividade(ConnectMidiaDto connect) {

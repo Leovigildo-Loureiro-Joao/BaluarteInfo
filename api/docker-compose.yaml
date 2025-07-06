@@ -1,0 +1,27 @@
+version: "3.8"
+
+
+services:
+  app:
+    container_name: springboot_app
+
+    build: 
+      context: .
+      args:
+        UID: ${LOCAL_UID}
+        GID: ${LOCAL_GID}
+    user: "${LOCAL_UID}:${LOCAL_GID}"
+   
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/app
+      - ~/.m2:/root/.m2
+
+    environment:
+      - JAVA_TOOL_OPTIONS=-Xms256m -Xmx512m
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+

@@ -8,10 +8,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter @Setter
+
+@Data
+@lombok.EqualsAndHashCode(callSuper = false)
 public class ArtigoModel extends HBox{
       
     private Label titulo;
@@ -34,8 +35,8 @@ public class ArtigoModel extends HBox{
         this.descricao=new Label(artigoDto.descricao());
         this.escritor=new Label(artigoDto.escritor());
         this.tipo=new Label(artigoDto.tipo().name());
-        this.data=new Label(artigoDto.data().toLocalDate().toString());
-        this.hora=new Label(artigoDto.data().toLocalTime().toString());
+        this.data=new Label(artigoDto.dataPublicacao().toLocalDate().toString());
+        this.hora=new Label(artigoDto.dataPublicacao().toLocalTime().toString());
         this.url.getChildren().add(LoadImageUtil.ImageTime());
         OrdenarModel(artigoDto.img());
     }

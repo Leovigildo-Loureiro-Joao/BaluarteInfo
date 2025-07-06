@@ -1,5 +1,6 @@
 package com.example.models.video;
 
+import com.example.dto.video.VideoDtoModel;
 import com.jfoenix.controls.JFXButton;
 
 import javafx.application.Platform;
@@ -25,7 +26,7 @@ public class VideoModel extends VBox{
 
 
     public VideoModel (VideoDtoModel video) {
-        this.videoId=video.youtubeID();
+        this.videoId=video.url();
         OrdenarModel(video.descricao());
         AddStyleClass();
         LoadVideo();

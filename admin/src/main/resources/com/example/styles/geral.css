@@ -375,3 +375,46 @@ TextField.error {
     -fx-border-color: red;
     -fx-border-width: 1px;
 }
+
+.card.wait{
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-alignment: center;
+    -fx-font-size: 14;
+    -fx-fill: #CB2020;
+    -fx-text-fill: #CB2020;
+}
+
+.corret{
+     -fx-alignment: center;
+    -fx-border-color: rgba(0, 184, 0, 0.308);
+    -fx-background-color: rgba(0, 128, 0, 0.103);
+    -fx-text-fill: rgb(0, 184, 0) ;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-font-size: 14;
+}
+
+.corret Label{
+    
+    -fx-text-fill: rgb(79, 180, 79) ;
+}
+
+.error{ 
+    -fx-border-color: rgba(184, 0, 0, 0.308);
+    -fx-background-color: rgba(128, 0, 0, 0.103);
+    -fx-text-fill: rgb(184, 0, 0) ;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-font-size: 14;
+}
+
+.error Label{
+    
+    -fx-text-fill: rgb(180, 79, 79) ;
+}
+
+.inf-card{
+    -fx-alignment: center;
+    -fx-font-size: 14;
+}

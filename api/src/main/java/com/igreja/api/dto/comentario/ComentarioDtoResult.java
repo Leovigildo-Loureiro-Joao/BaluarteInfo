@@ -1,8 +1,0 @@
-package com.igreja.api.dto.comentario;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-public record ComentarioDtoResult(int idComment,long idUser ,@NotBlank String imagem,String name,@NotBlank String descricao) {
-    
-}

@@ -41,6 +41,12 @@ public class MainController implements Initializable{
     private ScrollPane box;
 
     @FXML
+    private ImageView img;
+
+    @FXML
+    private Label info;
+
+    @FXML
     private ListView<ItemDash> lista;
     private Controller controller;
     private final Dialog dialog=new Dialog();
@@ -65,22 +71,21 @@ public class MainController implements Initializable{
                 if(!ApiCache.isTela(fxmlFile)){
                     FXMLLoader loader = new FXMLLoader(App.class.getResource("pages/sub-pages/" +fxmlFile + ".fxml"));
                     try {
-                        loadedPane = loader.load();
-                        
+                        loadedPane = loader.load();    
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     ApiCache.addTelaCache(fxmlFile,  loader.getController(), loadedPane);
+                    controller= (Controller)ApiCache.getTelaCache(fxmlFile)[0];
+                    controller.Fundo(conteinerModal,info,img);
                 }else{
                     Object[] cached = ApiCache.getTelaCache(fxmlFile);
                     controller = (Controller) cached[0];
-                    controller.Show();
                     loadedPane = (AnchorPane) cached[1];
                 }
                 AnchorPane finalPane= (AnchorPane)ApiCache.getTelaCache(fxmlFile)[1];
                 Platform.runLater(() -> {
                     if (finalPane != null) {
-                        controller= (Controller)ApiCache.getTelaCache(fxmlFile)[0];
                         finalPane.setVisible(true);
                         box.setContent(finalPane);
                         controller.Show();

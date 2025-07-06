@@ -21,11 +21,13 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class ArtigoController implements Controller{
@@ -63,11 +65,19 @@ public class ArtigoController implements Controller{
     private ArtigoService artigoService = new ArtigoService();
      public CardProcess card = null;
 
+     private StackPane fundo;
+
 
     @FXML
     void CarregarPdf(ActionEvent event) {
         UploadFiles.Uplaod(FileType.Pdf, upload, content);
     }
+
+          @Override
+      public void Fundo(StackPane fundo,Label info,ImageView img) {
+        this.fundo=fundo;
+      }
+   
 
     @FXML
     void Enviar(ActionEvent event) {
@@ -110,21 +120,25 @@ public class ArtigoController implements Controller{
     }
 
     private void loadArtigo(){
-        card=new CardProcess("Buscando as Actividades");
+        listArtigo.getChildren().clear();
+        card=new CardProcess("Buscando os Artigos");
         listArtigo.getChildren().add(card);
         CompletableFuture.supplyAsync(() -> {
             try {
                 return artigoService.allArtigos();
             } catch (Exception e) {
-                card.Error("Erro ao buscar artigos");
                 return null;
             }
         },App.getExecutorService()).thenAccept(t -> {
             Platform.runLater(() -> {
+                if (t == null) {
+                    card.Error("Erro ao buscar artigos");
+                    return;
+                }
                 if (t.isEmpty()) {
                     card.Vazio("Sem Actividades");
                 }else{
-                    listArtigo.getChildren().clear();
+                  
                     for (ArtigoDto artigoDto : t) {
                         listArtigo.getChildren().addAll(new ArtigoModel(artigoDto));
                     }

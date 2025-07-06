@@ -38,7 +38,7 @@ public class ComentarioModel {
     private MidiaModel midia;
 
     @ManyToOne
-    private ArtigosModel artigo;
+    private ArtigoModel artigo;
 
     @ManyToOne
     private ActividadeModel actividade;

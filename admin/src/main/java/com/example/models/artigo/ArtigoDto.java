@@ -4,6 +4,6 @@ import java.time.LocalDateTime;
 
 import com.example.enums.ArtigoType;
 
-public record ArtigoDto(Integer id,String descricao, String titulo, String escritor,String pdf,String img,int npag,ArtigoType tipo,LocalDateTime data) {
-    
+public record ArtigoDto(Integer id,String descricao, String titulo, String escritor,String pdf,String img,int nPagina,ArtigoType tipo,LocalDateTime dataPublicacao) {
+
 }

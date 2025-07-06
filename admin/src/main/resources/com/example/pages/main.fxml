@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.jfoenix.controls.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Text?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="992.0" styleClass="root" stylesheets="@../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.MainController">
 
@@ -73,9 +81,26 @@
             </VBox>
          </left>
          <center>
-            <ScrollPane fx:id="box" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+            <ScrollPane fx:id="box" prefHeight="601.0" prefWidth="799.0" />
          </center>
       </BorderPane>
       <StackPane fx:id="conteinerModal" mouseTransparent="true" prefHeight="600.0" prefWidth="992.0" style="-fx-opacity: 0;" styleClass="content-modal" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <HBox alignment="CENTER_LEFT" maxHeight="45.0" minHeight="45.0" opacity="0.0" prefHeight="45.0" prefWidth="799.0" spacing="20.0" translateX="190.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="193.0">
+         <children>
+            <ImageView fx:id="img" fitHeight="23.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../assets/corret.png" />
+               </image>
+            </ImageView>
+            <Label fx:id="info" text="Enviado com sucesso" />
+         </children>
+         <styleClass>
+            <String fx:value="reacao" />
+            <String fx:value="corret" />
+         </styleClass>
+         <padding>
+            <Insets left="10.0" />
+         </padding>
+      </HBox>
    </children>
 </AnchorPane>

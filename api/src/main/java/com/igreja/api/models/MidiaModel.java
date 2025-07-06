@@ -43,14 +43,10 @@ public class MidiaModel {
     @NotBlank
     private String titulo;
 
-    @NotBlank
+    @Column(nullable = true)
     private String tempo;
 
     @NotBlank(message = "URL é obrigatória")  // Não pode ser vazio
-    @Pattern(
-        regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$",  // Regex para URLs
-        message = "URL inválida! Ex: http://exemplo.com"
-    )
     private String url;
 
     @Column(nullable = true)

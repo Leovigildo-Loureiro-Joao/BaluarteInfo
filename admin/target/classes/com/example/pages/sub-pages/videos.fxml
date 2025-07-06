@@ -56,14 +56,18 @@
                   <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
                </padding>
                <children>
-                  <TextField promptText="Digite o Titulo do video" styleClass="fieldTextLine" />
-                  <TextField promptText="Insira a url do youtube" styleClass="fieldTextLine" />
-                  <TextArea prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do seu video(opcional)" styleClass="border-panel">
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </TextArea>
-                  <JFXButton prefHeight="48.0" prefWidth="366.0" styleClass="buttonColor" text="Enviar" />
+                  <VBox fx:id="form" spacing="20.0">
+                     <children>
+                        <TextField fx:id="titulo" promptText="Digite o Titulo do video" styleClass="fieldTextLine" />
+                        <TextField fx:id="url" promptText="Insira a url do youtube" styleClass="fieldTextLine" />
+                        <TextArea fx:id="descricao" prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do seu video" styleClass="border-panel">
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </TextArea>
+                     </children>
+                  </VBox>
+                  <JFXButton onAction="#Enviar" prefHeight="48.0" prefWidth="366.0" styleClass="buttonColor" text="Enviar" />
                </children>
             </VBox>
          </children>

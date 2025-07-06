@@ -27,7 +27,7 @@ public class InscritosController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping("/user/inscritos/register/{idActividade}")
+    @PostMapping("/user/inscritos/{idActividade}")
     public ResponseEntity<?> Register(@PathVariable(name = "idActividade") @Valid int id) {
         try {
               Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

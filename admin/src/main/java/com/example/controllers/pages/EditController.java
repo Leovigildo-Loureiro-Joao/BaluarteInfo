@@ -11,9 +11,12 @@ import com.jfoenix.controls.JFXToggleNode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 
 public class EditController implements Controller{
 
@@ -42,10 +45,18 @@ public class EditController implements Controller{
     @FXML
     private TextField versiculo;
 
+    private StackPane fundo;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
       
     }
+
+          @Override
+      public void Fundo(StackPane fundo,Label info,ImageView img) {
+        this.fundo=fundo;
+      }
+   
 
 
     @FXML

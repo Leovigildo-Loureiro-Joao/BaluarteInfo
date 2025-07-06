@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.artigo.*;
@@ -27,7 +28,7 @@ public class ActividadeController {
     @Autowired
     private ActividadeService actividadeService;
 
-     @PostMapping(value = "/admin/actividade/register",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+     @PostMapping(value = "/admin/actividade",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> Register(@ModelAttribute @Valid ActividadeDto actividadeDto) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(actividadeService.save(actividadeDto));
@@ -55,9 +56,10 @@ public class ActividadeController {
     }
 
     @GetMapping(value = "/user/actividade")
-    public ResponseEntity<?> AllActividades() throws IOException {
+    public ResponseEntity<?> AllActividades( @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws IOException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(actividadeService.AllDataSimple());
+            return ResponseEntity.status(HttpStatus.OK).body(actividadeService.AllDataSimple(page, size));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

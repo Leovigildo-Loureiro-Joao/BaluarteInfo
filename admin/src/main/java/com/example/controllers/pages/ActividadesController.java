@@ -24,6 +24,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
@@ -80,6 +81,8 @@ public class ActividadesController implements Controller{
       public CardProcess card = null;
     private ActividadeService actividadeService=new ActividadeService();
 
+    private StackPane fundo;
+
 
     @FXML
     void CarregarImagem(MouseEvent event) {
@@ -108,22 +111,32 @@ public class ActividadesController implements Controller{
         AddDetails();
     }
 
+          @Override
+      public void Fundo(StackPane fundo,Label info,ImageView img) {
+        this.fundo=fundo;
+      }
+   
+
     void LoadActividades(){
+         listActividade.getChildren().clear();
         card=new CardProcess("Buscando as Actividades");
         listActividade.getChildren().add(card);
         CompletableFuture.supplyAsync(() -> {
             try {
                 return actividadeService.allActividades();    
             } catch (Exception e) {
-                card.Error("Erro ao buscar actividades");
                 return null;
             }
         },App.getExecutorService()).thenAccept(t -> {
             Platform.runLater(() -> {
+                if (t == null) {
+                    card.Error("Erro ao buscar actividades");
+                    return;
+                }
                 if (t.isEmpty()) {
                     card.Vazio("Sem Actividades");
                 }else{
-                    listActividade.getChildren().clear();
+                   
                     for (ActividadeDtoSimple actividadeDtoSimple : t) {
                         listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple));
                     }

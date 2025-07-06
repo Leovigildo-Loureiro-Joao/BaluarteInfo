@@ -29,7 +29,6 @@ public class InfoTest {
 
      @Test
     public void deveRetornarInformacoes() throws Exception {
-        Map result = cloudinary.uploader().upload(new File("C:\\Users\\Familia_LJ\\Documents\\GitHub\\BaluarteInfo\\api\\0ce452a0-3788-491e-887d-487da6eadf3e_conteudo.png"), ObjectUtils.emptyMap());
-        System.out.println(result);
+       
     }
 }

@@ -2,18 +2,20 @@ package com.igreja.api.repositories;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.igreja.api.dto.midia.AudioDto;
-import com.igreja.api.dto.midia.VideoDto;
+import com.igreja.api.enums.MidiaType;
 import com.igreja.api.models.MidiaModel;
+import com.igreja.api.projection.midia.AudioProjection;
+import com.igreja.api.projection.midia.VideoProjection;
+
 
 public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
 
-    @Query("SELECT new com.igreja.api.dto.midia.VideoDto(id,descricao,url) from MidiaModel where type='VIDEO'")
-    public List<VideoDto> VideosAll();
+    Page<VideoProjection> findAllVideoByTypeOrderByIdDesc(MidiaType type, Pageable pageable);
 
-    @Query("SELECT new com.igreja.api.dto.midia.AudioDto(id,titulo,descricao,imagem,url) from MidiaModel where type='AUDIO'")
-    public List<AudioDto> AudioAll();
+    Page<AudioProjection> findAllAudioByTypeOrderByIdDesc(MidiaType type, Pageable pageable);
 }

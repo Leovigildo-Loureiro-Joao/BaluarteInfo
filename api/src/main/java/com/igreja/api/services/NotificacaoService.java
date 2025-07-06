@@ -12,7 +12,7 @@ import com.igreja.api.dto.mensage.MensagemDto;
 import com.igreja.api.enums.ConfigType;
 import com.igreja.api.enums.NotificacaoType;
 import com.igreja.api.models.ActividadeModel;
-import com.igreja.api.models.ArtigosModel;
+import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.NotificacaoModel;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.InscritosRepository;
@@ -158,7 +158,7 @@ public class NotificacaoService {
         });
     }
 
-    public void NotifyArtigo(List<ArtigosModel> artigos){
+    public void NotifyArtigo(List<ArtigoModel> artigos){
         //Quando muitos viram ou acederam muito um artigo ou um video 
         userService.findAll().forEach(use -> {
             artigos.forEach(t -> {

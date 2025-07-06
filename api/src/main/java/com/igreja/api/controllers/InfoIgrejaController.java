@@ -24,7 +24,7 @@ public class InfoIgrejaController {
     @Autowired
     private InfoIgrejaService infoIgrejaService;
 
-    @PostMapping(value = "/admin/info/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/admin/info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(@ModelAttribute @Valid InfoDto info) throws IOException {
         try {
             var infos=infoIgrejaService.save(info);
@@ -35,7 +35,7 @@ public class InfoIgrejaController {
      
     }
 
-    @PostMapping(value = "/admin/info/all")
+    @PostMapping(value = "/admin/info")
     public ResponseEntity<?> viewAll() {
         try {
             return ResponseEntity.ok(infoIgrejaService.AllData());

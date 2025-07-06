@@ -21,7 +21,7 @@ public class VistosModel {
     private int id;
 
     @ManyToOne
-    private ArtigosModel artigo;
+    private ArtigoModel artigo;
 
     @ManyToOne
     private MidiaModel midia;

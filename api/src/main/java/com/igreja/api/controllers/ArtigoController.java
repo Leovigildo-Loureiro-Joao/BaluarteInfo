@@ -31,7 +31,7 @@ public class ArtigoController {
     private ArtigoService artigoService;
 
 
-    @PostMapping(value = "/admin/artigo/register",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/admin/artigo",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> Register(@ModelAttribute @Valid ArtigoDto artigo) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(artigoService.save(artigo));
@@ -59,9 +59,10 @@ public class ArtigoController {
     }
 
     @GetMapping(value = "/user/artigo")
-    public ResponseEntity<?> AllArtigos() throws IOException {
+    public ResponseEntity<?> AllArtigos(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws IOException {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(artigoService.AllData());
+            return ResponseEntity.status(HttpStatus.OK).body(artigoService.AllData(size, page));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

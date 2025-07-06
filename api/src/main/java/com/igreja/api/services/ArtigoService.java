@@ -17,6 +17,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,11 +28,12 @@ import com.cloudinary.Url;
 import com.igreja.api.dto.artigo.*;
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
-import com.igreja.api.models.ArtigosModel;
+import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.models.VistosModel;
+import com.igreja.api.projection.ArtigoProjection;
 import com.igreja.api.repositories.ArtigosRepository;
 import com.igreja.api.repositories.VistosRepository;
 import com.igreja.api.utils.PdfUtils;
@@ -52,10 +55,10 @@ public class ArtigoService{
    private CloudDinaryService cloudinaryService;
 
 
-   public ArtigosModel save(ArtigoDto artigo) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+   public ArtigoModel save(ArtigoDto artigo) throws IOException, InterruptedException, ExecutionException, TimeoutException {
       cloudinaryService.generateUniqueName(artigo.pdf().getOriginalFilename());
   
-      ArtigosModel artigosM = new ArtigosModel();
+      ArtigoModel artigosM = new ArtigoModel();
       artigosM.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
       artigosM.setImg(cloudinaryService.uploadImageAsync(PdfUtils.extractCoverImageAsync(artigo.pdf().getInputStream()), "image"));
       BeanUtils.copyProperties(artigo, artigosM);
@@ -86,27 +89,26 @@ public class ArtigoService{
       }
   }
   
-   public List<ArtigoDataDto> AllData() {
-   
-      return  artigoRepository.findAllData();
-   }
-   
-   public ArtigosModel Select(int id)  {
-      ArtigosModel artigosModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
-      return artigosModel;
+   public List<ArtigoProjection> AllData(int size, int page) {
+      return  artigoRepository.findAllByOrderByIdDesc(PageRequest.of(page, size)).getContent();
    }
 
-   public ArtigosModel Visto(int id)  {
-      ArtigosModel artigosModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+   public ArtigoModel Select(int id)  {
+      ArtigoModel artigoModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+      return artigoModel;
+   }
+
+   public ArtigoModel Visto(int id)  {
+      ArtigoModel ArtigoModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
       VistosModel vistos=new VistosModel();
-      vistos.setArtigo(artigosModel);
+      vistos.setArtigo(ArtigoModel);
       vistosRepository.save(vistos);
-      return artigosModel;
+      return ArtigoModel;
    }
 
    public List<ComentarioResult> ComentariosAll(int id) {
       List<ComentarioResult> comentarios=new ArrayList<>();
-      ArtigosModel artigo=Select(id);
+      ArtigoModel artigo=Select(id);
       for (ComentarioModel comentario : artigo.getComentarios()) {
          UserModel user=comentario.getUser();
          comentarios.add(new ComentarioResult(user.getImg(), user.getUsername(), comentario.getDescricao()));
@@ -115,7 +117,7 @@ public class ArtigoService{
    }
 
    public boolean delete(int id) throws InternalError, IOException, InterruptedException, ExecutionException {
-      ArtigosModel artigo= Select(id);
+      ArtigoModel artigo= Select(id);
       if (DeleteFiles(artigo.getPdf(), artigo.getImg())) {
          artigoRepository.delete(artigo);   
          return true;
@@ -123,8 +125,8 @@ public class ArtigoService{
       throw new InternalError("A processo não foi realizado");
    }
 
-   public ArtigosModel edit(int id,ArtigoDto artigo) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
-      ArtigosModel artigoActual=Select(id);
+   public ArtigoModel edit(int id,ArtigoDto artigo) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
+      ArtigoModel artigoActual=Select(id);
       BeanUtils.copyProperties(artigo, artigoActual);
       if (!artigo.pdf().isEmpty()) {
          if (DeleteFiles(artigoActual.getPdf(),artigoActual.getImg())) {

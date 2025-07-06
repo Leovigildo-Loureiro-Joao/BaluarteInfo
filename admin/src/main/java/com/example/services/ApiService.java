@@ -11,7 +11,7 @@ import java.util.Map;
 
 import com.example.utils.TokenSeccao;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
+
 
 public class ApiService {
     private static final String BASE_URL = "http://localhost:8080"; // Ou o IP público

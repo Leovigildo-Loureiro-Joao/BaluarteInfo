@@ -29,7 +29,7 @@ public class App extends Application {
 
     public static Scene scene;
     private static Stage stage;
-    @Override
+    @Override 
     public void start(Stage stage) throws IOException {
         App.stage= stage;
         App.stage.setTitle("BaluarteAdmin");

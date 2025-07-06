@@ -46,17 +46,14 @@ public class LoginController implements Initializable{
     void Entrar(ActionEvent event) {
         String userEmail = email.getText();
         String userSenha = senha.getText();
-        String erro="";
         boolean hasError = false;
 
         if (userEmail.isEmpty()) {
             email.getStyleClass().add("error");
-            erro="Preencha todos campos";
             hasError = true;
         }
         if (userSenha.isEmpty()) {
             senha.getStyleClass().add("error");
-            erro="Preencha todos campos";
             hasError = true;
         }
         if (hasError) return;

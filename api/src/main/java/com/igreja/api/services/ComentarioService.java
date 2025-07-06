@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioDto;
-import com.igreja.api.models.ArtigosModel;
+import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.ActividadeRepository;
@@ -47,8 +47,8 @@ public class ComentarioService {
     }
 
     private ComentarioModel swSeccao(ComentarioModel comentario,Object seccao){
-        if (seccao instanceof ArtigosModel) {
-            comentario.setArtigo((ArtigosModel) seccao);
+        if (seccao instanceof ArtigoModel) {
+            comentario.setArtigo((ArtigoModel) seccao);
             return comentario;
         } else {
             return null;
