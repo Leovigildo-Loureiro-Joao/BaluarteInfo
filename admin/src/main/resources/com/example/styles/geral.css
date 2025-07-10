@@ -417,4 +417,11 @@ TextField.error {
 .inf-card{
     -fx-alignment: center;
     -fx-font-size: 14;
+    -fx-padding: 10 0;
+}
+
+.inf-card .jfx-button{
+    -fx-border-color: transparent transparent #CB2020 transparent;
+    -fx-padding: 5;
+    -fx-font-size: 12;
 }

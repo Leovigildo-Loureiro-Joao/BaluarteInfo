@@ -5,7 +5,7 @@ import com.jfoenix.controls.JFXButton;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-
+import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
@@ -27,16 +27,18 @@ public class CardProcess extends VBox {
     }
 
     public void Error(String erro) {
-        textos.setText(erro);
-        FontAwesomeIconView erroIcone = new FontAwesomeIconView(FontAwesomeIcon.WARNING, "30");
-        erroIcone.setStyle("-fx-fill: red;");
-        getStyleClass().setAll("inf-card","card", "error"); // Adiciona classe diferente se quiser
-        JFXButton botao = new JFXButton("Voltar a carregar");
-        botao.setOnAction(e -> {
-            Process("A processar ... ");
+        Platform.runLater(() -> {
+              textos.setText(erro);
+            FontAwesomeIconView erroIcone = new FontAwesomeIconView(FontAwesomeIcon.WARNING, "15");
+            getStyleClass().setAll("inf-card","card", "error"); // Adiciona classe diferente se quiser
+            JFXButton botao = new JFXButton("Voltar a carregar");
+            botao.setOnAction(e -> {
+                Process("A processar ... ");
+            });
+            botao.setGraphic(erroIcone);
+            getChildren().setAll(textos,botao);
         });
-        getChildren().setAll(textos, erroIcone,botao);
-        Vazio(erro);
+      
     }
 
     public void Vazio(String info) {

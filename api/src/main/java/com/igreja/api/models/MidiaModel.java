@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
 
 import jakarta.persistence.CascadeType;
@@ -36,6 +37,10 @@ public class MidiaModel {
 
     @Enumerated(EnumType.STRING)
     private MidiaType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private AudioType audioType;
 
     @NotBlank
     private String descricao;

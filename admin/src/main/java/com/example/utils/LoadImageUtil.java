@@ -34,16 +34,12 @@ public class LoadImageUtil {
 
     public static  void preocessarBackground(StackPane url ,String urls,int tamanho,int altura,boolean circle){
         url.setPrefSize(tamanho, altura);
-        ScheduledExecutorService service=Executors.newSingleThreadScheduledExecutor();
-        service.schedule(() -> {
-            Platform.runLater(() -> {
-                url.setClip(circle?new Circle(altura/2,altura/2,altura/2):RedoundImageUtil.AddRedoundImage(tamanho, altura,10));
-                url.getChildren().clear();
-                url.setStyle("-fx-background-size:cover;-fx-background-image:url("+urls+")");
-                url.setPrefSize(tamanho, altura);
-            });
-           service.shutdown();
-        }, 2, TimeUnit.SECONDS);
+        Platform.runLater(() -> {
+            url.setClip(circle?new Circle(altura/2,altura/2,altura/2):RedoundImageUtil.AddRedoundImage(tamanho, altura,10));
+            url.getChildren().clear();
+            url.setStyle("-fx-background-size:cover;-fx-background-image:url("+urls+")");
+            url.setPrefSize(tamanho, altura);
+        });  
     }
 
 

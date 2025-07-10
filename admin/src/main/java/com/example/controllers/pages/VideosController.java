@@ -119,8 +119,7 @@ public class VideosController implements Controller {
                 if (t.isEmpty()) {
                     card.Vazio("Sem videos");
                 }else{
-                    //listVideos.getChildren().remove(card);
-                    card.Error("Erro ao buscar videos");
+                    listVideos.getChildren().remove(card);
                     for (VideoDtoModel video : t) {
                         listVideos.getChildren().addAll(new VideoModel(video));
                     }

@@ -10,7 +10,7 @@ import com.example.components.item_list.CardProcess;
 import com.example.controllers.Controller;
 import com.example.dto.audio.AudioDto;
 import com.example.dto.audio.AudioDtoRegister;
-
+import com.example.enums.AudioType;
 import com.example.enums.FileType;
 import com.example.enums.MidiaType;
 
@@ -25,7 +25,7 @@ import com.jfoenix.controls.JFXComboBox;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -71,7 +71,7 @@ public class AudiosController implements Controller{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-      
+      tipo.getItems().addAll(AudioType.Lista());
     }
 
     @FXML
@@ -89,9 +89,11 @@ public class AudiosController implements Controller{
        loadAudio();
     }
 
-          @Override
+    @Override
       public void Fundo(StackPane fundo,Label info,ImageView img) {
         this.fundo=fundo;
+        this.info=info;
+        this.img=img;
       }
    
     
@@ -136,19 +138,21 @@ public class AudiosController implements Controller{
     }
 
     private void AddAudio(JFXButton actionButton){
+        System.out.println(UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath());
         CompletableFuture.supplyAsync(() -> {
             try {
                 return audioService.postAudio(new AudioDtoRegister(
                         titulo.getText(),
                         descricao.getText(),
-                        imgSrc.getImage().getUrl(),
+                        UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
                         audioSrc.getText(),
-                        MidiaType.AUDIO
-                    ));
+                        MidiaType.AUDIO,
+                        AudioType.valueOf(tipo.getValue())));
             } catch (IOException | InterruptedException e) {
               return null;
             }
         }).thenAccept(audio -> {
+            souuuuuuuuuuuuut
             if (audio==null) {
                 ReacaoFormUtil.Reagir("error","Erro! O Audio nao foi adicionado a base de dados" , img, info);
             }else{

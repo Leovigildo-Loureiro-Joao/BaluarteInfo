@@ -35,6 +35,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalSenhaController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/ActividadeService.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/pages/EditController.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/AudioType.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/components/item_list/CardProcess.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/comentario/ComentModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/PublicoAlvoType.java

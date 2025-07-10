@@ -37,7 +37,6 @@ public class App extends Application {
         App.stage.setMinHeight(600);
         App.stage.getIcons().add(new Image(App.class.getResourceAsStream("assets/logoP.png")));
         stage.setMaximized(true);
-      
         scene = new Scene(loadFXML("login"), 640, 480);
         stage.setScene(scene);
         stage.show();

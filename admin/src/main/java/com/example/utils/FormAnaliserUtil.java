@@ -1,6 +1,7 @@
 package com.example.utils;
 
 import javafx.scene.Node;
+import com.jfoenix.controls.*;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
@@ -13,6 +14,9 @@ public class FormAnaliserUtil {
             if (node.getClass().equals(TextField.class)) {
                 TextField input=(TextField) node ;
                 input.setText(null);
+            }else if(node.getClass().equals(JFXComboBox.class)){
+                JFXComboBox input=(JFXComboBox) node ;
+                input.getSelectionModel().clearSelection();
             }else{
                 TextArea input=(TextArea) node ;
                 input.setText(null);
@@ -27,9 +31,13 @@ public class FormAnaliserUtil {
                 TextField input=(TextField) node ;
                 hasError=input.getText().trim().isEmpty();
                 if (hasError) input.getStyleClass().add("error");
-            }else{
+            }else if(node.getClass().equals(TextArea.class)){
                 TextArea input=(TextArea) node ;
                 hasError=input.getText().trim().isEmpty();
+                if (hasError) input.getStyleClass().add("error");
+            }else{
+                JFXComboBox input=(JFXComboBox) node ;
+                hasError=input.getSelectionModel().isEmpty();
                 if (hasError) input.getStyleClass().add("error");
             }
             if (hasError) return hasError;

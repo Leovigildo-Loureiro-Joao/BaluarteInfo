@@ -13,34 +13,37 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 
 public class UploadFiles {
-
+    public static  File artigoFile;
+    public static  File audioFile;
+    public static  File imgFile;
     public static void Uplaod(FileType tipo,Node node,Node parent){
         try {
             FileChooser f = new FileChooser();
-            f.setTitle("Buscar imagem");
             FileChooser.ExtensionFilter imageFilter =null;
-            File select = null;
             switch (tipo) {
                 case Image:
+                    f.setTitle("Buscar imagem");
                     imageFilter = new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.gif", "*.bmp");
                     ImageView imageView=(ImageView)node;    
                     f.getExtensionFilters().add(imageFilter);
-                    select = f.showOpenDialog(parent.getScene().getWindow());        
-                    imageView.setImage(new Image(select.toURI().toURL().openStream()));
+                    imgFile = f.showOpenDialog(parent.getScene().getWindow());        
+                    imageView.setImage(new Image(imgFile.toURI().toURL().openStream()));
                     break;
                 case Audio:
+                f.setTitle("Buscar audio");
                     imageFilter = new FileChooser.ExtensionFilter("Audios", "*.mp3", "*.wav");
                     f.getExtensionFilters().add(imageFilter);
-                    select = f.showOpenDialog(parent.getScene().getWindow());
+                    audioFile = f.showOpenDialog(parent.getScene().getWindow());
                     TextField textFields=(TextField)node;
-                    textFields.setText(select.getPath());
+                    textFields.setText(audioFile.getPath());
                     break;
                 default:
+                f.setTitle("Buscar artigo");
                     imageFilter = new FileChooser.ExtensionFilter("Documentos", "*.pdf");
                     f.getExtensionFilters().add(imageFilter);
-                    select = f.showOpenDialog(parent.getScene().getWindow());
+                    artigoFile = f.showOpenDialog(parent.getScene().getWindow());
                     TextField textField=(TextField)node;
-                    textField.setText(select.getPath());
+                    textField.setText(artigoFile.getPath());
                     break;
             }
            

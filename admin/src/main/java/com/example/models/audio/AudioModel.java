@@ -4,6 +4,7 @@ import java.lang.ModuleLayer.Controller;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,16 +57,23 @@ public class AudioModel extends StackPane{
     public AudioModel(AudioDto audioDto){
         this.titulo=new Label(audioDto.titulo());
         this.descricao=new Label(audioDto.descricao());
+        this.imageView=new ImageView();
         this.imageView=LoadImageUtil.ImageTimeRedound(200,200);
-        imageView.setPreserveRatio(false);
         // Carregar o áudio
-        try {
-            this.mediaPlayer = new AudioMidiaUtil(audioDto.url());
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        
-        OrdenarModel(audioDto.url());
+        play.setDisable(true);
+        after.setDisable(true);
+        before.setDisable(true);
+        CompletableFuture.runAsync(() -> Platform.runLater(() -> {
+            try {
+                this.mediaPlayer = new AudioMidiaUtil(audioDto.url());
+                play.setDisable(false);
+                after.setDisable(false);
+                before.setDisable(false);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }));
+        OrdenarModel();
         carregarImagem(audioDto.imagem());
     }
 
@@ -86,7 +94,7 @@ public class AudioModel extends StackPane{
     }
 
 
-    private void OrdenarModel(String url) {
+    private void OrdenarModel() {
         Region spacer = new Region();
         header=new HBox(titulo,spacer,more);
         AddControlsMidia();
@@ -127,6 +135,7 @@ public class AudioModel extends StackPane{
         ScheduledExecutorService service=Executors.newSingleThreadScheduledExecutor();
         service.schedule(() -> {
            Platform.runLater(() -> {
+            imageView.setPreserveRatio(false);
             this.imageView.setImage(new Image(urls));    
            });
            service.shutdown();
@@ -147,16 +156,20 @@ public class AudioModel extends StackPane{
 
 
     public void start(){
-        mediaPlayer.toggle();  
+        Platform.runLater(() -> {
+            mediaPlayer.toggle();
+            if (mediaPlayer.getMediaPlayer().status().isPlaying()) {
+                play.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.PLAY,"15"));
+            } else {
+                play.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.PAUSE,"15"));
+            }
+        });
     }
 
     public void stop(){
         mediaPlayer.stop();    
     }
 
-    public void pause(){
-        mediaPlayer.toggle();    
-    }
 
     @Override
     public void finalize() throws Throwable {

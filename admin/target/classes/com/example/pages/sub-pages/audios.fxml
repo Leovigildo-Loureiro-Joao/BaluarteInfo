@@ -50,7 +50,7 @@
                   </HBox>
                   <ScrollPane hbarPolicy="NEVER" prefHeight="495.0" prefWidth="479.0">
                     <content>
-                        <VBox fx:id="listAudios" prefHeight="482.0" prefWidth="479.0" />
+                        <VBox fx:id="listAudios" prefHeight="482.0" prefWidth="479.0" spacing="10.0" />
                     </content>
                      <VBox.margin>
                         <Insets top="40.0" />
@@ -88,7 +88,7 @@
                         </ImageView>
                      </children>
                   </StackPane>
-                  <JFXButton prefHeight="46.0" prefWidth="366.0" styleClass="buttonColor" text="Enviar" />
+                  <JFXButton onAction="#Enviar" prefHeight="46.0" prefWidth="366.0" styleClass="buttonColor" text="Enviar" />
                </children>
             </VBox>
          </children>

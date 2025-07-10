@@ -5,12 +5,21 @@ import uk.co.caprica.vlcj.player.base.MediaPlayer;
 
 public class AudioMidiaUtil {
      private final MediaPlayer mediaPlayer;
+     private String audioUrl;
 
     public AudioMidiaUtil(String audioUrl) {
         MediaPlayerFactory factory = new MediaPlayerFactory();
         this.mediaPlayer = factory.mediaPlayers().newMediaPlayer();
-        mediaPlayer.media().play(audioUrl);
         mediaPlayer.controls().pause(); // inicia carregado, mas pausado
+        this.audioUrl = audioUrl;
+    }
+
+    public void play() {
+        if (audioUrl != null && !audioUrl.isEmpty()) {
+            mediaPlayer.media().play(audioUrl);
+        } else {
+            System.err.println("URL do áudio inválida ou vazia.");
+        }
     }
 
     public void toggle() {
@@ -37,5 +46,9 @@ public class AudioMidiaUtil {
 
     public void release() {
         mediaPlayer.release();
+    }
+
+    public MediaPlayer getMediaPlayer(){
+        return mediaPlayer;
     }
 }

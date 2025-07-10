@@ -6,6 +6,8 @@
 # ================================
 
 # ⚡ Passo 1: Limpeza do build antigo
+cd admin
+
 echo "🧹 Limpando arquivos antigos..."
 mvn clean
 
@@ -13,9 +15,10 @@ mvn clean
 echo "🔨 Compilando o projeto..."
 mvn compile
 
-# ⚡ Passo 3: Execução JavaFX
+# ...existing code...
 echo "🚀 Iniciando sua aplicação JavaFX..."
-mvn javafx:run -e
+MAVEN_OPTS="-Xmx512m" mvn javafx:run -e
+# ...existing code...
 
 # ⚡ Passo 4: Status final
 echo "✅ Finalizado. Código rodou sem depender de IDE!"

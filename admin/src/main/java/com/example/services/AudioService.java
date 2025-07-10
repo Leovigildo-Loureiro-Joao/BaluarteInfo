@@ -17,6 +17,7 @@ public class AudioService {
     }
 
     public AudioDto postAudio(AudioDtoRegister audioDtoRegister) throws IOException, InterruptedException {
+	System.out.println("Cheguei no AudioService.postAudio");
         String resposta=ApiService.post("/admin/midia/audio", audioDtoRegister.toMap());
         return AudioDto.fromJson(resposta);
     }

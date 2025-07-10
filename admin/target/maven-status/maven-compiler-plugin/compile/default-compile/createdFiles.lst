@@ -27,6 +27,7 @@ com/example/controllers/pages/EditController.class
 com/example/dto/audio/AudioDtoRegister.class
 com/example/controllers/modal/ModalVirsiculoBiblicoController.class
 com/example/controllers/pages/MainController.class
+com/example/enums/AudioType.class
 com/example/utils/DialogUtil.class
 com/example/enums/ActividadeType.class
 com/example/controllers/modal/ModalSenhaController.class
