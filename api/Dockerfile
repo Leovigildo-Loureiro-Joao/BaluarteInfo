@@ -1,23 +1,25 @@
-# Dockerfile
-FROM eclipse-temurin:21-jdk
+FROM openjdk:21-jdk-slim
 
-ARG UID=1000
-ARG GID=1000
-# Cria usuário com UID/GID certos
-RUN addgroup --gid ${GID} devgroup && \
-    adduser --disabled-password --gecos '' --uid ${UID} --gid ${GID} devuser
-USER devuser
+# IDs alternativos
+ENV UID=1010
+ENV GID=1010
 
+# Cria grupo e usuário só se não existirem
+RUN getent group ${GID} || addgroup --gid ${GID} devgroup \
+    && adduser --disabled-password --gecos '' --uid ${UID} --gid ${GID} devuser
+
+# Define diretório de trabalho
 WORKDIR /app
 
-COPY . /app
+# Copia projeto
+COPY . .
 
-# 🔑 Garantir permissão de execução do Maven Wrapper
-RUN chmod +x mvnw
+# Expõe porta
+EXPOSE 8080
 
-# Pré-instala dependências Maven
-RUN ./mvnw dependency:resolve
+# Executa como devuser
+USER devuser
 
-CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m"]
-
+# Executa aplicação
+ENTRYPOINT ["java","-jar","target/BaluarteInfo.jar"]
 
