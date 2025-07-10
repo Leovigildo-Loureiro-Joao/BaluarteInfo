@@ -21,5 +21,5 @@ EXPOSE 8080
 USER devuser
 
 # Executa aplicação
-ENTRYPOINT ["java","-jar","target/BaluarteInfo.jar"]
+ENTRYPOINT ["java","-jar","target/api-0.0.1-SNAPSHOT.jar"]
 
