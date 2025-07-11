@@ -34,7 +34,7 @@ public class MensagemService {
     @Autowired
     private MensagemRepository mensagemRepository;
 
-    @Value("${email.user}")
+    @Value("${spring.mail.username}") // use spring.mail.username, não email.user!
     private String user;
 
     public MensagemService(JavaMailSender mensagemUtils) {
