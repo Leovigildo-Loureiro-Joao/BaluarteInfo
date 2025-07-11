@@ -10,7 +10,7 @@ import com.cloudinary.utils.ObjectUtils;
 import io.github.cdimascio.dotenv.Dotenv;
 
 @Configuration
-public class CloudinayConfig {
+public class CloudinaryConfig {
 
     @Value("${cloudinary.cloud_name}")
     private String cloudName;
