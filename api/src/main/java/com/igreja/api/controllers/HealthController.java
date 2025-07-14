@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 public class HealthController {
 
     @GetMapping("/health")
-    public String health() {
+    public ResponseEntity<?> health() {
         return ResponseEntity.ok("OK");
     }
 }
