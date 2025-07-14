@@ -152,7 +152,6 @@ public class AudiosController implements Controller{
               return null;
             }
         }).thenAccept(audio -> {
-            souuuuuuuuuuuuut
             if (audio==null) {
                 ReacaoFormUtil.Reagir("error","Erro! O Audio nao foi adicionado a base de dados" , img, info);
             }else{
