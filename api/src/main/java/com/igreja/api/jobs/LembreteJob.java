@@ -14,9 +14,7 @@ public class LembreteJob implements Job{
     @Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
         try {
-            System.out.println("Iniciando o job Lembrete...");
             notificacaoService.NotifyActividadeLembrete();
-            System.out.println("Job executado com sucesso...");
         } catch (Exception e) {
             System.out.println("Job falhou Lembrete:  "+e.getMessage()); 
         }
