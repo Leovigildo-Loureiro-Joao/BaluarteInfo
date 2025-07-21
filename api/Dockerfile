@@ -18,9 +18,8 @@ COPY src ./src
 # Executa o build — para PROD, é melhor rodar testes!
 RUN mvn clean package -DskipTests
 
-# Verifica se o .jar existe — falha se não existir
-RUN ls -lh target/ && \
-    if [ ! -f target/*.jar ]; then echo "❌ JAR NÃO FOI GERADO!"; exit 1; fi
+# Renomeia o JAR para app.jar
+RUN mv target/*.jar target/app.jar
 
 # ============================
 # ⚙️ 2️⃣ STAGE DE RUNTIME
@@ -32,8 +31,8 @@ RUN addgroup --system spring && adduser --system --ingroup spring spring
 
 WORKDIR /app
 
-# Copia apenas o jar gerado do stage anterior
-COPY --from=build /app/target/*.jar app.jar
+# Copia o jar gerado do stage anterior
+COPY --from=build /app/target/app.jar /app/app.jar
 
 # Permissão do jar para o user não-root
 RUN chown spring:spring /app/app.jar
