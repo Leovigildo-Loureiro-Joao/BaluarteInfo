@@ -91,6 +91,7 @@ public class VideosController implements Controller {
                 ReacaoFormUtil.Reagir("error","Erro! O Video nao foi adicionado a base de dados" , img, info);
             }else{
                 Platform.runLater(() -> {
+                    listVideos.getChildren().remove(card);
                     listVideos.getChildren().add(0,new VideoModel(video));
                     FormAnaliserUtil.CleanForm(form);
                     ReacaoFormUtil.Reagir("corret","O Video foi adicionado com sucesso" , img, info);

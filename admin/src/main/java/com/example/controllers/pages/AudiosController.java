@@ -141,14 +141,32 @@ public class AudiosController implements Controller{
         System.out.println(UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath());
         CompletableFuture.supplyAsync(() -> {
             try {
+                if (UploadFiles.imgFile==null) {
+                    ReacaoFormUtil.Reagir("error","Erro! A imagem nao foi carregada" , img, info);
+                    return null;
+                }
+                if (UploadFiles.audioFile==null) {
+                    ReacaoFormUtil.Reagir("error","Erro! O audio nao foi carregado" , img, info);
+                    return null;
+                }
+            } catch (Exception e) {
+                ReacaoFormUtil.Reagir("error","Erro! Ocorreu um erro ao carregar os arquivos" , img, info);
+                return null;
+            }
+            try {
+                  System.out.println("Esperndo o AudioService.postAudio");
                 return audioService.postAudio(new AudioDtoRegister(
                         titulo.getText(),
                         descricao.getText(),
                         UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
                         audioSrc.getText(),
                         MidiaType.AUDIO,
-                        AudioType.valueOf(tipo.getValue())));
-            } catch (IOException | InterruptedException e) {
+                        AudioType.fromValue(tipo.getValue())));
+            } catch ( IOException | InterruptedException e) {
+                 System.out.println(e.getMessage());
+              return null;
+            } catch ( Exception e) {
+                System.out.println(e.getMessage());
               return null;
             }
         }).thenAccept(audio -> {

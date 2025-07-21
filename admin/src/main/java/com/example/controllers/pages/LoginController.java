@@ -66,9 +66,10 @@ public class LoginController implements Initializable{
         CompletableFuture
             .supplyAsync(() -> {
                 try {
+                    System.out.println("Autenticando usuário: " + userEmail+ " com senha: " + userSenha);
                     return service.autenticar(userEmail, userSenha);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                     return false; // Trata exceção e impede retorno null
                 }
             })

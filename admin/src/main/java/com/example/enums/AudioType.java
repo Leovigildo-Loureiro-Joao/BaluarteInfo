@@ -18,6 +18,20 @@ public enum AudioType {
         this.value = descricao;
     }
 
+    @Override
+    public String toString() {
+        return value;
+    }
+
+    public static AudioType fromValue(String value) {
+    for (AudioType type : AudioType.values()) {
+        if (type.value.equals(value)) {
+            return type;
+        }
+    }
+    throw new IllegalArgumentException("Tipo de áudio inválido: " + value);
+}
+
      public static List<String> Lista() {
     return java.util.Arrays.stream(AudioType.values())
         .map(type -> type.value)

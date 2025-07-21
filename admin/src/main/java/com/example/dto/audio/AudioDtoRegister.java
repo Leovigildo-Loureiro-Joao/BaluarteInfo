@@ -14,7 +14,8 @@ public record AudioDtoRegister(String titulo, String descricao, String imagem, S
         map.put("imagem", imagem);
         map.put("url", url);
         map.put("type", tipo.name());
-        map.put("audioType", tipo.name());
+        map.put("audioType", audioType.name());
+        System.out.println(map);
         return map;
     }
 }

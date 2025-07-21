@@ -65,6 +65,7 @@ com/example/controllers/pages/LoginController.class
 com/example/utils/DataFormater.class
 com/example/models/user/UserMapper.class
 com/example/dto/video/VideoDtoRegister.class
+com/example/utils/FilePartUtil.class
 com/example/enums/MidiaType.class
 com/example/models/actividade/ActividadeModel.class
 com/example/controllers/modal/ModalEditController.class

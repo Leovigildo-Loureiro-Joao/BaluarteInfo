@@ -58,6 +58,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/ApiService.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/components/notificacao/ItemNotif.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalEditarApagarController.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/FilePartUtil.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/user/UserDtoData.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalEditController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/pages/ActividadesController.java

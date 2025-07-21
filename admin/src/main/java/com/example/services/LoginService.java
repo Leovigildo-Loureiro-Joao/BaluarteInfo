@@ -30,6 +30,7 @@ public class LoginService {
         ObjectMapper mapper = new ObjectMapper();
         UserDtoData usuario = mapper.convertValue(resultado.get("user"), UserDtoData.class);
         TokenSeccao.setUsuarioLogado(usuario);
+        
         if (!TokenSeccao.getUsuarioLogado().roles().contains("ADMIN")) {
             return false;
         }
