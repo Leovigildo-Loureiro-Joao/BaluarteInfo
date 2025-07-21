@@ -45,5 +45,5 @@ USER spring
 EXPOSE 8080
 
 # Entrypoint robusto
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["java", "-Xmx512m", "-jar", "/app/app.jar"]
 
