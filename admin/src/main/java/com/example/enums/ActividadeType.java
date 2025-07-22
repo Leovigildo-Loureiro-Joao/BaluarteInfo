@@ -9,8 +9,8 @@ public enum ActividadeType {
     Acampamento;
 
      public static List<String> Lista() {
-        return java.util.Arrays.stream(AudioType.values())
-            .map(type -> type.value)
+        return java.util.Arrays.stream(ActividadeType.values())
+            .map(type -> type.name())
             .toList();
     }
 

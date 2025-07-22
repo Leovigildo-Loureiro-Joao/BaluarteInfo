@@ -93,7 +93,7 @@ public class ArtigoController implements Controller{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         AddDetails();
-
+        loadArtigo();
         upload.setOnMouseClicked((MouseEvent e) -> {
             UploadFiles.Uplaod(FileType.Pdf, upload, content);
         });
@@ -107,7 +107,9 @@ public class ArtigoController implements Controller{
 
     @Override
     public void Show() {
-      loadArtigo();
+     if (listArtigo.getChildren().isEmpty()) {
+          loadArtigo();  
+      }
     }
 
     private void ClearFields() {

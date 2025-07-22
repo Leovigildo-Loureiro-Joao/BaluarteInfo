@@ -60,7 +60,10 @@ public class VideosController implements Controller {
 
     @Override
     public void Show() {
-      
+      if (listVideos.getChildren().isEmpty()) {
+          loadVideo();  
+        
+      }
     }
 
     @FXML

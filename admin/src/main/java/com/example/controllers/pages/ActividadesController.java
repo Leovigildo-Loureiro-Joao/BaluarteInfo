@@ -21,6 +21,7 @@ import com.example.dto.actividade.*;
 import com.example.models.actividade.ActividadeModel;
 import com.example.services.ActividadeService;
 import com.example.utils.FormAnaliserUtil;
+import com.example.utils.ReacaoFormUtil;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
@@ -34,6 +35,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -58,7 +60,7 @@ public class ActividadesController implements Controller{
     private JFXComboBox<String> filtro;
 
     @FXML
-    private ImageView img;
+    private ImageView imgSrc;
 
     @FXML
     private VBox listActividade;
@@ -97,10 +99,13 @@ public class ActividadesController implements Controller{
 
     private StackPane fundo;
 
+    private ImageView img;
+
+    private Label info;
 
     @FXML
     void CarregarImagem(MouseEvent event) {
-        UploadFiles.Uplaod(FileType.Image, img,  content); 
+        UploadFiles.Uplaod(FileType.Image, imgSrc,  content); 
     }
 
     @FXML
@@ -115,7 +120,16 @@ public class ActividadesController implements Controller{
     }
 
     private void AddActividade(JFXButton actionButton){
+        
         CompletableFuture.supplyAsync(() -> {
+            if (UploadFiles.imgFile == null) {
+                ReacaoFormUtil.Reagir("error", "Erro! A imagem nao foi carregada", img, info);
+                return null;
+            }
+            if (data_hora.getValue() == null) {
+                ReacaoFormUtil.Reagir("error", "Erro! A data e hora do evento nao foram selecionadas", img, info);
+                return null;
+            }
             try {
                 return actividadeService.postActividade(new ActividadeDtoRegister(
                         descricao.getText(),
@@ -128,19 +142,25 @@ public class ActividadesController implements Controller{
                         organizador.getText(),
                         LocalDateTime.from(data_hora.getValue()),
                         contactos.getText(),
-                        UploadFiles.imgFile
+                        UploadFiles.imgFile.getPath()
                     ));
             } catch (IOException | InterruptedException e) {
                 return null;
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+                return null;
             }
-        }, App.getExecutorService()).thenAccept(t -> {
+        }, App.getExecutorService()).thenAccept(actividade -> {
             Platform.runLater(() -> {
                 actionButton.setDisable(false);
-                if (t == null) {
-                    card.Error("Erro ao enviar actividade", () -> AddActividade(actionButton));
+                if (actividade == null) {
+                    ReacaoFormUtil.Reagir("error","Erro! A actividade não foi adicionada a base de dados" , img, info);
                     return;
                 }
-                card.Success("Actividade enviada com sucesso", () -> loadActividades());
+                listActividade.getChildren().add(0,new ActividadeModel(actividade));
+                FormAnaliserUtil.CleanForm(form);
+                img.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
+                ReacaoFormUtil.Reagir("corret","A Actividade foi adicionada com sucesso" , img, info);
             });
         });
     }
@@ -161,9 +181,11 @@ public class ActividadesController implements Controller{
          AddDetails();
     }
 
-          @Override
+    @Override
       public void Fundo(StackPane fundo,Label info,ImageView img) {
         this.fundo=fundo;
+        this.info=info;
+        this.img=img;
       }
    
 
@@ -205,7 +227,9 @@ public class ActividadesController implements Controller{
 
     @Override
     public void Show() {
-     
+        if (listActividade.getChildren().isEmpty()) {
+          LoadActividades();  
+        }
     }
  
     

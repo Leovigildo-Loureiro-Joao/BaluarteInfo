@@ -8,8 +8,8 @@ public enum DuracaoActividade {
     Projecto;
 
     public static List<String> Lista() {
-        return java.util.Arrays.stream(AudioType.values())
-            .map(type -> type.value)
+        return java.util.Arrays.stream(DuracaoActividade.values())
+            .map(type -> type.name())
             .toList();
     }
 }

@@ -106,7 +106,7 @@
                                     <TextArea fx:id="descricao" prefHeight="90.0" prefWidth="346.0" promptText="Descrição" styleClass="border-panel" />
                                     <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="border-panel">
                                        <children>
-                                          <ImageView fx:id="img" fitHeight="209.0" fitWidth="274.0" onMouseClicked="#CarregarImagem" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgSrc" fitHeight="209.0" fitWidth="274.0" onMouseClicked="#CarregarImagem" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../../assets/pdf.png" />
                                              </image>

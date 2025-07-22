@@ -25,7 +25,7 @@ public class ReacaoFormUtil {
             
             FadeTransition fadeOut = FadeTrasitionUtil.Fade(0.3, box, 1, 0);
             fadeOut.setOnFinished(event -> {
-                FadeTransition fadeIn = FadeTrasitionUtil.Fade(0.8, box, 0, 1);
+                FadeTransition fadeIn = FadeTrasitionUtil.Fade(1, box, 0, 1);
                 box.getProperties().put("fadeTransition", fadeIn);
                 fadeIn.play();
             });

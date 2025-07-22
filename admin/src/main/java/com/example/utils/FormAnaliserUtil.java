@@ -2,6 +2,8 @@ package com.example.utils;
 
 import javafx.scene.Node;
 import com.jfoenix.controls.*;
+
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
@@ -17,7 +19,10 @@ public class FormAnaliserUtil {
             }else if(node.getClass().equals(JFXComboBox.class)){
                 JFXComboBox input=(JFXComboBox) node ;
                 input.getSelectionModel().clearSelection();
-            }else{
+            }else if(node.getClass().equals(DatePicker.class)){
+                DatePicker input=(DatePicker) node ;
+                input.setValue(null);
+            }else if(node.getClass().equals(TextArea.class)){
                 TextArea input=(TextArea) node ;
                 input.setText(null);
             }
@@ -35,7 +40,11 @@ public class FormAnaliserUtil {
                 TextArea input=(TextArea) node ;
                 hasError=input.getText().trim().isEmpty();
                 if (hasError) input.getStyleClass().add("error");
-            }else{
+            }else if(node.getClass().equals(DatePicker.class)){
+                DatePicker input=(DatePicker) node ;
+                hasError=input.getValue() == null;
+                if (hasError) input.getStyleClass().add("error");
+            }else if(node.getClass().equals(JFXComboBox.class)){
                 JFXComboBox input=(JFXComboBox) node ;
                 hasError=input.getSelectionModel().isEmpty();
                 if (hasError) input.getStyleClass().add("error");
