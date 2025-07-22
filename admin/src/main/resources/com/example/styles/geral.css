@@ -425,3 +425,20 @@ TextField.error {
     -fx-padding: 5;
     -fx-font-size: 12;
 }
+
+.shimmer-light {
+    -fx-background-color: linear-gradient(
+        to right,
+        transparent 0%,
+        #f5f5f5B3 50%, /* B3 = 70% opacity em hexadecimal */
+        transparent 100%
+    );
+    -fx-opacity: 0.7;
+    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.5), 10, 0, 0, 0);
+}
+
+/* progress-style.css */
+.custom-progress {
+    -fx-progress-color: #CB2020; /* Verde */
+    -fx-background-color: transparent;
+}

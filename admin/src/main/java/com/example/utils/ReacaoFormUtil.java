@@ -11,18 +11,26 @@ import javafx.scene.layout.HBox;
 
 public class ReacaoFormUtil {
 
-    public static void Reagir(String type,String infoText,ImageView img,Label info){
-       Platform.runLater(() -> {
-            HBox box=(HBox) info.getParent();
+    public static void Reagir(String type, String infoText, ImageView img, Label info) {
+        Platform.runLater(() -> {
+            HBox box = (HBox) info.getParent();
             info.setText(infoText);
             box.getStyleClass().clear();
             box.getStyleClass().add(type);
             box.getStyleClass().add("reacap");
-            img.setImage(new Image(App.class.getResourceAsStream("assets/"+type+".png")));
-            FadeTransition fade =FadeTrasitionUtil.Fade(.3, box, 1, 0);
-            fade.setOnFinished(event -> {
-                FadeTrasitionUtil.Fade(5, box, 0, 1);
+            img.setImage(new Image(App.class.getResourceAsStream("assets/" + type + ".png")));
+
+            // Cancela animações anteriores (se houver)
+            box.getProperties().remove("fadeTransition");
+            
+            FadeTransition fadeOut = FadeTrasitionUtil.Fade(0.3, box, 1, 0);
+            fadeOut.setOnFinished(event -> {
+                FadeTransition fadeIn = FadeTrasitionUtil.Fade(0.8, box, 0, 1);
+                box.getProperties().put("fadeTransition", fadeIn);
+                fadeIn.play();
             });
+            box.getProperties().put("fadeTransition", fadeOut);
+            fadeOut.play();
         });
     }
     

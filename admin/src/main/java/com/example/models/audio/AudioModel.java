@@ -15,12 +15,16 @@ import com.example.utils.AudioMidiaUtil;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.RedoundImageUtil;
+import com.example.utils.ShimmerUtil;
 import com.jfoenix.controls.JFXButton;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -31,6 +35,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
@@ -58,7 +63,6 @@ public class AudioModel extends StackPane{
         this.titulo=new Label(audioDto.titulo());
         this.descricao=new Label(audioDto.descricao());
         this.imageView=new ImageView();
-        this.imageView=LoadImageUtil.ImageTimeRedound(200,200);
         // Carregar o áudio
         play.setDisable(true);
         after.setDisable(true);
@@ -131,15 +135,33 @@ public class AudioModel extends StackPane{
         return scrollPane;
     }
 
-    public  void carregarImagem(String urls){
-        ScheduledExecutorService service=Executors.newSingleThreadScheduledExecutor();
+    public void carregarImagem(String urls){
+        double width = 318, height = 204;
+        StackPane stack = (StackPane) ((ScrollPane) boxElements.getChildren().get(1)).getContent();
+        StackPane shimmerPane = ShimmerUtil.createShimmerPane(width, height);
+        stack.getChildren().add(shimmerPane);
+
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         service.schedule(() -> {
-           Platform.runLater(() -> {
-            imageView.setPreserveRatio(false);
-            this.imageView.setImage(new Image(urls));    
-           });
-           service.shutdown();
-        }, 2, TimeUnit.SECONDS);
+            Platform.runLater(() -> {
+                imageView.setPreserveRatio(false);
+                imageView.setImage(new Image(urls));
+                imageView.setClip(new javafx.scene.shape.Circle(100, 100, 100));
+                imageView.setFitWidth(200);
+                imageView.setFitHeight(200);
+                // Fade out shimmer, fade in image
+                FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), shimmerPane);
+                fadeOut.setToValue(0);
+                fadeOut.setOnFinished(e -> stack.getChildren().remove(shimmerPane));
+                fadeOut.play();
+
+                FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), imageView);
+                fadeIn.setFromValue(0);
+                fadeIn.setToValue(1);
+                fadeIn.play();
+            });
+            service.shutdown();
+        },1 , TimeUnit.SECONDS);
     }
 
 

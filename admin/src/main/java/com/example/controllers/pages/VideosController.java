@@ -55,12 +55,12 @@ public class VideosController implements Controller {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        
+        loadVideo();
     }
 
     @Override
     public void Show() {
-      loadVideo();
+      
     }
 
     @FXML
@@ -114,11 +114,11 @@ public class VideosController implements Controller {
         },App.getExecutorService()).thenAccept(t -> {
             Platform.runLater(() -> {
                 if(t == null) {
-                    card.Error("Erro ao buscar videos");
+                    card.Error("Erro ao buscar videos", () -> loadVideo());
                     return;
                 }
                 if (t.isEmpty()) {
-                    card.Vazio("Sem videos");
+                    card.Vazio("Sem videos", () -> loadVideo());
                 }else{
                     listVideos.getChildren().remove(card);
                     for (VideoDtoModel video : t) {

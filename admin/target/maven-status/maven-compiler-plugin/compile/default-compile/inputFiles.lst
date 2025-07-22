@@ -4,7 +4,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/pages/MainController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/pages/LoginController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/AudioService.java
-/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/actividade/ActividadeDtoSimple.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/actividade/ActividadeDtoRegister.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/LoadImageUtil.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/LocalDateTimeAdapter.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/ModalUtil.java
@@ -13,6 +13,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/Perct_Card.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/audio/AudioModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/DialogUtil.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/ShimmerUtil.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/FileType.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/user/UserModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/LoginService.java
@@ -71,6 +72,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalVersiculoController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/pages/ConfigController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/RedoundImageUtil.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/actividade/ActividadeDtoSimple.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/comentario/ComentarioDto.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/pages/HomeController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/Controller.java

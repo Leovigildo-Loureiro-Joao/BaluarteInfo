@@ -9,7 +9,7 @@ import com.example.App;
 import com.example.components.item_list.CardProcess;
 import com.example.controllers.Controller;
 import com.example.enums.FileType;
-import com.example.models.actividade.ActividadeDtoSimple;
+import com.example.dto.actividade.ActividadeDtoSimple;
 import com.example.models.actividade.ActividadeModel;
 import com.example.models.artigo.ArtigoDto;
 import com.example.models.artigo.ArtigoModel;
@@ -132,11 +132,11 @@ public class ArtigoController implements Controller{
         },App.getExecutorService()).thenAccept(t -> {
             Platform.runLater(() -> {
                 if (t == null) {
-                    card.Error("Erro ao buscar artigos");
+                    card.Error("Erro ao buscar artigos", () -> loadArtigo());
                     return;
                 }
                 if (t.isEmpty()) {
-                    card.Vazio("Sem Actividades");
+                    card.Vazio("Sem Actividades",() -> loadArtigo());
                 }else{
                   
                     for (ArtigoDto artigoDto : t) {

@@ -11,8 +11,6 @@ public record AudioDtoRegister(String titulo, String descricao, String imagem, S
         Map<String, String> map = new HashMap<>();
         map.put("titulo", titulo);
         map.put("descricao", descricao);
-        map.put("imagem", imagem);
-        map.put("url", url);
         map.put("type", tipo.name());
         map.put("audioType", audioType.name());
         System.out.println(map);

@@ -20,25 +20,11 @@ public class AudioService {
 
     public AudioDto postAudio(AudioDtoRegister audioDtoRegister) throws IOException, InterruptedException {
         String resposta=ApiService.postForm("/admin/midia/audio", audioDtoRegister.toMap(),List.of(
-            new FilePartUtil(Paths.get(audioDtoRegister.imagem()), "imagem", Formato("image", audioDtoRegister.imagem())),
-            new FilePartUtil(Paths.get(audioDtoRegister.url()), "audio", Formato("audio", audioDtoRegister.url()))
+            new FilePartUtil(Paths.get(audioDtoRegister.imagem()), "imagem", FilePartUtil.Formato("image", audioDtoRegister.imagem())),
+            new FilePartUtil(Paths.get(audioDtoRegister.url()), "url", FilePartUtil.Formato("audio", audioDtoRegister.url()))
         ));
         return AudioDto.fromJson(resposta);
     }
 
-    public static String Formato(String type, String url) {
-        String ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase();
-        switch (ext) {
-            case "jpg":
-            case "jpeg": return "image/jpeg";
-            case "png": return "image/png";
-            case "gif": return "image/gif";
-            case "bmp": return "image/bmp";
-            case "webp": return "image/webp";
-            case "mp3": return "audio/mpeg";
-            case "wav": return "audio/wav";
-            case "ogg": return "audio/ogg";
-            default: return type + "/" + ext; // fallback
-        }
-    }
+    
 }

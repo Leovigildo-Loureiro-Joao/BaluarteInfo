@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import com.example.App;
 import com.example.configs.ApiCache;
 import com.example.controllers.pages.MainController;
+import com.example.dto.actividade.ActividadeDtoSimple;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.ModalUtil;

@@ -29,6 +29,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -72,6 +73,7 @@ public class AudiosController implements Controller{
     @Override
     public void initialize(URL location, ResourceBundle resources) {
       tipo.getItems().addAll(AudioType.Lista());
+       loadAudio();
     }
 
     @FXML
@@ -86,7 +88,7 @@ public class AudiosController implements Controller{
 
     @Override
     public void Show() {
-       loadAudio();
+      
     }
 
     @Override
@@ -110,11 +112,11 @@ public class AudiosController implements Controller{
         },App.getExecutorService()).thenAccept(t -> {
             Platform.runLater(() -> {
                 if (t == null) {
-                    card.Error("Erro ao buscar audios");
+                    card.Error("Erro ao buscar audios", () -> loadAudio());
                     return;
                 }
                 if (t.isEmpty()) {
-                    card.Vazio("Sem Audios");
+                    card.Vazio("Sem Audios", () -> loadAudio());
                 }else{
                     listAudios.getChildren().clear();
                     for (AudioDto audio : t) {
@@ -176,6 +178,8 @@ public class AudiosController implements Controller{
                 Platform.runLater(() -> {
                     listAudios.getChildren().add(0,new AudioModel(audio));
                     FormAnaliserUtil.CleanForm(form);
+                    imgSrc.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
+                    audioSrc.setText("");
                     ReacaoFormUtil.Reagir("corret","O Audio foi adicionado com sucesso" , img, info);
                 });
             }

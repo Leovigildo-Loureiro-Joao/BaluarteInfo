@@ -12,9 +12,10 @@ import com.example.components.item_list.CardProcess;
 import com.example.configs.ApiCache;
 import com.example.controllers.Controller;
 import com.example.enums.FileType;
-import com.example.models.actividade.ActividadeDtoSimple;
+import com.example.dto.actividade.*;
 import com.example.models.actividade.ActividadeModel;
 import com.example.services.ActividadeService;
+import com.example.utils.FormAnaliserUtil;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
@@ -71,6 +72,8 @@ public class ActividadesController implements Controller{
 
     @FXML
     private TextField tema;
+    @FXML
+    private VBox form;
 
     @FXML
     private JFXComboBox<String> tipo;
@@ -91,7 +94,41 @@ public class ActividadesController implements Controller{
 
     @FXML
     void Enviar(ActionEvent event) {
+        JFXButton actionButton = (JFXButton) event.getSource();
+        actionButton.setDisable(true);
+        if (! FormAnaliserUtil.isEmpty(form)) {
+            AddActividade(actionButton);
+        }else {
+            actionButton.setDisable(false);
+        }
+    }
 
+    private void AddActividade(JFXButton actionButton){
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return actividadeService.postActividade(new ActividadeDtoRegister(
+                        titulo.getText(),
+                        descricao.getText(),
+                        data_hora.getValue().toString(),
+                        tipo.getValue(),
+                        PublicoAlvoType.valueOf(publico_alvo.getValue()),
+                        organizador.getText(),
+                        contactos.getText(),
+                        img.getImage() != null ? UploadFiles.UploadImage(img) : null
+                    ));
+            } catch (IOException | InterruptedException e) {
+                return null;
+            }
+        }, App.getExecutorService()).thenAccept(t -> {
+            Platform.runLater(() -> {
+                actionButton.setDisable(false);
+                if (t == null) {
+                    card.Error("Erro ao enviar actividade", () -> AddActividade(actionButton));
+                    return;
+                }
+                card.Success("Actividade enviada com sucesso", () -> loadActividades());
+            });
+        });
     }
 
     @FXML
@@ -130,11 +167,11 @@ public class ActividadesController implements Controller{
         },App.getExecutorService()).thenAccept(t -> {
             Platform.runLater(() -> {
                 if (t == null) {
-                    card.Error("Erro ao buscar actividades");
+                    card.Error("Erro ao buscar actividades",() -> LoadActividades());
                     return;
                 }
                 if (t.isEmpty()) {
-                    card.Vazio("Sem Actividades");
+                    card.Vazio("Sem Actividades",() -> LoadActividades());
                 }else{
                    
                     for (ActividadeDtoSimple actividadeDtoSimple : t) {

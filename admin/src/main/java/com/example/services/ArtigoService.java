@@ -3,7 +3,6 @@ package com.example.services;
 import java.io.IOException;
 import java.util.List;
 
-import com.example.models.actividade.ActividadeDtoSimple;
 import com.example.models.artigo.ArtigoDto;
 import com.example.utils.ListUtil;
 

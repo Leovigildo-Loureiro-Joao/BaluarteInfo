@@ -23,7 +23,7 @@ public class LoadImageUtil {
         return image;
     }
 
-    public static ImageView ImageTimeRedound(double w,double h){
+    public static ImageView ImageRedound(double w,double h){
         ImageView image=new ImageView(new Image(App.class.getResourceAsStream("assets/loader.gif")));        
         image.setFitHeight(h);
         image.setFitWidth(w);

@@ -8,10 +8,11 @@
 }
 
 
-.titleModel{
+.audio-model .titleModel{
     -fx-font-weight: bold;
     -fx-font-size: 18;
     -fx-padding: 0 0 0 0;
+    -fx-text-fill: #333333;
 }
 
 .audio-model Text{

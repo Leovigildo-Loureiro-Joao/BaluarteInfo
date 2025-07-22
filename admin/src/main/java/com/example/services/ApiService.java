@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.util.Map;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,9 +115,8 @@ public class ApiService {
     }
 
     public static String postForm(String endpoint, Map<String, String> params,List<FilePartUtil> files) throws IOException, InterruptedException {
-
         BodyPublisher body = buildFormData(params, files);
-        System.out.println("Request body for postForm: " + body);
+        System.out.println("Request body for postForm: " + body.toString());
          HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(BASE_URL + endpoint))
             .header("Content-Type", "multipart/form-data; boundary=" + boundary)
@@ -126,7 +126,6 @@ public class ApiService {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Response from postMultipart: " + response);
         return response.body();
     }
 
