@@ -1,6 +1,8 @@
 package com.example.controllers.pages;
 
+import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -11,7 +13,10 @@ import com.example.App;
 import com.example.components.item_list.CardProcess;
 import com.example.configs.ApiCache;
 import com.example.controllers.Controller;
+import com.example.enums.ActividadeType;
+import com.example.enums.DuracaoActividade;
 import com.example.enums.FileType;
+import com.example.enums.PublicoAlvoType;
 import com.example.dto.actividade.*;
 import com.example.models.actividade.ActividadeModel;
 import com.example.services.ActividadeService;
@@ -61,11 +66,17 @@ public class ActividadesController implements Controller{
     @FXML
     private TextField organizador;
 
+     @FXML
+    private TextField endereco;
+
     @FXML
     private TextField pesqBloco;
 
     @FXML
     private JFXComboBox<String> publico_alvo;
+
+    @FXML
+    private JFXComboBox<String> duracao;
 
     @FXML
     private ToggleGroup selectActivy;
@@ -107,14 +118,17 @@ public class ActividadesController implements Controller{
         CompletableFuture.supplyAsync(() -> {
             try {
                 return actividadeService.postActividade(new ActividadeDtoRegister(
-                        titulo.getText(),
                         descricao.getText(),
-                        data_hora.getValue().toString(),
-                        tipo.getValue(),
+                        tema.getText(),
+                        titulo.getText(),
+                        endereco.getText(),
+                        ActividadeType.valueOf(tipo.getValue()),
                         PublicoAlvoType.valueOf(publico_alvo.getValue()),
+                        DuracaoActividade.valueOf(duracao.getValue()),
                         organizador.getText(),
+                        LocalDateTime.from(data_hora.getValue()),
                         contactos.getText(),
-                        img.getImage() != null ? UploadFiles.UploadImage(img) : null
+                        UploadFiles.imgFile
                     ));
             } catch (IOException | InterruptedException e) {
                 return null;
@@ -143,9 +157,8 @@ public class ActividadesController implements Controller{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-      
-      
-        AddDetails();
+        LoadActividades();
+         AddDetails();
     }
 
           @Override
@@ -185,13 +198,14 @@ public class ActividadesController implements Controller{
 
     private void AddDetails(){
         filtro.getItems().addAll("Todos","Mulheres","Jovens","Pais","Velhos","Crianças");
-        publico_alvo.getItems().addAll("Todos","Mulheres","Jovens","Pais","Velhos","Crianças");
-        tipo.getItems().addAll("Anual","Mensal","Projecto");
+        publico_alvo.getItems().addAll(PublicoAlvoType.Lista());
+        duracao.getItems().addAll(DuracaoActividade.Lista());
+        tipo.getItems().addAll(ActividadeType.Lista());
     }
 
     @Override
     public void Show() {
-       LoadActividades();
+     
     }
  
     

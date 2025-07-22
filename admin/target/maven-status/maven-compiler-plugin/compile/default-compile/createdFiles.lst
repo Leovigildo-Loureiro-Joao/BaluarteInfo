@@ -45,6 +45,7 @@ com/example/models/audio/AudioModel.class
 com/example/components/progress/Circle_progress$2.class
 com/example/dto/video/VideoDtoModel.class
 com/example/models/config/Statics_value.class
+com/example/enums/DuracaoActividade.class
 com/example/dto/audio/AudioDto.class
 com/example/utils/AudioMidiaUtil.class
 com/example/models/comentario/ComentModel.class

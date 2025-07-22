@@ -30,6 +30,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/AudioMidiaUtil.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/config/Statics_dto.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/UserDataType.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/DuracaoActividade.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/artigo/ArtigoModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/DataFormater.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/audio/AudioDtoRegister.java

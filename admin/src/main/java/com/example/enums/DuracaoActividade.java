@@ -1,5 +1,7 @@
 package com.example.enums;
 
+import java.util.List;
+
 public enum DuracaoActividade {
     Mensal,
     Anual,
