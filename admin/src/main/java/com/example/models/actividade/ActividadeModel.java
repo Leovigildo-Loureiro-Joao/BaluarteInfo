@@ -75,6 +75,7 @@ public class ActividadeModel extends StackPane{
         this.endereco=new Label(data.endereco());
         this.imagemUrl=data.img();
         this.duracao=data.duracao();
+        System.out.println("Duracao: "+data.duracao());
         this.data=new Label("Marcado para "+data.dataEvento().toLocalDate().toString());
         this.hora=new Label("Às  "+data.dataEvento().toLocalTime().toString());
         this.url.getChildren().add(image);

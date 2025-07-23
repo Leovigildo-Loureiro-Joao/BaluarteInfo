@@ -35,6 +35,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -192,8 +193,8 @@ public class ActividadesController implements Controller{
 
     @FXML
     void SelectSeccao(ActionEvent event) {
-        ToggleGroup toggleGroup = (ToggleGroup) event.getSource();
-        String selectedValue = toggleGroup.getSelectedToggle().getUserData().toString();
+        ToggleButton toggleGroup = (ToggleButton) event.getSource();
+        String selectedValue = toggleGroup.getText();
         if (selectedValue.equals("Todos")) {
             listActividade.getChildren().clear();
             LoadActividades();
@@ -202,7 +203,7 @@ public class ActividadesController implements Controller{
                 List<ActividadeModel> filteredList = listActividade.getChildren().stream()
                         .filter(node -> node instanceof ActividadeModel)
                         .map(node -> (ActividadeModel) node)
-                        .filter(model -> model.getTipo().getText().equals(selectedValue))
+                        .filter(model -> model.getDuracao().name().equals(selectedValue))
                         .toList();
                 listActividade.getChildren().setAll(filteredList);
                 if (filteredList.isEmpty()) {
@@ -249,7 +250,7 @@ public class ActividadesController implements Controller{
                 if (t.isEmpty()) {
                     card.Vazio("Sem Actividades",() -> LoadActividades());
                 }else{
-                   
+                    listActividade.getChildren().remove(card);
                     for (ActividadeDtoSimple actividadeDtoSimple : t) {
                         listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple));
                     }
