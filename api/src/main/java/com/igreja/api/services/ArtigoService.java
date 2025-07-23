@@ -55,7 +55,7 @@ public class ArtigoService{
    private CloudDinaryService cloudinaryService;
 
 
-   public ArtigoModel save(ArtigoDto artigo) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+   public ArtigoModel save(ArtigoDtoRegister artigo) throws IOException, InterruptedException, ExecutionException, TimeoutException {
       cloudinaryService.generateUniqueName(artigo.pdf().getOriginalFilename());
   
       ArtigoModel artigosM = new ArtigoModel();
@@ -125,7 +125,7 @@ public class ArtigoService{
       throw new InternalError("A processo não foi realizado");
    }
 
-   public ArtigoModel edit(int id,ArtigoDto artigo) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
+   public ArtigoModel edit(int id,ArtigoDtoRegister artigo) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
       ArtigoModel artigoActual=Select(id);
       BeanUtils.copyProperties(artigo, artigoActual);
       if (!artigo.pdf().isEmpty()) {

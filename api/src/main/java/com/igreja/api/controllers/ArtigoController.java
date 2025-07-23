@@ -32,7 +32,7 @@ public class ArtigoController {
 
 
     @PostMapping(value = "/admin/artigo",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> Register(@ModelAttribute @Valid ArtigoDto artigo) throws IOException {
+    public ResponseEntity<?> Register(@ModelAttribute @Valid ArtigoDtoRegister artigo) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(artigoService.save(artigo));
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class ArtigoController {
     }
 
     @PutMapping(value = "/admin/artigo/edit/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> Editar(@PathVariable(name = "id") int id,@ModelAttribute @Valid ArtigoDto artigo) throws IOException {
+    public ResponseEntity<?> Editar(@PathVariable(name = "id") int id,@ModelAttribute @Valid ArtigoDtoRegister artigo) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(artigoService.edit(id,artigo));
         } catch (Exception e) {
