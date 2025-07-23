@@ -3,6 +3,7 @@ package com.example.controllers.pages;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -41,6 +42,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import jfxtras.scene.control.LocalDateTimeTextField;
 
 public class ActividadesController implements Controller{
     
@@ -51,7 +53,7 @@ public class ActividadesController implements Controller{
     private AnchorPane content;
 
     @FXML
-    private DatePicker data_hora;
+    private LocalDateTimeTextField data_hora;
 
     @FXML
     private TextArea descricao;
@@ -122,14 +124,11 @@ public class ActividadesController implements Controller{
     private void AddActividade(JFXButton actionButton){
         
         CompletableFuture.supplyAsync(() -> {
-            if (UploadFiles.imgFile == null) {
+            if (UploadFiles.imgFile == null || UploadFiles.imgFile.getPath() == null) {
                 ReacaoFormUtil.Reagir("error", "Erro! A imagem nao foi carregada", img, info);
                 return null;
             }
-            if (data_hora.getValue() == null) {
-                ReacaoFormUtil.Reagir("error", "Erro! A data e hora do evento nao foram selecionadas", img, info);
-                return null;
-            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
             try {
                 return actividadeService.postActividade(new ActividadeDtoRegister(
                         descricao.getText(),
@@ -140,7 +139,7 @@ public class ActividadesController implements Controller{
                         PublicoAlvoType.valueOf(publico_alvo.getValue()),
                         DuracaoActividade.valueOf(duracao.getValue()),
                         organizador.getText(),
-                        LocalDateTime.from(data_hora.getValue()),
+                        LocalDateTime.parse(data_hora.getText(),formatter),
                         contactos.getText(),
                         UploadFiles.imgFile.getPath()
                     ));

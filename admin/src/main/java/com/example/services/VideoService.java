@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.example.dto.video.VideoDtoModel;
 import com.example.dto.video.VideoDtoRegister;
-import com.example.models.artigo.ArtigoDto;
+import com.example.dto.artigo.ArtigoDto;
 import com.example.utils.ListUtil;
 
 public class VideoService {

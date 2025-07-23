@@ -9,7 +9,14 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
     </properties>
-    <dependencies>
+    
+      <dependencies>
+          <dependency>
+          <groupId>org.jfxtras</groupId>
+          <artifactId>jfxtras-controls</artifactId>
+          <version>17-r1</version>
+      </dependency>
+
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>

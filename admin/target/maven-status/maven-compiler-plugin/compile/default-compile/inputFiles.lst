@@ -10,6 +10,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/ModalUtil.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/HomeService.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/video/VideoDtoModel.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/artigo/ArtigoRegister.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/Perct_Card.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/audio/AudioModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/DialogUtil.java
@@ -38,6 +39,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/ActividadeService.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/pages/EditController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/AudioType.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/artigo/ArtigoDto.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/components/item_list/CardProcess.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/comentario/ComentModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/PublicoAlvoType.java
@@ -52,7 +54,6 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/notification/NotificacaoModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalVissaoController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/FormAnaliserUtil.java
-/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/artigo/ArtigoDto.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/video/VideoModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/configs/ApiCache.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/components/item_list/ItemDash.java

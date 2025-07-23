@@ -115,8 +115,8 @@ public class ApiService {
     }
 
     public static String postForm(String endpoint, Map<String, String> params,List<FilePartUtil> files) throws IOException, InterruptedException {
+         // Constrói o corpo do formulário multipart
         BodyPublisher body = buildFormData(params, files);
-        System.out.println("Request body for postForm: " + body.toString());
          HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(BASE_URL + endpoint))
             .header("Content-Type", "multipart/form-data; boundary=" + boundary)
@@ -126,6 +126,7 @@ public class ApiService {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+         System.out.println(response);
         return response.body();
     }
 

@@ -10,7 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.example.dto.audio.AudioDto;
-import com.example.models.artigo.ArtigoDto;
+import com.example.dto.artigo.ArtigoDto;
 import com.example.utils.AudioMidiaUtil;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;

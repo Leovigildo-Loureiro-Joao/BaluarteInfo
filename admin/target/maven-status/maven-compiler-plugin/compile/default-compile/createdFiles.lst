@@ -4,7 +4,6 @@ com/example/controllers/pages/HomeController.class
 com/example/components/notificacao/ItemNotif$1.class
 com/example/services/AudioService.class
 com/example/enums/FileType.class
-com/example/models/artigo/ArtigoDto.class
 com/example/utils/DiaUtilAnimation.class
 com/example/utils/UploadFiles.class
 com/example/models/user/UsuarioModel.class
@@ -18,6 +17,7 @@ com/example/enums/NotificacaoType.class
 com/example/services/HomeService.class
 com/example/components/progress/Circle_progress$1.class
 com/example/models/user/UserDtoData.class
+com/example/dto/artigo/ArtigoRegister.class
 com/example/utils/FadeTrasitionUtil.class
 com/example/utils/ListUtil.class
 com/example/controllers/pages/ArtigoController.class
@@ -70,6 +70,7 @@ com/example/models/user/UserMapper.class
 com/example/dto/video/VideoDtoRegister.class
 com/example/utils/FilePartUtil.class
 com/example/enums/MidiaType.class
+com/example/dto/artigo/ArtigoDto.class
 com/example/models/actividade/ActividadeModel.class
 com/example/controllers/modal/ModalEditController.class
 com/example/services/ApiService.class

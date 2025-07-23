@@ -24,6 +24,7 @@ public  class FilePartUtil {
             case "mp3": return "audio/mpeg";
             case "wav": return "audio/wav";
             case "ogg": return "audio/ogg";
+            case "pdf": return "application/pdf";
             default: return type + "/" + ext; // fallback
         }
     }

@@ -7,7 +7,7 @@ import java.util.List;
 import com.example.dto.audio.AudioDto;
 import com.example.dto.audio.AudioDtoRegister;
 import com.example.dto.video.VideoDtoModel;
-import com.example.models.artigo.ArtigoDto;
+import com.example.dto.artigo.ArtigoDto;
 import com.example.utils.FilePartUtil;
 import com.example.utils.ListUtil;
 

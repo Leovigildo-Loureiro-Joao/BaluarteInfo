@@ -1,5 +1,6 @@
 package com.example.models.artigo;
 
+import com.example.dto.artigo.ArtigoDto;
 import com.example.utils.LoadImageUtil;
 import com.jfoenix.controls.JFXButton;
 
