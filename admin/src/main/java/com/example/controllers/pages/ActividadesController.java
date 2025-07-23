@@ -156,6 +156,8 @@ public class ActividadesController implements Controller{
                     ReacaoFormUtil.Reagir("error","Erro! A actividade não foi adicionada a base de dados" , img, info);
                     return;
                 }
+                if(listActividade.getChildren().contains(card))
+                    listActividade.getChildren().remove(card);
                 listActividade.getChildren().add(0,new ActividadeModel(actividade));
                 FormAnaliserUtil.CleanForm(form);
                 img.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
@@ -166,12 +168,52 @@ public class ActividadesController implements Controller{
 
     @FXML
     void pesquisar(ActionEvent event) {
-
+        String search = pesqBloco.getText().trim();
+        if (search.isEmpty()) {
+            ReacaoFormUtil.Reagir("error", "Erro! O campo de pesquisa está vazio", img, info);
+            return;
+        }
+        List<ActividadeModel> filteredList = new ArrayList<>();
+        for (ActividadeModel model : listActividade.getChildren().stream()
+                .filter(node -> node instanceof ActividadeModel)
+                .map(node -> (ActividadeModel) node)
+                .toList()) {
+            if (model.getTitulo().getText().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            }
+        }
+        listActividade.getChildren().setAll(filteredList);
+        if (filteredList.isEmpty()) {
+            ReacaoFormUtil.Reagir("error", "Nenhuma actividade encontrada com o termo: " + search, img, info);
+        } else {
+            ReacaoFormUtil.Reagir("corret", "Actividades encontradas: " + filteredList.size(), img, info);
+        }
     }
 
     @FXML
     void SelectSeccao(ActionEvent event) {
-
+        ToggleGroup toggleGroup = (ToggleGroup) event.getSource();
+        String selectedValue = toggleGroup.getSelectedToggle().getUserData().toString();
+        if (selectedValue.equals("Todos")) {
+            listActividade.getChildren().clear();
+            LoadActividades();
+        } else {
+           Platform.runLater(() -> {
+                List<ActividadeModel> filteredList = listActividade.getChildren().stream()
+                        .filter(node -> node instanceof ActividadeModel)
+                        .map(node -> (ActividadeModel) node)
+                        .filter(model -> model.getTipo().getText().equals(selectedValue))
+                        .toList();
+                listActividade.getChildren().setAll(filteredList);
+                if (filteredList.isEmpty()) {
+                    listActividade.getChildren().clear();
+                    card.Vazio("Nenhuma actividade encontrada para o tipo: " + selectedValue, () -> SelectSeccao(event));
+                    listActividade.getChildren().add(card);
+                } else {
+                    ReacaoFormUtil.Reagir("corret", "Actividades filtradas por tipo: " + selectedValue, img, info);
+                }
+            });
+        }
     }
 
     @Override

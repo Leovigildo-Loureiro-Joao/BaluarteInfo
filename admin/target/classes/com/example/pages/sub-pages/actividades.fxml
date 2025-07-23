@@ -49,12 +49,17 @@
                   </HBox>
                   <HBox prefHeight="43.0" prefWidth="479.0" spacing="20.0">
                      <children>
-                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" selected="true" styleClass="button-toggle" text="Anual">
+                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" selected="true" styleClass="button-toggle" text="Todos">
                            <toggleGroup>
                               <ToggleGroup fx:id="selectActivy" />
                            </toggleGroup></ToggleButton>
                         <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Mensal" toggleGroup="$selectActivy" />
                         <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Projectos" toggleGroup="$selectActivy" />
+                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Anual">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="selectActivy1" />
+                           </toggleGroup>
+                        </ToggleButton>
                      </children>
                      <VBox.margin>
                         <Insets top="20.0" />

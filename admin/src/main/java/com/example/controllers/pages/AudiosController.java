@@ -177,15 +177,16 @@ public class AudiosController implements Controller{
             Platform.runLater(() -> {
                 if (audio==null) {
                     ReacaoFormUtil.Reagir("error","Erro! O Audio nao foi adicionado a base de dados" , img, info);
-                }else{
-                    
-                    listAudios.getChildren().add(0,new AudioModel(audio));
-                    FormAnaliserUtil.CleanForm(form);
-                    imgSrc.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
-                    audioSrc.setText("");
-                    ReacaoFormUtil.Reagir("corret","O Audio foi adicionado com sucesso" , img, info);
-                    
+                    actionButton.setDisable(false);
+                    return;
                 }
+                if (listAudios.getChildren().contains(card))
+                    listAudios.getChildren().remove(card);
+                listAudios.getChildren().add(0,new AudioModel(audio));
+                FormAnaliserUtil.CleanForm(form);
+                imgSrc.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
+                audioSrc.setText("");
+                ReacaoFormUtil.Reagir("corret","O Audio foi adicionado com sucesso" , img, info);
                 actionButton.setDisable(false);
             });
         });    

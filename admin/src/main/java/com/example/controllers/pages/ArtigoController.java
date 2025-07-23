@@ -126,6 +126,8 @@ public class ArtigoController implements Controller{
                     ReacaoFormUtil.Reagir("error","Erro! O artigo não foi adicionado a base de dados" , img, info);
                     return;
                 }
+                if(listArtigo.getChildren().contains(card))
+                    listArtigo.getChildren().remove(card);
                 listArtigo.getChildren().add(0,new ArtigoModel(artigo));
                 FormAnaliserUtil.CleanForm(form);
                 ReacaoFormUtil.Reagir("corret","O Artigo foi adicionado com sucesso" , img, info);
@@ -178,7 +180,7 @@ public class ArtigoController implements Controller{
                     return;
                 }
                 if (t.isEmpty()) {
-                    card.Vazio("Sem Actividades",() -> loadArtigo());
+                    card.Vazio("Sem artigos",() -> loadArtigo());
                 }else{
                   
                     for (ArtigoDto artigoDto : t) {

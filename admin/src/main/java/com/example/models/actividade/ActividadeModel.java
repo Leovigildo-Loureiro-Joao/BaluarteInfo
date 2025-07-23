@@ -11,6 +11,8 @@ import com.example.App;
 import com.example.configs.ApiCache;
 import com.example.controllers.pages.MainController;
 import com.example.dto.actividade.ActividadeDtoSimple;
+import com.example.enums.ActividadeType;
+import com.example.enums.DuracaoActividade;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.ModalUtil;
@@ -43,6 +45,7 @@ public class ActividadeModel extends StackPane{
     private Label tipoEvento;
     private Label organizador;
     private Label publicoAlvo;
+    private DuracaoActividade duracao;
     private Label descricao;
     private Label telefone;
     private Label endereco;
@@ -71,6 +74,7 @@ public class ActividadeModel extends StackPane{
         this.telefone=new Label(data.contactos());
         this.endereco=new Label(data.endereco());
         this.imagemUrl=data.img();
+        this.duracao=data.duracao();
         this.data=new Label("Marcado para "+data.dataEvento().toLocalDate().toString());
         this.hora=new Label("Às  "+data.dataEvento().toLocalTime().toString());
         this.url.getChildren().add(image);

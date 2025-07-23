@@ -3,6 +3,7 @@ package com.example.dto.actividade;
 import java.time.LocalDateTime;
 
 import com.example.enums.ActividadeType;
+import com.example.enums.DuracaoActividade;
 import com.example.enums.PublicoAlvoType;
 
 import com.example.utils.LocalDateTimeAdapter;
@@ -17,6 +18,7 @@ public record ActividadeDtoSimple(
     String titulo,
     String endereco,
     ActividadeType tipoEvento,
+    DuracaoActividade duracao,
     PublicoAlvoType publicoAlvo,
     String organizador,
     LocalDateTime dataEvento,
