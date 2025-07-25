@@ -6,29 +6,33 @@
 <?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
-<?import jfxtras.scene.control.LocalDateTimeTextField?>
 
-<AnchorPane fx:id="content" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="684.0" prefWidth="849.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.ActividadesController">
+<AnchorPane fx:id="content" maxHeight="-Infinity" minHeight="-Infinity" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.ActividadesController">
    <children>
-      <HBox layoutY="-2.0" prefHeight="778.0" prefWidth="1200.0" spacing="100.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
+      <VBox layoutX="40.0" layoutY="29.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="22.0">
          <children>
-            <VBox prefHeight="728.0" prefWidth="488.0">
+            <HBox>
                <children>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Actividades" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Actividades" wrappingWidth="117.41015625" />
+                  <Region prefHeight="0.0" prefWidth="868.0" HBox.hgrow="ALWAYS" />
+                  <JFXButton contentDisplay="RIGHT" onAction="#Add" prefHeight="34.0" prefWidth="152.0" styleClass="buttonColor" text="Adicionar actividade" />
+               </children>
+            </HBox>
+            <VBox prefHeight="150.0" prefWidth="450.0">
+               <children>
                   <HBox prefHeight="42.0" prefWidth="484.0" spacing="20.0">
                      <children>
-                        <TextField fx:id="pesqBloco" prefHeight="34.0" prefWidth="331.0" promptText="Pesquisar actividades" styleClass="fieldTextLine" />
+                        <TextField fx:id="pesqBloco" prefHeight="34.0" prefWidth="489.0" promptText="Pesquisar actividades" styleClass="fieldTextLine" />
                         <JFXButton onAction="#pesquisar" prefHeight="33.0" prefWidth="25.0" text=" ">
                            <HBox.margin>
                               <Insets left="-50.0" />
@@ -41,130 +45,35 @@
                               </ImageView>
                            </graphic>
                         </JFXButton>
-                        <JFXComboBox fx:id="filtro" prefHeight="32.0" prefWidth="105.0" promptText="Filtro" visibleRowCount="4" />
                      </children>
                      <VBox.margin>
                         <Insets top="20.0" />
                      </VBox.margin>
                   </HBox>
-                  <HBox prefHeight="43.0" prefWidth="479.0" spacing="20.0">
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Filtros">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </Text>
+                  <FlowPane hgap="10.0" prefHeight="0.0" prefWidth="450.0" vgap="10.0">
                      <children>
-                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" selected="true" styleClass="button-toggle" text="Todos">
-                           <toggleGroup>
-                              <ToggleGroup fx:id="selectActivy" />
-                           </toggleGroup></ToggleButton>
-                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Mensal" toggleGroup="$selectActivy" />
-                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Projectos" toggleGroup="$selectActivy" />
-                        <ToggleButton mnemonicParsing="false" onAction="#SelectSeccao" styleClass="button-toggle" text="Anual">
-                           <toggleGroup>
-                              <ToggleGroup fx:id="selectActivy1" />
-                           </toggleGroup>
-                        </ToggleButton>
+                        <JFXComboBox fx:id="duracao" prefHeight="32.0" prefWidth="143.0" promptText="Duração" visibleRowCount="4" />
+                        <JFXComboBox fx:id="tipo" prefHeight="32.0" prefWidth="143.0" promptText="Tipo" visibleRowCount="4" />
+                        <JFXComboBox fx:id="publico_alvo" prefHeight="32.0" prefWidth="143.0" promptText="Publico Alvo" visibleRowCount="4" />
                      </children>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </HBox>
-                  <ScrollPane hbarPolicy="NEVER" prefHeight="482.0" prefWidth="488.0">
-                    <content>
-                        <VBox fx:id="listActividade" alignment="TOP_CENTER" prefHeight="477.0" prefWidth="534.0" spacing="20.0">
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                        </VBox>
-                    </content>
-                  </ScrollPane>
+                  </FlowPane>
                </children>
             </VBox>
-            <VBox maxHeight="-Infinity" prefHeight="507.0" prefWidth="452.0" styleClass="card">
-               <padding>
-                  <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-               </padding>
-               <children>
-                  <ScrollPane hbarPolicy="NEVER" prefHeight="388.0" prefWidth="372.0" vbarPolicy="ALWAYS">
-                    <content>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="690.0" prefWidth="368.0">
-                           <children>
-                              <VBox fx:id="form" prefHeight="682.0" prefWidth="369.0" spacing="20.0">
-                                 <children>
-                                    <TextField fx:id="titulo" promptText="Digite o Titulo da actividade" styleClass="fieldTextLine">
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin></TextField>
-                                    <TextField fx:id="tema" promptText="Digite o tema da actividade" styleClass="fieldTextLine">
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin></TextField>
-                                    <JFXComboBox fx:id="tipo" prefHeight="23.0" prefWidth="376.0" promptText="Selecione o tipo de actividade">
-                                       <padding>
-                                          <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-                                       </padding>
-                                    </JFXComboBox>
-                                    <JFXComboBox fx:id="duracao" prefHeight="23.0" prefWidth="376.0" promptText="Selecione em quantos dias a actividade vai durar">
-                                       <padding>
-                                          <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-                                       </padding>
-                                    </JFXComboBox>
-                                    <TextField fx:id="organizador" promptText="Digite o nome do organizador" styleClass="fieldTextLine">
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin></TextField>
-                                    <JFXComboBox fx:id="publico_alvo" prefHeight="23.0" prefWidth="376.0" promptText="Selecione o publico alvo">
-                                       <padding>
-                                          <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-                                       </padding>
-                                    </JFXComboBox>
-                                    <LocalDateTimeTextField fx:id="data_hora" prefHeight="27.0" prefWidth="317.0" promptText="Degite a data e a hora do evento" styleClass="fieldTextLine">
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin></LocalDateTimeTextField>
-                                    <TextField fx:id="contactos" promptText="Digite aqui os seus contactos" styleClass="fieldTextLine">
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin></TextField>
-                                    <TextField fx:id="endereco" promptText="Digite o endereço da actividade" styleClass="fieldTextLine">
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin></TextField>
-                                    <TextArea fx:id="descricao" prefHeight="80.0" prefWidth="324.0" promptText="Descrição" styleClass="border-panel">
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin></TextArea>
-                                    <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="border-panel">
-                                       <children>
-                                          <ImageView fx:id="imgSrc" fitHeight="174.0" fitWidth="238.0" onMouseClicked="#CarregarImagem" pickOnBounds="true" preserveRatio="true">
-                                             <image>
-                                                <Image url="@../../assets/foto.png" />
-                                             </image>
-                                          </ImageView>
-                                       </children>
-                                       <VBox.margin>
-                                          <Insets left="10.0" right="10.0" />
-                                       </VBox.margin>
-                                    </StackPane>
-                                 </children>
-                                 <padding>
-                                    <Insets bottom="5.0" left="5.0" right="20.0" top="5.0" />
-                                 </padding>
-                              </VBox>
-                           </children>
-                        </AnchorPane>
-                    </content>
-                     <padding>
-                        <Insets bottom="20.0" />
-                     </padding>
-                  </ScrollPane>
-                  <JFXButton onAction="#Enviar" prefHeight="40.0" prefWidth="353.0" styleClass="buttonColor" text="Enviar" />
-               </children>
-               <HBox.margin>
-                  <Insets top="50.0" />
-               </HBox.margin>
-            </VBox>
+            <ScrollPane hbarPolicy="NEVER" prefHeight="448.0" prefWidth="1138.0">
+               <content>
+                  <FlowPane fx:id="listActividade" hgap="10.0" prefHeight="446.0" prefWidth="1134.0" vgap="10.0" />
+               </content>
+            </ScrollPane>
          </children>
-         <padding>
-            <Insets left="40.0" top="50.0" />
-         </padding>
-      </HBox>
+      </VBox>
    </children>
    <stylesheets>
       <URL value="@../../styles/geral.css" />

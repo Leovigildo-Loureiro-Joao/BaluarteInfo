@@ -22,6 +22,7 @@ import com.example.dto.actividade.*;
 import com.example.models.actividade.ActividadeModel;
 import com.example.services.ActividadeService;
 import com.example.utils.FormAnaliserUtil;
+import com.example.utils.ModalUtil;
 import com.example.utils.ReacaoFormUtil;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXButton;
@@ -31,7 +32,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -41,6 +41,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import jfxtras.scene.control.LocalDateTimeTextField;
@@ -48,31 +49,13 @@ import jfxtras.scene.control.LocalDateTimeTextField;
 public class ActividadesController implements Controller{
     
     @FXML
-    private TextField contactos;
-
-    @FXML
     private AnchorPane content;
-
-    @FXML
-    private LocalDateTimeTextField data_hora;
-
-    @FXML
-    private TextArea descricao;
 
     @FXML
     private JFXComboBox<String> filtro;
 
     @FXML
-    private ImageView imgSrc;
-
-    @FXML
-    private VBox listActividade;
-
-    @FXML
-    private TextField organizador;
-
-     @FXML
-    private TextField endereco;
+    public FlowPane listActividade;
 
     @FXML
     private TextField pesqBloco;
@@ -84,66 +67,33 @@ public class ActividadesController implements Controller{
     private JFXComboBox<String> duracao;
 
     @FXML
-    private ToggleGroup selectActivy;
-
-    @FXML
-    private TextField tema;
-    @FXML
-    private VBox form;
-
-    @FXML
     private JFXComboBox<String> tipo;
 
-    @FXML
-    private TextField titulo;
-
-      public CardProcess card = null;
+    public CardProcess card = null;
     private ActividadeService actividadeService=new ActividadeService();
 
-    private StackPane fundo;
+    public  StackPane fundo;
 
-    private ImageView img;
+    public  ImageView img;
 
-    private Label info;
+    public  Label info;
 
-    @FXML
-    void CarregarImagem(MouseEvent event) {
-        UploadFiles.Uplaod(FileType.Image, imgSrc,  content); 
-    }
 
     @FXML
-    void Enviar(ActionEvent event) {
-        JFXButton actionButton = (JFXButton) event.getSource();
-        actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
-            AddActividade(actionButton);
-        }else {
-            actionButton.setDisable(false);
-        }
+    void Add(){
+        ModalUtil.Show("modalActividade",this,content);
     }
 
-    private void AddActividade(JFXButton actionButton){
+
+    public void AddActividade(JFXButton actionButton,ActividadeDtoRegister act,VBox form){
         
         CompletableFuture.supplyAsync(() -> {
             if (UploadFiles.imgFile == null || UploadFiles.imgFile.getPath() == null) {
                 ReacaoFormUtil.Reagir("error", "Erro! A imagem nao foi carregada", img, info);
                 return null;
             }
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
             try {
-                return actividadeService.postActividade(new ActividadeDtoRegister(
-                        descricao.getText(),
-                        tema.getText(),
-                        titulo.getText(),
-                        endereco.getText(),
-                        ActividadeType.valueOf(tipo.getValue()),
-                        PublicoAlvoType.valueOf(publico_alvo.getValue()),
-                        DuracaoActividade.valueOf(duracao.getValue()),
-                        organizador.getText(),
-                        LocalDateTime.parse(data_hora.getText(),formatter),
-                        contactos.getText(),
-                        UploadFiles.imgFile.getPath()
-                    ));
+                return actividadeService.postActividade(act);
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
@@ -159,13 +109,14 @@ public class ActividadesController implements Controller{
                 }
                 if(listActividade.getChildren().contains(card))
                     listActividade.getChildren().remove(card);
-                listActividade.getChildren().add(0,new ActividadeModel(actividade));
+                listActividade.getChildren().add(0,new ActividadeModel(actividade,true));
                 FormAnaliserUtil.CleanForm(form);
                 img.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
                 ReacaoFormUtil.Reagir("corret","A Actividade foi adicionada com sucesso" , img, info);
             });
         });
     }
+     
 
     @FXML
     void pesquisar(ActionEvent event) {
@@ -243,6 +194,8 @@ public class ActividadesController implements Controller{
             }
         },App.getExecutorService()).thenAccept(t -> {
             Platform.runLater(() -> {
+                if(App.teste)
+                    AddTestActividade();
                 if (t == null) {
                     card.Error("Erro ao buscar actividades",() -> LoadActividades());
                     return;
@@ -252,7 +205,7 @@ public class ActividadesController implements Controller{
                 }else{
                     listActividade.getChildren().remove(card);
                     for (ActividadeDtoSimple actividadeDtoSimple : t) {
-                        listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple));
+                        listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple, true));
                     }
                 }
             });
@@ -260,8 +213,28 @@ public class ActividadesController implements Controller{
         
     }
 
+    private void AddTestActividade(){
+         listActividade.getChildren().clear();
+        for (int i = 0; i < 5; i++) {
+                listActividade.getChildren().add(new ActividadeModel(new ActividadeDtoSimple(
+            i,
+    "sdsd fsdf sdf sdf sdf",
+    "sdfsdfsdf",
+    "asdasdasdasd",
+"sdfsd sdddf dfdf",
+    ActividadeType.Acampamento,
+    DuracaoActividade.Anual,
+    PublicoAlvoType.Criancas,
+    "sdfsdfds",
+    LocalDateTime.now(),
+    LocalDateTime.now(),
+    "955383237",
+   "file:///home/devpro/Imagens/asd.jpeg"
+         ),true));
+        }
+    }
+
     private void AddDetails(){
-        filtro.getItems().addAll("Todos","Mulheres","Jovens","Pais","Velhos","Crianças");
         publico_alvo.getItems().addAll(PublicoAlvoType.Lista());
         duracao.getItems().addAll(DuracaoActividade.Lista());
         tipo.getItems().addAll(ActividadeType.Lista());

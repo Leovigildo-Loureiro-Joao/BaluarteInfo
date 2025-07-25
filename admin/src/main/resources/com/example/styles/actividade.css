@@ -1,11 +1,15 @@
 .actividade-model{
     -fx-min-height: 550;
     -fx-spacing: 20;
-    -fx-max-width: 400;
+    -fx-max-width: 350;
+}
+
+.actividade-model.mini{
+    -fx-min-height: 300;
 }
 
 .actividade-model-block{
-    -fx-max-width: 400;
+    -fx-max-width: 350;
    
 }
 
@@ -48,9 +52,17 @@
     -fx-pref-width: 250;
 }
 
-.actividade-model .buttonColor{
-    -fx-min-width: 400;
+.actividade-model .botao-box .buttonColor{
+    -fx-min-width: 200;
     -fx-padding: 10;
+    -fx-background-radius: 0 0 0 4;
+}
+
+.actividade-model .botao-box .buttonWhite{
+    -fx-min-width: 200;
+    -fx-padding: 9;
+    -fx-background-radius: 0 0 4 0;
+    -fx-border-radius: 0 0 4 0;
 }
 
 
@@ -82,4 +94,9 @@
 
 .actividade-model .bloco .glyph-icon {
     -fx-fill: #CB2020;
+}
+
+.actividade-model HBox.botao-box{
+    -fx-spacing: 0;
+    -fx-padding: 10 0 0 0;
 }

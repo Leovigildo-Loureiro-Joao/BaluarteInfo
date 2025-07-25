@@ -69,12 +69,12 @@ public class ModalActividadeDetalhesController implements Initializable{
 
     @FXML
     void AddTrailer(ActionEvent event) {
-        ModalUtil.Show("modalVideo");
+        ModalUtil.Show("modalVideo",() ->  ModalUtil.Show("modalActividadeDetalhes"));
     }
 
     @FXML
     void AddimageGaleria(MouseEvent event) {
-        ModalUtil.Show("modal");
+        ModalUtil.Show("modalImagemAdd",() ->  ModalUtil.Show("modalActividadeDetalhes"));
     }
 
 

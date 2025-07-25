@@ -1,5 +1,6 @@
 package com.example.utils;
 
+import com.example.App;
 import com.example.models.user.UserDtoData;
 import com.example.models.user.UsuarioModel;
 
@@ -29,6 +30,6 @@ public class TokenSeccao {
     }
 
     public static UserDtoData getUsuarioLogado() {
-        return usuarioLogado;
+        return App.teste?new UserDtoData(1,"","","",""):usuarioLogado;
     }
 }

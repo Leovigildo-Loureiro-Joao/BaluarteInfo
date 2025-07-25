@@ -138,30 +138,7 @@ public class AudioModel extends StackPane{
     public void carregarImagem(String urls){
         double width = 318, height = 204;
         StackPane stack = (StackPane) ((ScrollPane) boxElements.getChildren().get(1)).getContent();
-        StackPane shimmerPane = ShimmerUtil.createShimmerPane(width, height);
-        stack.getChildren().add(shimmerPane);
-
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.schedule(() -> {
-            Platform.runLater(() -> {
-                imageView.setPreserveRatio(false);
-                imageView.setImage(new Image(urls));
-                imageView.setClip(new javafx.scene.shape.Circle(100, 100, 100));
-                imageView.setFitWidth(200);
-                imageView.setFitHeight(200);
-                // Fade out shimmer, fade in image
-                FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), shimmerPane);
-                fadeOut.setToValue(0);
-                fadeOut.setOnFinished(e -> stack.getChildren().remove(shimmerPane));
-                fadeOut.play();
-
-                FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), imageView);
-                fadeIn.setFromValue(0);
-                fadeIn.setToValue(1);
-                fadeIn.play();
-            });
-            service.shutdown();
-        },1 , TimeUnit.SECONDS);
+        ShimmerUtil.carregarImagem(urls, width, height, stack, imageView);
     }
 
 

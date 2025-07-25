@@ -18,6 +18,7 @@ import com.example.dto.artigo.ArtigoRegister;
 import com.example.models.artigo.ArtigoModel;
 import com.example.services.ArtigoService;
 import com.example.utils.FormAnaliserUtil;
+import com.example.utils.ModalUtil;
 import com.example.utils.ReacaoFormUtil;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXComboBox;
@@ -34,14 +35,14 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class ArtigoController implements Controller{
 
    
-    @FXML
-    private TextArea descricao;
+    
 
     @FXML
     private AnchorPane content;
@@ -50,26 +51,13 @@ public class ArtigoController implements Controller{
     private JFXComboBox<String> filtro;
 
     @FXML
-    private VBox listArtigo;
+    private FlowPane listArtigo;
 
-    @FXML
-    private TextField nome;
-
-    @FXML
-    private TextField upload;
-
-    @FXML
-    private TextField pesqBlock;
-
-    @FXML
-    private JFXComboBox<String> tipo;
-
-    @FXML
-    private TextField titulo;
     private ArtigoService artigoService = new ArtigoService();
-     public CardProcess card = null;
 
-     private StackPane fundo;
+    public CardProcess card = null;
+
+    private StackPane fundo;
 
     private ImageView img;
 
@@ -79,10 +67,7 @@ public class ArtigoController implements Controller{
     private Label info;
 
 
-    @FXML
-    void CarregarPdf(ActionEvent event) {
-        UploadFiles.Uplaod(FileType.Pdf, upload, content);
-    }
+   
     @Override
     public void Fundo(StackPane fundo,Label info,ImageView img) {
         this.fundo=fundo;
@@ -91,28 +76,11 @@ public class ArtigoController implements Controller{
     }
    
 
-    @FXML
-    void Enviar(ActionEvent event) {
-        JFXButton actionButton = (JFXButton) event.getSource();
-        actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
-            AddArtigo(actionButton);
-        }else {
-            actionButton.setDisable(false);
-        }
-    }
-
-    private void AddArtigo(JFXButton actionButton){
+    public void AddArtigo(JFXButton actionButton,ArtigoRegister artigoRegister,VBox form){
         
         CompletableFuture.supplyAsync(() -> {
             try {
-                return artigoService.postArtigo(new ArtigoRegister(
-                        descricao.getText(),
-                        titulo.getText(),
-                        nome.getText(),
-                        upload.getText(),
-                        ArtigoType.fromValue(tipo.getValue())
-                    ));
+                return artigoService.postArtigo(artigoRegister);
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
@@ -140,19 +108,20 @@ public class ArtigoController implements Controller{
 
     }
 
+     @FXML
+    void Add(){
+        ModalUtil.Show("modalArtigo",this,content);
+    }
+
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         AddDetails();
-        loadArtigo();
-        upload.setOnMouseClicked((MouseEvent e) -> {
-            UploadFiles.Uplaod(FileType.Pdf, upload, content);
-        });
-                       
+        loadArtigo();    
     }
 
     private void AddDetails(){
-        tipo.getItems().addAll(ArtigoType.Lista());
         filtro.getItems().addAll(ArtigoType.Lista());
     }
 

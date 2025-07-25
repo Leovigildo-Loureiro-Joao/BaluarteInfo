@@ -1,7 +1,17 @@
 package com.example.utils;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -29,5 +39,32 @@ public class ShimmerUtil {
 
         shimmerPane.setPrefSize(width, height);
         return shimmerPane;
+    }
+
+    public static void carregarImagem(String urls,double width,double height,Node node,ImageView imageView){
+        StackPane shimmerPane = createShimmerPane(width, height);
+        StackPane stack = (StackPane) node;
+        stack.getChildren().add(shimmerPane);
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.schedule(() -> {
+            Platform.runLater(() -> {
+                imageView.setPreserveRatio(false);
+                imageView.setImage(new Image(urls));
+                imageView.setClip(new javafx.scene.shape.Circle(100, 100, 100));
+                imageView.setFitWidth(200);
+                imageView.setFitHeight(200);
+                // Fade out shimmer, fade in image
+                FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), shimmerPane);
+                fadeOut.setToValue(0);
+                fadeOut.setOnFinished(e -> stack.getChildren().remove(shimmerPane));
+                fadeOut.play();
+
+                FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), imageView);
+                fadeIn.setFromValue(0);
+                fadeIn.setToValue(1);
+                fadeIn.play();
+            });
+            service.shutdown();
+        },2 , TimeUnit.SECONDS);
     }
 }

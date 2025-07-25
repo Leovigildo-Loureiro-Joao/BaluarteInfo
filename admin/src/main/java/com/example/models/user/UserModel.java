@@ -43,7 +43,7 @@ public class UserModel extends HBox{
         setOnMouseClicked(event -> {
              MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
             if (userDataType.equals(UserDataType.Comentarios)) {
-                ModalUtil.ShowComentario(controller.conteinerModal, "modalUserComent",this);
+                ModalUtil.ShowComentario(controller.conteinerModal, "modalUserComent",this,()->{ModalUtil.Show("modalActividadeDetalhes");});
             }
         });
     }

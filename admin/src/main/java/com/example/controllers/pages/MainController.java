@@ -71,7 +71,7 @@ public class MainController implements Initializable{
                 if(!ApiCache.isTela(fxmlFile)){
                     FXMLLoader loader = new FXMLLoader(App.class.getResource("pages/sub-pages/" +fxmlFile + ".fxml"));
                     try {
-                        loadedPane = loader.load();    
+                        loadedPane = loader.load(); 
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -125,7 +125,7 @@ public class MainController implements Initializable{
         lista.getItems().add(new ItemDash("Configurações",FontAwesomeIcon.COGS));
         nome.setText(TokenSeccao.getUsuarioLogado().nome());
         role.setText(TokenSeccao.getUsuarioLogado().roles());
-        imagem.setImage(new Image(TokenSeccao.getUsuarioLogado().img()));
+        if(!App.teste)imagem.setImage(new Image(TokenSeccao.getUsuarioLogado().img()));
         imagem.setClip(new Circle(imagem.getFitWidth()/2,imagem.getFitWidth()/2,imagem.getFitWidth()/2));
         loadFXMLAsync("home");
      }

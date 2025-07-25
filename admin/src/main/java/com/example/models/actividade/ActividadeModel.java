@@ -25,6 +25,7 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -43,6 +44,7 @@ public class ActividadeModel extends StackPane{
     private Label titulo;
     private Label tema;
     private Label tipoEvento;
+    private ProgressIndicator imagemAtual = new ProgressIndicator();  
     private Label organizador;
     private Label publicoAlvo;
     private DuracaoActividade duracao;
@@ -56,14 +58,14 @@ public class ActividadeModel extends StackPane{
     private StackPane control=new StackPane();
     private StackPane block=new StackPane();
     private VBox bloco;
-    private ImageView image=LoadImageUtil.ImageTime();
     private VBox inputBloco=new VBox();
     private JFXButton addAtributos;
+    private JFXButton expandir=new JFXButton("Expandir");
     private JFXButton more=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.ELLIPSIS_H,"25"));
     private JFXButton edit=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.EDIT,"20"));
     private JFXButton trash=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.TRASH,"20"));
-    
-    public ActividadeModel(ActividadeDtoSimple data){
+
+    public ActividadeModel(ActividadeDtoSimple data, boolean mini) {
 
         this.titulo=new Label(data.titulo());
         this.tema=new Label(data.tema());
@@ -75,16 +77,21 @@ public class ActividadeModel extends StackPane{
         this.endereco=new Label(data.endereco());
         this.imagemUrl=data.img();
         this.duracao=data.duracao();
-        System.out.println("Duracao: "+data.duracao());
         this.data=new Label("Marcado para "+data.dataEvento().toLocalDate().toString());
         this.hora=new Label("Às  "+data.dataEvento().toLocalTime().toString());
-        this.url.getChildren().add(image);
+       
+        imagemAtual.setPrefSize(50, 50);
+        imagemAtual.getStyleClass().add("custom-progress");
+        this.url.getChildren().add(imagemAtual);
         addAtributos=new JFXButton("Adicionar atributos");
-        OrdenarModel(imagemUrl);
+        if(mini) {
+            OrdenarModelMini(imagemUrl);
+        } else {
+            OrdenarModel(imagemUrl);
+        }
         AddStyleClass();
         preocessarBackground(imagemUrl, 400, 130);
         Buttons();
-        
         CriarControl();
     }
 
@@ -116,6 +123,32 @@ public class ActividadeModel extends StackPane{
         this.getChildren().add(control);
     }
 
+    private void OrdenarModelMini(String url){
+        Region spacer = new Region();
+        HBox moreBox=new HBox(spacer,more);
+        HBox box=new HBox(data,hora);
+        box.getStyleClass().add("seg-text");
+        moreBox.setMargin(titulo, new javafx.geometry.Insets(0, 0, -20, 0));
+        moreBox.setHgrow(spacer, Priority.ALWAYS);
+        block.getChildren().addAll(moreBox,this.titulo);
+        this.url.getChildren().addAll(block);
+         HBox hb=new HBox(addAtributos,expandir);
+         hb.getStyleClass().add("botao-box");
+        bloco=new VBox(
+            new HBox(new FontAwesomeIconView(FontAwesomeIcon.LINK,"20"),new Text("Tema: "),this.tema),
+            new HBox(new FontAwesomeIconView(FontAwesomeIcon.TICKET,"20"),new Text("Tipo de evento: "),this.tipoEvento),
+            new HBox(new FontAwesomeIconView(FontAwesomeIcon.USER,"20"),new Text("Organizador: "),this.organizador),
+            new HBox(new FontAwesomeIconView(FontAwesomeIcon.GROUP,"20"),new Text("Público alvo: "),this.publicoAlvo),
+           box);
+        HBox blocTopBox=new HBox(bloco);
+         inputBloco.getChildren().addAll(new StackPane(this.url),blocTopBox,hb
+           );   
+        this.getChildren().add(inputBloco);
+        this.getChildren().add(control);
+        inputBloco.getStyleClass().add("mini");
+
+    }
+
     public void CriarControl(){
         control.getChildren().add(new HBox(edit,trash));
         control.setOpacity(0);
@@ -140,6 +173,7 @@ public class ActividadeModel extends StackPane{
         this.descricao.getStyleClass().add("text-descricao");
         bloco.getStyleClass().add("bloco");
         addAtributos.getStyleClass().add("buttonColor");
+        expandir.getStyleClass().add("buttonWhite");
         url.getStyleClass().add("actividade-img");
         more.getStyleClass().add("more");
         block.getStyleClass().add("actividade-img-block");
@@ -147,9 +181,9 @@ public class ActividadeModel extends StackPane{
 
     public  void preocessarBackground(String urls,int tamanho,int altura){
         Platform.runLater(() -> {
-            this.url.getChildren().remove(image);
+            this.url.getChildren().remove(imagemAtual);
             this.url.setClip(RedoundImageUtil.AddRedoundImage(tamanho, altura,10));
-        this.url.setStyle(this.getStyle().concat("-fx-background-image:  url("+urls+")"));
+            this.url.setStyle(this.getStyle().concat("-fx-background-image:  url("+urls+")"));
         });
  
     }

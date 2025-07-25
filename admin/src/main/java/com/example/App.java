@@ -29,6 +29,7 @@ public class App extends Application {
 
     public static Scene scene;
     private static Stage stage;
+    public static boolean teste=true;
     @Override 
     public void start(Stage stage) throws IOException {
         App.stage= stage;

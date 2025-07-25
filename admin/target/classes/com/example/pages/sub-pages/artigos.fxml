@@ -2,17 +2,16 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXComboBox?>
-<?import com.jfoenix.controls.JFXDrawer?>
 <?import java.net.URL?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
@@ -23,11 +22,17 @@
    </stylesheets>
   
    <children>
-      <HBox layoutY="-2.0" prefHeight="656.0" prefWidth="921.0" spacing="100.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
+      <HBox layoutY="-2.0" prefWidth="1023.0" spacing="100.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
          <children>
-            <VBox prefHeight="567.0" prefWidth="507.0">
+            <VBox prefHeight="606.0" prefWidth="975.0">
                <children>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Artigos" />
+                  <HBox>
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Artigos" />
+                        <Region prefHeight="23.0" prefWidth="833.0" HBox.hgrow="ALWAYS" />
+                        <JFXButton onAction="#Add" prefHeight="45.0" prefWidth="178.0" styleClass="buttonColor" text="Adicionar artigo" />
+                     </children>
+                  </HBox>
                   <HBox prefHeight="42.0" prefWidth="369.0" spacing="10.0">
                      <children>
                         <TextField fx:id="pesqBlock" prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar artigo" styleClass="fieldTextLine" />
@@ -49,43 +54,15 @@
                         <Insets top="20.0" />
                      </VBox.margin>
                   </HBox>
-                  <ScrollPane hbarPolicy="NEVER" prefHeight="489.0" prefWidth="479.0">
-                     <content>
-                        <VBox fx:id="listArtigo" maxHeight="1.7976931348623157E308" prefHeight="477.0" prefWidth="479.0" spacing="20.0">
-                           <padding>
-                              <Insets bottom="10.0" top="10.0" />
-                           </padding>
-                        </VBox>
-                     </content>
+                  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="486.0" prefWidth="962.0">
                      <VBox.margin>
                         <Insets top="40.0" />
                      </VBox.margin>
+                     <content>
+                        <FlowPane fx:id="listArtigo" hgap="10.0" prefHeight="200.0" prefWidth="200.0" vgap="10.0" />
+                     </content>
                   </ScrollPane>
                </children>
-            </VBox>
-            <VBox fx:id="form" maxHeight="-Infinity" prefHeight="458.0" prefWidth="406.0" spacing="20.0" styleClass="card">
-               <padding>
-                  <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
-               </padding>
-               <children>
-                  <TextField fx:id="titulo" promptText="Digite o Titulo do artigo" styleClass="fieldTextLine" />
-                  <TextField fx:id="nome" promptText="Digite o nome do escritor" styleClass="fieldTextLine" />
-                  <JFXComboBox fx:id="tipo" focusColor="#bc3c28" prefHeight="26.0" prefWidth="344.0" promptText="   Tipo de artigo" />
-                  <TextField fx:id="upload" editable="false" onAction="#CarregarPdf" prefHeight="49.0" prefWidth="319.0" promptText="Clique para fazer o uplaod do artigo" styleClass="fieldTextLine">
-                     <cursor>
-                        <Cursor fx:constant="HAND" />
-                     </cursor></TextField>
-                  <TextArea fx:id="descricao" prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do seu artigo" styleClass="border-panel">
-                     <padding>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </padding>
-                  </TextArea>
-                  <JFXDrawer prefWidth="340.0" />
-                  <JFXButton onAction="#Enviar" prefHeight="46.0" prefWidth="319.0" styleClass="buttonColor" text="Enviar" />
-               </children>
-               <HBox.margin>
-                  <Insets top="40.0" />
-               </HBox.margin>
             </VBox>
          </children>
          <padding>

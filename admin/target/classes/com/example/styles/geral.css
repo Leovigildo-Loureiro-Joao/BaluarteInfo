@@ -53,7 +53,6 @@ Label, Text, TextField, ListView {
 /* Tela */
 .tela {
     -fx-background-color: #F8F8F8;
-    -fx-pref-width: 1200;
 }
 
 /* Titles and Text Styles */
@@ -417,7 +416,7 @@ TextField.error {
 .inf-card{
     -fx-alignment: center;
     -fx-font-size: 14;
-    -fx-padding: 10 0;
+    -fx-padding: 10;
 }
 
 .inf-card .jfx-button{
@@ -442,3 +441,5 @@ TextField.error {
     -fx-progress-color: #CB2020; /* Verde */
     -fx-background-color: transparent;
 }
+
+

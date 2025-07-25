@@ -6,6 +6,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/AudioService.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/actividade/ActividadeDtoRegister.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/LoadImageUtil.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalControllerAll.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/LocalDateTimeAdapter.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/ModalUtil.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/HomeService.java

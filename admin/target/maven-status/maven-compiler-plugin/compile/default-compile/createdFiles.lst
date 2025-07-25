@@ -78,6 +78,7 @@ com/example/services/HomeService$1.class
 com/example/enums/ConfigType.class
 com/example/controllers/pages/VideosController.class
 com/example/controllers/modal/ModalEditarApagarController.class
+com/example/controllers/modal/ModalControllerAll.class
 com/example/models/video/VideoModel.class
 com/example/models/config/Statics_dto.class
 com/example/models/artigo/ArtigoModel.class

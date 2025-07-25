@@ -81,7 +81,7 @@
             </VBox>
          </left>
          <center>
-            <ScrollPane fx:id="box" prefHeight="601.0" prefWidth="799.0" />
+            <ScrollPane fx:id="box" fitToHeight="true" fitToWidth="true" prefHeight="601.0" prefWidth="799.0" />
          </center>
       </BorderPane>
       <StackPane fx:id="conteinerModal" mouseTransparent="true" prefHeight="600.0" prefWidth="992.0" style="-fx-opacity: 0;" styleClass="content-modal" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
