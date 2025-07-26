@@ -4,24 +4,22 @@
 <?import com.jfoenix.controls.JFXComboBox?>
 <?import java.net.URL?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-<?import jfxtras.scene.control.LocalDateTimeTextField?>
 
 <VBox maxHeight="500.0" maxWidth="418.0" prefHeight="500.0" prefWidth="418.0" styleClass="card" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.ModalControllerAll">
    <children>
       <HBox alignment="CENTER" prefHeight="77.0" prefWidth="408.0">
          <children>
-            <Label prefHeight="53.0" prefWidth="338.0" text="Actividades" textFill="#c31f1f">
+            <Label prefHeight="53.0" prefWidth="338.0" text="Audio" textFill="#c31f1f">
                <HBox.margin>
                   <Insets left="30.0" right="5.0" />
                </HBox.margin>
@@ -43,92 +41,38 @@
             <Insets right="10.0" top="10.0" />
          </VBox.margin>
       </HBox>
-      <VBox maxHeight="-Infinity" prefHeight="495.0" prefWidth="418.0" stylesheets="@../../styles/geral.css">
+      <VBox maxHeight="-Infinity" prefHeight="564.0" prefWidth="446.0" spacing="20.0" styleClass="card">
          <padding>
-            <Insets bottom="30.0" left="30.0" right="30.0" top="10.0" />
+            <Insets bottom="40.0" left="40.0" right="40.0" top="10.0" />
          </padding>
          <children>
-            <ScrollPane hbarPolicy="NEVER" prefHeight="388.0" prefWidth="372.0" vbarPolicy="ALWAYS">
-               <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="690.0" prefWidth="368.0">
-                     <children>
-                        <VBox fx:id="form" prefHeight="682.0" prefWidth="369.0" spacing="20.0">
-                           <children>
-                              <TextField fx:id="titulo" promptText="Digite o Titulo da actividade" styleClass="fieldTextLine">
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </TextField>
-                              <TextField fx:id="tema" promptText="Digite o tema da actividade" styleClass="fieldTextLine">
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </TextField>
-                              <JFXComboBox fx:id="tipo" prefHeight="23.0" prefWidth="376.0" promptText="Selecione o tipo de actividade">
-                                 <padding>
-                                    <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-                                 </padding>
-                              </JFXComboBox>
-                              <JFXComboBox fx:id="duracao" prefHeight="23.0" prefWidth="376.0" promptText="Selecione em quantos dias a actividade vai durar">
-                                 <padding>
-                                    <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-                                 </padding>
-                              </JFXComboBox>
-                              <TextField fx:id="organizador" promptText="Digite o nome do organizador" styleClass="fieldTextLine">
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </TextField>
-                              <JFXComboBox fx:id="publico_alvo" prefHeight="23.0" prefWidth="376.0" promptText="Selecione o publico alvo">
-                                 <padding>
-                                    <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-                                 </padding>
-                              </JFXComboBox>
-                              <LocalDateTimeTextField fx:id="data_hora" prefHeight="27.0" prefWidth="317.0" promptText="Degite a data e a hora do evento" styleClass="fieldTextLine">
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </LocalDateTimeTextField>
-                              <TextField fx:id="contactos" promptText="Digite aqui os seus contactos" styleClass="fieldTextLine">
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </TextField>
-                              <TextField fx:id="endereco" promptText="Digite o endereço da actividade" styleClass="fieldTextLine">
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </TextField>
-                              <TextArea fx:id="descricao" prefHeight="80.0" prefWidth="324.0" promptText="Descrição" styleClass="border-panel">
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </TextArea>
-                              <StackPane prefHeight="150.0" prefWidth="200.0" styleClass="border-panel">
-                                 <children>
-                                    <ImageView fx:id="imgSrc" fitHeight="174.0" fitWidth="238.0" onMouseClicked="#CarregarImagem" pickOnBounds="true" preserveRatio="true">
-                                       <image>
-                                          <Image url="@../../assets/foto.png" />
-                                       </image>
-                                    </ImageView>
-                                 </children>
-                                 <VBox.margin>
-                                    <Insets left="10.0" right="10.0" />
-                                 </VBox.margin>
-                              </StackPane>
-                           </children>
-                           <padding>
-                              <Insets bottom="5.0" left="5.0" right="20.0" top="5.0" />
-                           </padding>
-                        </VBox>
-                     </children>
-                  </AnchorPane>
-               </content>
-               <padding>
-                  <Insets bottom="20.0" />
-               </padding>
-            </ScrollPane>
-            <JFXButton onAction="#EnviarActividade" prefHeight="40.0" prefWidth="353.0" styleClass="buttonColor" text="Enviar" />
+            <VBox fx:id="form" spacing="15.0">
+               <children>
+                  <TextField fx:id="titulo" promptText="Digite o titulo do audio" styleClass="fieldTextLine" />
+                  <JFXComboBox fx:id="tipo" prefHeight="26.0" prefWidth="365.0" promptText="   Tipo de audio" />
+                  <TextField fx:id="audioSrc" editable="false" onAction="#CarregarAudio" onMouseClicked="#CarregarAudio" promptText="Clique parea realizar o upload do audio" styleClass="fieldTextLine">
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </TextField>
+                  <TextArea fx:id="descricao" prefHeight="119.0" prefWidth="283.0" promptText="Digite aqui a descricao do audio" styleClass="border-panel">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </TextArea>
+               </children>
+            </VBox>
+            <Label text="Capa do audio" />
+            <StackPane prefHeight="143.0" prefWidth="338.0" styleClass="border-panel">
+               <children>
+                  <ImageView fx:id="imgSrc" fitHeight="145.0" fitWidth="229.0" onMouseClicked="#CarregarImagem" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../assets/song.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <JFXButton minHeight="40.0" onAction="#Enviar" prefHeight="56.0" prefWidth="338.0" styleClass="buttonColor" text="Enviar" />
          </children>
       </VBox>
    </children>
