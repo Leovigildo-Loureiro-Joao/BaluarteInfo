@@ -56,7 +56,7 @@
                   </TextArea>
                </children>
             </VBox>
-            <JFXButton onAction="#Enviar" prefHeight="38.0" prefWidth="338.0" styleClass="buttonColor" text="Enviar" />
+            <JFXButton onAction="#EnviarVideo" prefHeight="38.0" prefWidth="338.0" styleClass="buttonColor" text="Enviar" />
          </children>
       </VBox>
    </children>

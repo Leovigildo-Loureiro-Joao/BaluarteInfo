@@ -17,6 +17,7 @@ import com.example.enums.MidiaType;
 import com.example.models.audio.AudioModel;
 import com.example.services.AudioService;
 import com.example.utils.FormAnaliserUtil;
+import com.example.utils.ModalUtil;
 import com.example.utils.ReacaoFormUtil;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXButton;
@@ -33,33 +34,18 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class AudiosController implements Controller{
 
     @FXML
-    private TextArea descricao;
-
-    @FXML
-    private VBox listAudios;
-
-    @FXML
-    private JFXComboBox<String> tipo;
-
-    @FXML
-    private TextField titulo;
+    private FlowPane listAudios;
 
     @FXML
     private AnchorPane content;
 
-    @FXML
-    private TextField audioSrc;
-
-    @FXML
-    private ImageView imgSrc;
-    @FXML
-    private VBox form;
     public CardProcess card;
 
     private AudioService audioService=new AudioService();
@@ -72,18 +58,7 @@ public class AudiosController implements Controller{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-      tipo.getItems().addAll(AudioType.Lista());
        loadAudio();
-    }
-
-    @FXML
-    void CarregarAudio(MouseEvent event) {
-        UploadFiles.Uplaod(FileType.Audio, audioSrc, content);
-    }
-
-    @FXML
-    void CarregarImagem(MouseEvent event) {
-        UploadFiles.Uplaod(FileType.Image, imgSrc, content);
     }
 
     @Override
@@ -100,6 +75,10 @@ public class AudiosController implements Controller{
         this.img=img;
       }
    
+       @FXML
+    void Add(){
+        ModalUtil.Show("modalAudio",this,content);
+    }
     
     private void loadAudio(){
         listAudios.getChildren().clear();
@@ -130,18 +109,9 @@ public class AudiosController implements Controller{
         
     }
 
-      @FXML
-    void Enviar(ActionEvent event) {
-        JFXButton actionButton = (JFXButton) event.getSource();
-        actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
-             AddAudio(actionButton);
-        }else {
-            actionButton.setDisable(false);
-        }
-    }
+     
 
-    private void AddAudio(JFXButton actionButton){
+    public void AddAudio(JFXButton actionButton,AudioDtoRegister audioRegister,VBox form,ImageView imgSrc){
         System.out.println(UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath());
         CompletableFuture.supplyAsync(() -> {
             try {
@@ -159,13 +129,7 @@ public class AudiosController implements Controller{
             }
             try {
                   System.out.println("Esperndo o AudioService.postAudio");
-                return audioService.postAudio(new AudioDtoRegister(
-                        titulo.getText(),
-                        descricao.getText(),
-                        UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
-                        audioSrc.getText(),
-                        MidiaType.AUDIO,
-                        AudioType.fromValue(tipo.getValue())));
+                return audioService.postAudio(audioRegister);
             } catch ( IOException | InterruptedException e) {
                  System.out.println(e.getMessage());
               return null;
@@ -185,7 +149,6 @@ public class AudiosController implements Controller{
                 listAudios.getChildren().add(0,new AudioModel(audio));
                 FormAnaliserUtil.CleanForm(form);
                 imgSrc.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
-                audioSrc.setText("");
                 ReacaoFormUtil.Reagir("corret","O Audio foi adicionado com sucesso" , img, info);
                 actionButton.setDisable(false);
             });

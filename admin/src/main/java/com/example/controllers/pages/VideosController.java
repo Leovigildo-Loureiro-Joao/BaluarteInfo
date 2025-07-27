@@ -27,29 +27,25 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class VideosController implements Controller {
 
     @FXML
-    private VBox listVideos;
+    private FlowPane listVideos;
 
     @FXML
-    private TextArea descricao;
+    private AnchorPane content;
 
-    @FXML
-    private TextField titulo;
-
-    @FXML
-    private VBox form;
     private StackPane fundo;
 
     private ImageView img;
 
     private Label info;
-    @FXML
-    private TextField url;
+   
     public CardProcess card;
     public VideoService videoService=new VideoService();
 
@@ -66,26 +62,16 @@ public class VideosController implements Controller {
       }
     }
 
-    @FXML
-    void Enviar(ActionEvent event) {
-        JFXButton actionButton = (JFXButton) event.getSource();
-        actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
-             AddVideo(actionButton);
-        }else {
-            actionButton.setDisable(false);
-        }
+   
+      @FXML
+    void Add(){
+        ModalUtil.Show("modalVideoAdd",this,content);
     }
 
-    private void AddVideo(JFXButton actionButton){
+    public void AddVideo(JFXButton actionButton,VideoDtoRegister videoRegister,VBox form){
         CompletableFuture.supplyAsync(() -> {
             try {
-                return videoService.postVideo(new VideoDtoRegister(
-                        titulo.getText(),
-                        descricao.getText(),
-                        url.getText(),
-                        MidiaType.VIDEO
-                    ));
+                return videoService.postVideo(videoRegister);
             } catch (IOException | InterruptedException e) {
               return null;
             }

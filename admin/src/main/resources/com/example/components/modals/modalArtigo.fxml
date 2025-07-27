@@ -60,7 +60,7 @@
                </padding>
             </TextArea>
             <JFXDrawer prefWidth="340.0" />
-            <JFXButton onAction="#Enviar" prefHeight="68.0" prefWidth="338.0" styleClass="buttonColor" text="Enviar" />
+            <JFXButton onAction="#EnviarArtigo" prefHeight="68.0" prefWidth="338.0" styleClass="buttonColor" text="Enviar" />
          </children>
       </VBox>
    </children>

@@ -49,7 +49,7 @@
             <TextField fx:id="titulo" promptText="Digite o Titulo do artigo" styleClass="fieldTextLine" />
             <TextField fx:id="nome" promptText="Digite o nome do escritor" styleClass="fieldTextLine" />
             <JFXComboBox fx:id="tipo" focusColor="#bc3c28" prefHeight="26.0" prefWidth="344.0" promptText="   Tipo de artigo" />
-            <TextField fx:id="upload" editable="false" onAction="#CarregarPdf" prefHeight="49.0" prefWidth="319.0" promptText="Clique para fazer o uplaod do artigo" styleClass="fieldTextLine">
+            <TextField fx:id="upload" editable="false" onAction="#CarregarPdf" onMouseClicked="#CarregarPdf" prefHeight="49.0" prefWidth="319.0" promptText="Clique para fazer o uplaod do artigo" styleClass="fieldTextLine">
                <cursor>
                   <Cursor fx:constant="HAND" />
                </cursor>

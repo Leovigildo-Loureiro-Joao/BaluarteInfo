@@ -72,7 +72,7 @@
                   </ImageView>
                </children>
             </StackPane>
-            <JFXButton minHeight="40.0" onAction="#Enviar" prefHeight="56.0" prefWidth="338.0" styleClass="buttonColor" text="Enviar" />
+            <JFXButton minHeight="40.0" onAction="#EnviarAudio" prefHeight="56.0" prefWidth="338.0" styleClass="buttonColor" text="Enviar" />
          </children>
       </VBox>
    </children>

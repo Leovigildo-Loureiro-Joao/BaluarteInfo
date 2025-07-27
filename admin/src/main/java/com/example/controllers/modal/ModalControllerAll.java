@@ -18,8 +18,12 @@ import com.example.App;
 import com.example.controllers.Controller;
 import com.example.controllers.pages.ActividadesController;
 import com.example.controllers.pages.ArtigoController;
+import com.example.controllers.pages.AudiosController;
+import com.example.controllers.pages.VideosController;
 import com.example.dto.actividade.*;
 import com.example.dto.artigo.ArtigoRegister;
+import com.example.dto.audio.AudioDtoRegister;
+import com.example.dto.video.VideoDtoRegister;
 import com.example.enums.*;
 import com.example.models.actividade.ActividadeModel;
 
@@ -69,6 +73,9 @@ public class ModalControllerAll implements Initializable{
     private TextField tema;
 
     @FXML
+    private TextField url;
+
+    @FXML
     private VBox form;
 
     private Controller controller;
@@ -81,6 +88,9 @@ public class ModalControllerAll implements Initializable{
 
     @FXML
     private TextField pesqBlock;
+
+     @FXML
+    private TextField audioSrc;
 
     @FXML
     private JFXComboBox<String> tipo;
@@ -98,6 +108,8 @@ public class ModalControllerAll implements Initializable{
             tipo.getItems().addAll(ActividadeType.Lista());
         }else if (ArtigoController.class.equals(controller.getClass())) {
              tipo.getItems().addAll(ArtigoType.Lista());
+        }else{
+             tipo.getItems().addAll(AudioType.Lista());
         }
     }
 
@@ -106,6 +118,24 @@ public class ModalControllerAll implements Initializable{
     
     }
 
+
+     @FXML
+    void EnviarAudio(ActionEvent event) {
+        JFXButton actionButton = (JFXButton) event.getSource();
+        actionButton.setDisable(true);
+        if (! FormAnaliserUtil.isEmpty(form)) {
+             AudiosController control=(AudiosController)controller;
+             control.AddAudio(actionButton,new AudioDtoRegister(
+                        titulo.getText(),
+                        descricao.getText(),
+                        UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
+                        audioSrc.getText(),
+                        MidiaType.AUDIO,
+                        AudioType.fromValue(tipo.getValue())),form,imgSrc);
+        }else {
+            actionButton.setDisable(false);
+        }
+    }
     @FXML
     void CarregarImagem(MouseEvent event) {
         UploadFiles.Uplaod(FileType.Image, imgSrc,  content); 
@@ -115,6 +145,12 @@ public class ModalControllerAll implements Initializable{
     void CarregarPdf(ActionEvent event) {
         UploadFiles.Uplaod(FileType.Pdf, upload, content);
     }
+
+     @FXML
+    void CarregarAudio(MouseEvent event) {
+        UploadFiles.Uplaod(FileType.Audio, audioSrc, content);
+    }
+
 
 
      @FXML
@@ -158,6 +194,22 @@ public class ModalControllerAll implements Initializable{
             actionButton.setDisable(false);
         }
     }
+
+     @FXML
+    void EnviarVideo(ActionEvent event) {
+        JFXButton actionButton = (JFXButton) event.getSource();
+        actionButton.setDisable(true);
+        if (! FormAnaliserUtil.isEmpty(form)) {
+            VideosController control=(VideosController)controller;
+             control.AddVideo(actionButton,new VideoDtoRegister(titulo.getText(),
+                        descricao.getText(),
+                        url.getText(),
+                        MidiaType.VIDEO),form);
+        }else {
+            actionButton.setDisable(false);
+        }
+    }
+
 
 }
 

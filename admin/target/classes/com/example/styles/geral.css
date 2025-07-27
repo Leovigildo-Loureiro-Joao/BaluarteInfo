@@ -408,6 +408,10 @@ TextField.error {
     -fx-font-size: 14;
 }
 
+.jfx-hamburger *{
+     -fx-background-color: white;
+}
+
 .error Label{
     
     -fx-text-fill: rgb(180, 79, 79) ;
@@ -442,4 +446,16 @@ TextField.error {
     -fx-background-color: transparent;
 }
 
+.mini-bar .aux{
+
+    -fx-opacity: 0;
+
+}
+
+
+.max-bar .aux{
+
+    -fx-opacity: 1;
+
+}
 

@@ -15,60 +15,53 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="content" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="656.0" prefWidth="1039.0" styleClass="root" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.ArtigoController">
+<AnchorPane fx:id="content" styleClass="root" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.ArtigoController">
   <stylesheets>
       <URL value="@../../styles/geral.css" />
       <URL value="@../../styles/artigo.css" />
    </stylesheets>
   
    <children>
-      <HBox layoutY="-2.0" prefWidth="1023.0" spacing="100.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-2.0">
+      <VBox layoutX="40.0" layoutY="48.0" prefHeight="606.0" prefWidth="975.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="24.0" AnchorPane.topAnchor="48.0">
          <children>
-            <VBox prefHeight="606.0" prefWidth="975.0">
+            <HBox>
                <children>
-                  <HBox>
-                     <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Artigos" />
-                        <Region prefHeight="23.0" prefWidth="833.0" HBox.hgrow="ALWAYS" />
-                        <JFXButton onAction="#Add" prefHeight="45.0" prefWidth="178.0" styleClass="buttonColor" text="Adicionar artigo" />
-                     </children>
-                  </HBox>
-                  <HBox prefHeight="42.0" prefWidth="369.0" spacing="10.0">
-                     <children>
-                        <TextField fx:id="pesqBlock" prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar artigo" styleClass="fieldTextLine" />
-                        <JFXButton onAction="#Pesquisar" prefHeight="33.0" prefWidth="25.0" text=" ">
-                           <HBox.margin>
-                              <Insets left="-50.0" />
-                           </HBox.margin>
-                           <graphic>
-                              <ImageView fx:id="imgSrc" fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" translateY="2.0">
-                                 <image>
-                                    <Image url="@../../assets/0001.png" />
-                                 </image>
-                              </ImageView>
-                           </graphic>
-                        </JFXButton>
-                        <JFXComboBox fx:id="filtro" focusColor="#bc3c28" prefHeight="32.0" prefWidth="98.0" promptText="Filtro" />
-                     </children>
-                     <VBox.margin>
-                        <Insets top="20.0" />
-                     </VBox.margin>
-                  </HBox>
-                  <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="486.0" prefWidth="962.0">
-                     <VBox.margin>
-                        <Insets top="40.0" />
-                     </VBox.margin>
-                     <content>
-                        <FlowPane fx:id="listArtigo" hgap="10.0" prefHeight="200.0" prefWidth="200.0" vgap="10.0" />
-                     </content>
-                  </ScrollPane>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Artigos" />
+                  <Region prefHeight="23.0" prefWidth="833.0" HBox.hgrow="ALWAYS" />
+                  <JFXButton onAction="#Add" prefHeight="45.0" prefWidth="178.0" styleClass="buttonColor" text="Adicionar artigo" />
                </children>
-            </VBox>
+            </HBox>
+            <HBox prefHeight="42.0" prefWidth="369.0" spacing="10.0">
+               <children>
+                  <TextField fx:id="pesqBlock" prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar artigo" styleClass="fieldTextLine" />
+                  <JFXButton onAction="#Pesquisar" prefHeight="33.0" prefWidth="25.0" text=" ">
+                     <HBox.margin>
+                        <Insets left="-50.0" />
+                     </HBox.margin>
+                     <graphic>
+                        <ImageView fx:id="imgSrc" fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" translateY="2.0">
+                           <image>
+                              <Image url="@../../assets/0001.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </JFXButton>
+                  <JFXComboBox fx:id="filtro" focusColor="#bc3c28" prefHeight="32.0" prefWidth="98.0" promptText="Filtro" />
+               </children>
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </HBox>
+            <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="486.0" prefWidth="962.0">
+               <VBox.margin>
+                  <Insets top="40.0" />
+               </VBox.margin>
+               <content>
+                  <FlowPane fx:id="listArtigo" hgap="10.0" prefHeight="200.0" prefWidth="200.0" vgap="10.0" />
+               </content>
+            </ScrollPane>
          </children>
-         <padding>
-            <Insets left="40.0" top="50.0" />
-         </padding>
-      </HBox>
+      </VBox>
    </children>
  
 </AnchorPane>

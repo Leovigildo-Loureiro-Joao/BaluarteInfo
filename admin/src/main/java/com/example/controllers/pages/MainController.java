@@ -11,10 +11,14 @@ import com.example.App;
 import com.example.components.item_list.ItemDash;
 import com.example.configs.ApiCache;
 import com.example.controllers.Controller;
+import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.ModalUtil;
 import com.example.utils.TokenSeccao;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -29,11 +33,14 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 public class MainController implements Initializable{
 
@@ -42,6 +49,9 @@ public class MainController implements Initializable{
 
     @FXML
     private ImageView img;
+
+    @FXML
+    private VBox dashboard;
 
     @FXML
     private Label info;
@@ -55,6 +65,12 @@ public class MainController implements Initializable{
 
     @FXML
     private ImageView imagem;
+
+    @FXML
+    private VBox aux1;
+
+    @FXML
+    private HBox aux2;
 
     @FXML
     private Text nome;
@@ -109,6 +125,33 @@ public class MainController implements Initializable{
         App.setRoot("login");
     }
 
+
+     @FXML
+    public void toggle(ActionEvent event) {
+        Platform.runLater(() -> {
+            double init = dashboard.getPrefWidth();
+            int initPos = aux1.getOpacity();
+            double end= init==50?200:50;
+            int endPos= initPos==1?0:1;
+            Timeline line=new Timeline(
+                new KeyFrame(
+                    Duration.ZERO,new KeyValue(dashboard.prefWidthProperty(),init)
+                ),
+                new KeyFrame(
+                    Duration.seconds(0.5),new KeyValue(dashboard.prefWidthProperty(),end)
+                )
+            );line.setDelay(Duration.seconds(0.3));
+            FadeTrasitionUtil.Fade(.3, aux1, endPos, initPos);
+            FadeTrasitionUtil.Fade(.3, aux2, endPos, initPos);
+            
+            line.play();
+            
+            
+                
+                
+        }); 
+    }
+
     @FXML
     public void MudarSenha(ActionEvent event) {
         ModalUtil.Show("modalSenha");
@@ -128,5 +171,6 @@ public class MainController implements Initializable{
         if(!App.teste)imagem.setImage(new Image(TokenSeccao.getUsuarioLogado().img()));
         imagem.setClip(new Circle(imagem.getFitWidth()/2,imagem.getFitWidth()/2,imagem.getFitWidth()/2));
         loadFXMLAsync("home");
+        dashboard.setPrefWidth(50);
      }
 }

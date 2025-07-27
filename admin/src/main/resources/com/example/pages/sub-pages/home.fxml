@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.jfoenix.controls.*?>
-<?import java.lang.*?>
-<?import java.net.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import java.lang.String?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="748.0" prefWidth="1334.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.HomeController">
+<AnchorPane fx:id="container" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="748.0" prefWidth="1113.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.HomeController">
    <stylesheets>
       <URL value="@../../styles/home.css" />
       <URL value="@../../styles/geral.css" />
@@ -19,7 +25,7 @@
       <String fx:value="root" />
    </styleClass>
    <children>
-      <HBox fx:id="blocoTop" layoutY="40.0" prefHeight="182.0" prefWidth="1200.0" spacing="30.0">
+      <HBox fx:id="blocoTop" layoutY="40.0" prefHeight="182.0" prefWidth="1113.0" spacing="25.0">
          <children>
             <AnchorPane prefHeight="162.0" stylesheets="@../../styles/home.css">
                <styleClass>
@@ -113,10 +119,10 @@
             </AnchorPane>
          </children>
          <padding>
-            <Insets bottom="10.0" left="40.0" right="10.0" top="10.0" />
+            <Insets bottom="10.0" left="25.0" right="10.0" top="10.0" />
          </padding>
       </HBox>
-      <HBox fx:id="blocoBottom" layoutY="266.0" prefHeight="476.0" prefWidth="1200.0" spacing="80.0">
+      <HBox fx:id="blocoBottom" layoutY="266.0" prefHeight="476.0" prefWidth="1113.0" spacing="80.0">
          <children>
             <VBox prefHeight="464.0" prefWidth="411.0" spacing="20.0">
                <children>
@@ -225,7 +231,7 @@
             </AnchorPane>
          </children>
          <padding>
-            <Insets left="40.0" />
+            <Insets left="25.0" />
          </padding>
       </HBox>
    </children>
