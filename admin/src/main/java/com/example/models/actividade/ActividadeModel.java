@@ -40,7 +40,7 @@ import lombok.Setter;
 
 @Getter @Setter
 public class ActividadeModel extends StackPane{
-      
+    private ActividadeDtoSimple dados;
     private Label titulo;
     private Label tema;
     private Label tipoEvento;
@@ -66,7 +66,7 @@ public class ActividadeModel extends StackPane{
     private JFXButton trash=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.TRASH,"20"));
 
     public ActividadeModel(ActividadeDtoSimple data, boolean mini) {
-
+        dados=data;
         this.titulo=new Label(data.titulo());
         this.tema=new Label(data.tema());
         this.tipoEvento=new Label(data.tipoEvento().name());
@@ -78,7 +78,8 @@ public class ActividadeModel extends StackPane{
         this.imagemUrl=data.img();
         this.duracao=data.duracao();
         this.data=new Label("Marcado para "+data.dataEvento().toLocalDate().toString());
-        this.hora=new Label("Às  "+data.dataEvento().toLocalTime().toString());
+        this.hora=new Label("Às  "+data.dataEvento().toLocalTime().getHour()+":"+
+        data.dataEvento().toLocalTime().getMinute());
        
         imagemAtual.setPrefSize(50, 50);
         imagemAtual.getStyleClass().add("custom-progress");
@@ -90,7 +91,7 @@ public class ActividadeModel extends StackPane{
             OrdenarModel(imagemUrl);
         }
         AddStyleClass();
-        preocessarBackground(imagemUrl, 400, 130);
+        preocessarBackground(imagemUrl, 300, 130);
         Buttons();
         CriarControl();
     }

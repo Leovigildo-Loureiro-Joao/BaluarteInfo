@@ -25,7 +25,7 @@
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Actividades" wrappingWidth="117.41015625" />
                   <Region prefHeight="0.0" prefWidth="868.0" HBox.hgrow="ALWAYS" />
-                  <JFXButton contentDisplay="RIGHT" onAction="#Add" prefHeight="34.0" prefWidth="152.0" styleClass="buttonColor" text="Adicionar actividade" />
+                  <JFXButton contentDisplay="RIGHT" maxWidth="152.0" minWidth="152.0" onAction="#Add" prefHeight="34.0" prefWidth="152.0" styleClass="buttonColor" text="Adicionar actividade" />
                </children>
             </HBox>
             <VBox prefHeight="150.0" prefWidth="450.0">
@@ -58,18 +58,21 @@
                         <Insets top="10.0" />
                      </VBox.margin>
                   </Text>
-                  <FlowPane hgap="10.0" prefHeight="0.0" prefWidth="450.0" vgap="10.0">
+                  <FlowPane hgap="20.0" prefHeight="0.0" prefWidth="450.0" vgap="10.0">
                      <children>
-                        <JFXComboBox fx:id="duracao" prefHeight="32.0" prefWidth="143.0" promptText="Duração" visibleRowCount="4" />
-                        <JFXComboBox fx:id="tipo" prefHeight="32.0" prefWidth="143.0" promptText="Tipo" visibleRowCount="4" />
-                        <JFXComboBox fx:id="publico_alvo" prefHeight="32.0" prefWidth="143.0" promptText="Publico Alvo" visibleRowCount="4" />
+                        <JFXComboBox fx:id="duracao" focusColor="#c93012" labelFloat="true" onAction="#SelecionarSeccao" prefHeight="32.0" prefWidth="143.0" promptText="Duração" visibleRowCount="4" />
+                        <JFXComboBox fx:id="tipo" focusColor="#c93012" labelFloat="true" onAction="#SelecionarSeccao" prefHeight="32.0" prefWidth="143.0" promptText="Tipo" visibleRowCount="4" />
+                        <JFXComboBox fx:id="publico_alvo" focusColor="#c93012" labelFloat="true" onAction="#SelecionarSeccao" prefHeight="32.0" prefWidth="143.0" promptText="Publico Alvo" visibleRowCount="4" />
                      </children>
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
                   </FlowPane>
                </children>
             </VBox>
             <ScrollPane hbarPolicy="NEVER" prefHeight="448.0" prefWidth="1138.0">
                <content>
-                  <FlowPane fx:id="listActividade" hgap="10.0" prefHeight="446.0" prefWidth="1134.0" vgap="10.0" />
+                  <FlowPane fx:id="listActividade" hgap="20.0" prefHeight="446.0" prefWidth="1134.0" vgap="20.0" />
                </content>
             </ScrollPane>
          </children>

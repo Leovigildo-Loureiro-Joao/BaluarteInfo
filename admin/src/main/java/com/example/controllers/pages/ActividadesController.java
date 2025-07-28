@@ -6,9 +6,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 import com.example.App;
 import com.example.components.item_list.CardProcess;
@@ -32,6 +34,8 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -77,6 +81,8 @@ public class ActividadesController implements Controller{
     public  ImageView img;
 
     public  Label info;
+
+    private List<ActividadeDtoSimple> actividades;
 
 
     @FXML
@@ -130,43 +136,65 @@ public class ActividadesController implements Controller{
                 .filter(node -> node instanceof ActividadeModel)
                 .map(node -> (ActividadeModel) node)
                 .toList()) {
-            if (model.getTitulo().getText().toLowerCase().contains(search.toLowerCase())) {
+            if (model.getDados().titulo().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            }else if (model.getDados().descricao().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            } else if (model.getDados().tema().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            } else if (model.getDados().endereco().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            } else if (model.getDados().organizador().toLowerCase().contains(search.toLowerCase())) {
                 filteredList.add(model);
             }
         }
         listActividade.getChildren().setAll(filteredList);
         if (filteredList.isEmpty()) {
-            ReacaoFormUtil.Reagir("error", "Nenhuma actividade encontrada com o termo: " + search, img, info);
+           listActividade.getChildren().clear();
+            card.Vazio("Nenhuma actividade encontrada", () -> SelecionarSeccao(event));
+            listActividade.getChildren().add(card);
         } else {
-            ReacaoFormUtil.Reagir("corret", "Actividades encontradas: " + filteredList.size(), img, info);
+            listActividade.getChildren().setAll(filteredList);
         }
     }
 
+
     @FXML
-    void SelectSeccao(ActionEvent event) {
-        ToggleButton toggleGroup = (ToggleButton) event.getSource();
-        String selectedValue = toggleGroup.getText();
-        if (selectedValue.equals("Todos")) {
-            listActividade.getChildren().clear();
-            LoadActividades();
-        } else {
-           Platform.runLater(() -> {
-                List<ActividadeModel> filteredList = listActividade.getChildren().stream()
-                        .filter(node -> node instanceof ActividadeModel)
-                        .map(node -> (ActividadeModel) node)
-                        .filter(model -> model.getDuracao().name().equals(selectedValue))
-                        .toList();
-                listActividade.getChildren().setAll(filteredList);
-                if (filteredList.isEmpty()) {
-                    listActividade.getChildren().clear();
-                    card.Vazio("Nenhuma actividade encontrada para o tipo: " + selectedValue, () -> SelectSeccao(event));
-                    listActividade.getChildren().add(card);
-                } else {
-                    ReacaoFormUtil.Reagir("corret", "Actividades filtradas por tipo: " + selectedValue, img, info);
-                }
-            });
+    void SelecionarSeccao(ActionEvent event) {
+    Platform.runLater(() -> {
+          listActividade.getChildren().clear();
+        for (ActividadeDtoSimple actividadeDtoSimple : actividades) {
+            listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple, true));
         }
-    }
+        String duracaoValue = Optional.ofNullable(duracao.getSelectionModel().getSelectedItem()).orElse("Todos");
+        String tipoValue = Optional.ofNullable(tipo.getSelectionModel().getSelectedItem()).orElse("Todos");
+        String publicoAlvoValue = Optional.ofNullable(publico_alvo.getSelectionModel().getSelectedItem()).orElse("Todos");
+
+        List<Node> filteredList = listActividade.getChildren().stream()
+                .filter(node -> node instanceof ActividadeModel)
+                .map(node -> (ActividadeModel) node)
+                .filter(model -> correspondeAFiltros(model, duracaoValue, tipoValue, publicoAlvoValue))
+                .collect(Collectors.toList());
+
+        if (filteredList.isEmpty()) {
+            listActividade.getChildren().clear();
+            card.Vazio("Nenhuma actividade encontrada", () -> SelecionarSeccao(event));
+            listActividade.getChildren().add(card);
+        } else {
+            listActividade.getChildren().setAll(filteredList);
+        }
+    });
+}
+
+private boolean correspondeAFiltros(ActividadeModel model, String duracaoValue, String tipoValue, String publicoAlvoValue) {
+    return (duracaoValue.equals("Todos") || model.getDados().duracao().name().equals(duracaoValue)) &&
+           (tipoValue.equals("Todos") || model.getDados().tipoEvento().name().equals(tipoValue)) &&
+           (publicoAlvoValue.equals("Todos") || model.getDados().publicoAlvo().name().equals(publicoAlvoValue));
+}
+
+
+
+   
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -193,6 +221,7 @@ public class ActividadesController implements Controller{
                 return null;
             }
         },App.getExecutorService()).thenAccept(t -> {
+            actividades=t;
             Platform.runLater(() -> {
                 if(App.teste)
                     AddTestActividade();
@@ -235,9 +264,17 @@ public class ActividadesController implements Controller{
     }
 
     private void AddDetails(){
+        publico_alvo.getItems().add(0,"Todos");
+        tipo.getItems().add(0,"Todos");
+        duracao.getItems().add(0,"Todos");
         publico_alvo.getItems().addAll(PublicoAlvoType.Lista());
         duracao.getItems().addAll(DuracaoActividade.Lista());
         tipo.getItems().addAll(ActividadeType.Lista());
+
+        publico_alvo.getSelectionModel().select("Todos");
+        tipo.getSelectionModel().select("Todos");
+        duracao.getSelectionModel().select("Todos");
+
     }
 
     @Override

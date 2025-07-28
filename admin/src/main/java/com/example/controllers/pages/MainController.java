@@ -130,9 +130,9 @@ public class MainController implements Initializable{
     public void toggle(ActionEvent event) {
         Platform.runLater(() -> {
             double init = dashboard.getPrefWidth();
-            int initPos = aux1.getOpacity();
+            int initPos = (int) aux1.getOpacity();
             double end= init==50?200:50;
-            int endPos= initPos==1?0:1;
+            int endPos= initPos==50?0:1;
             Timeline line=new Timeline(
                 new KeyFrame(
                     Duration.ZERO,new KeyValue(dashboard.prefWidthProperty(),init)
@@ -171,6 +171,6 @@ public class MainController implements Initializable{
         if(!App.teste)imagem.setImage(new Image(TokenSeccao.getUsuarioLogado().img()));
         imagem.setClip(new Circle(imagem.getFitWidth()/2,imagem.getFitWidth()/2,imagem.getFitWidth()/2));
         loadFXMLAsync("home");
-        dashboard.setPrefWidth(50);
+        dashboard.setPrefWidth(200);
      }
 }
