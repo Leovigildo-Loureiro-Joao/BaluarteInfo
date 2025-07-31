@@ -1,31 +1,18 @@
-version: '3.8'
-
+# docker-compose.yml
+version: '3.9'
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: local_mysql
+  postgres:
+    image: postgres:16
+    container_name: igreja-db
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: appdb
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: apppassword
+      POSTGRES_DB: igreja_db
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: Lp11Baluarte
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
-
-  springboot-app:
-    build: .
-    container_name: springboot_container
-    environment:
-      DB_URL: jdbc:mysql://mysql:3306/appdb
-      DB_USERNAME: appuser
-      DB_PASSWORD: apppassword
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql
-
+      - pgdata:/var/lib/postgresql/data
 volumes:
-  mysql_data:
+  pgdata:
 
