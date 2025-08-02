@@ -1,0 +1,483 @@
+/* Global Styles */
+* {
+    -fx-background-color: transparent; 
+    -fx-font-family: 'Roboto';
+}
+
+.tooltip {
+    -fx-background-color: derive(#2a2a2a, 20%); /* ou #f5f5f5 */
+    -fx-text-fill: black;
+    -fx-padding: 8px;
+    -fx-background-radius: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0.3, 0, 2);
+}
+
+/* ScrollBar */
+ScrollBar .thumb {
+    -fx-background-color: #cccccc8a;
+    -fx-background-radius: 45;
+    -fx-background-insets: 5;
+    -fx-primary: #CB2020;
+}
+
+.scroll-bar {
+    -fx-background-color: #f0f0f0;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #c0c0c0;
+    -fx-background-radius: 5px;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #e0e0e0;
+}
+
+
+/* ListView */
+ListView {
+    -fx-background-color: transparent; 
+}
+
+ListView * {
+    -fx-background-color: transparent; 
+    -fx-padding: 0;
+    -fx-margin: 0;
+}
+
+ListView *:selected {
+    -fx-background-color: white;   
+}
+
+/* Labels and Text */
+Label, Text, TextField, ListView {
+    -fx-font-family: Roboto;
+}
+
+.minText {
+    -fx-font-size: 11;
+}
+
+/* Cards and Modals */
+.card, .modal {
+    -fx-background-radius: 8;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, #e5e5e5, 8, 0.1, 1, 1);
+}
+
+.card.percentagem {
+    -fx-max-width: 250;
+    -fx-max-height: 160;
+    -fx-pref-width: 250;
+    -fx-pref-height: 160;
+}
+
+/* Tela */
+.tela {
+    -fx-background-color: #F8F8F8;
+}
+
+/* Titles and Text Styles */
+.titulo {
+    -fx-fill: #CB2020;
+    -fx-font-size: 18;
+    -fx-font-weight: BOLD;
+}
+
+.textData {
+    -fx-fill: #000000;
+    -fx-font-size: 12;
+}
+
+.textDataL {
+    -fx-fill: #ffff;
+    -fx-font-size: 12;
+}
+
+.textDesig {
+    -fx-background-color: #3cf8233f;
+    -fx-text-fill: rgb(135, 255, 165);
+    -fx-font-size: 12;
+    -fx-background-radius: 10;
+    -fx-padding: 2 10;
+}
+
+.textDataG {
+    -fx-fill: #5a5a5a;
+    -fx-font-size: 13;
+}
+
+.textSubtitle {
+    -fx-fill: #CB2020;
+    -fx-font-size: 14;
+}
+
+/* Item Dash */
+ItemDash {
+    -fx-padding: 10;
+}
+
+ItemDash Label {
+    -fx-text-fill: white;
+    -fx-font-size: 14;
+}
+
+ItemDash .glyph-icon {
+    -fx-fill: #ffffff;
+}
+
+.list-cell:selected ItemDash .glyph-icon,.list-cell:selected ItemNotif .glyph-icon {
+    -fx-fill: #CB2020;
+}
+
+.list-cell:selected ItemDash Label {
+    -fx-text-fill: #CB2020;
+}
+
+.list-cell:selected ItemDash {
+    -fx-background-color: white;
+    -fx-border-color: #CB2020;
+    -fx-border-width: 0 0 0 2;
+}
+
+/* Item Notification */
+ItemNotif Label {
+    -fx-text-fill: black;
+}
+
+ItemNotif.select {
+    -fx-border-color: #cb202024 #cb202024 #cb202024 #CB2020;
+    -fx-border-width: 0 0 0 2;
+    -fx-background-color: #cb202024;
+}
+
+ItemNotif {
+    -fx-border-color: white;
+    -fx-border-width: 0 0 0 2;
+    -fx-padding: 10 25;
+}
+
+/* Circle Progress */
+.arc_progress {
+    -fx-stroke: #CB2020;
+    -fx-fill: white;
+}
+
+.arc_percent {
+    -fx-fill: #d8d8d8;
+}
+
+.text_progress {
+    -fx-text-fill: #CB2020;
+}
+
+/* Buttons */
+.buttonWhite {
+    -fx-border-radius: 4;
+    -fx-border-color: #CB2020;
+    -fx-background-radius: 4;
+    -fx-background-color: white;
+    -fx-text-fill: #CB2020;
+}
+
+.buttonColor {
+    -fx-background-radius: 4;
+    -fx-background-color: #CB2020;
+    -fx-text-fill: white;
+}
+
+.button-toggle {
+    -fx-background-color: #fff;
+    -fx-background-radius: 6;
+    -fx-padding: 10;
+    -fx-border-color: #c8c8c8;
+    -fx-border-radius: 6;
+}
+
+.button-toggle:selected {
+    -fx-background-color: #CB2020;
+    -fx-text-fill: white;
+}
+
+/* Select Section */
+.selectSection {
+    -fx-border-color: transparent;
+    -fx-border-width: 2;
+    -fx-font-size: 14;
+    -fx-font-weight: BOLD;
+    -fx-text-fill: #797979;
+}
+
+.selectSection.sel {
+    -fx-border-color: transparent transparent #CB2020 transparent;
+    -fx-border-width: 2;
+    -fx-text-fill: #cb20208a;
+}
+
+/* Borders */
+.border-panel {
+    -fx-border-color: #c8c8c8;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.fieldTextLine {
+    -fx-border-color: transparent transparent #c8c8c8 transparent;
+}
+
+/* JFXComboBox */
+.jfx-combo-box > .input-line {
+    -fx-background-color: #c8c8c8;
+    -fx-pref-height: 1px;
+    -fx-translate-y: 1px;
+}
+
+.jfx-combo-box > .arrow-button .arrow {
+    -fx-background-color: #c8c8c8;
+}
+
+.jfx-combo-box .combo-box-popup .list-cell {
+    -fx-background-color: #ffffff;
+}
+
+.jfx-combo-box .combo-box-popup .list-cell:selected {
+    -fx-background-color: #d16161; /* Cor de fundo do item selecionado */
+    -fx-text-fill: white; /* Cor do texto do item selecionado */
+}
+
+.jfx-combo-box .combo-box-popup .list-cell:hover {
+    -fx-background-color: #929292;
+}
+
+/* Titles for Models */
+.titleModel {
+    -fx-font-weight: bold;
+    -fx-font-size: 18;
+    -fx-padding: 30 0 0 0;
+    -fx-wrap-text: true;
+}
+
+/* Modals */
+.content-modal {
+    -fx-background-color: rgba(0, 0, 0, 0.37);
+}
+
+.modal-header {
+    -fx-background-color: #CB2020;
+    -fx-background-radius: 8 8 0 0;
+}
+
+.infoControl label{
+
+}
+
+/* Carousel Items */
+.Item_Carrosel {
+    -fx-font-size: 14;
+}
+
+.Item_Carrosel.select Region {
+    -fx-background-color: #CB2020;
+    -fx-background-radius: 8;
+    -fx-max-height: 4;
+    -fx-max-width: 80;
+}
+
+.Item_Carrosel Region {
+    -fx-background-radius: 8;
+    -fx-max-height: 4;
+    -fx-max-width: 80;
+}
+
+/* Gradients */
+.gradiente.select .card-gradiente {
+    -fx-background-color: linear-gradient(transparent, transparent, #CB2020);
+}
+
+.gradiente .card-gradiente {
+    -fx-background-color: linear-gradient(transparent, transparent, #fff);
+    -fx-background-radius: 8;
+}
+
+.gradiente.select .circle-rotate{
+    -fx-stroke: #CB2020;
+}
+
+.gradiente .circle-rotate{
+    -fx-stroke-dash-array: 25, 44.58, 25, 44.58, 25, 44.58;
+}
+
+
+/* User Cards */
+.user-card {
+    -fx-padding: 5;
+    -fx-max-width: 230;
+}
+
+.user-card Text {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-fill: #5a5a5a;
+}
+
+.user-card Label {
+    -fx-font-size: 12;
+    -fx-wrap-text: true;
+    -fx-max-width: 150;
+}
+
+.coment-model Label{
+    -fx-max-width: 300;
+    -fx-min-width: 300;
+    -fx-wrap-text: true;
+    -fx-padding: 10;
+}
+
+
+.control-model{
+    -fx-background-color: rgba(0, 0, 0, 0.61);
+    -fx-background-radius: 8;
+}
+
+.control-model HBox{
+    -fx-max-width: 70;
+    -fx-max-height: 25;
+    -fx-spacing: 20;
+
+}
+
+
+.control-model .jfx-button *{
+   -fx-fill: #fff;
+   -fx-text-fill: #fff;
+
+}
+
+
+
+.control-model .jfx-button{
+   -fx-background-color: #CB2020;
+   -fx-background-radius: 100;
+   -fx-padding: 10;
+   -fx-pref-width: 45;
+   -fx-pref-height: 45;
+   -fx-min-width: 45;
+   -fx-min-height: 45;
+   -fx-max-width: 45;
+   -fx-max-height: 45;
+ 
+ }
+
+
+
+.button{
+    -fx-cursor: HAND;
+}
+
+.list-cell{
+    -fx-cursor: HAND;
+}
+
+.bord{
+    -fx-border-color: #CB2020;
+    -fx-border-width: 0 0 2;
+    -fx-border-radius: 8;
+}
+
+.notif-read {
+    -fx-opacity: 0.5;
+}
+
+.notif-unread {
+    -fx-opacity: 1;
+}
+
+TextField.error {
+    -fx-border-color: red;
+    -fx-border-width: 1px;
+}
+
+.card.wait{
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-alignment: center;
+    -fx-font-size: 14;
+    -fx-fill: #CB2020;
+    -fx-text-fill: #CB2020;
+}
+
+.corret{
+     -fx-alignment: center;
+    -fx-border-color: rgba(0, 184, 0, 0.308);
+    -fx-background-color: rgba(0, 128, 0, 0.103);
+    -fx-text-fill: rgb(0, 184, 0) ;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-font-size: 14;
+}
+
+.corret Label{
+    
+    -fx-text-fill: rgb(79, 180, 79) ;
+}
+
+.error{ 
+    -fx-border-color: rgba(184, 0, 0, 0.308);
+    -fx-background-color: rgba(128, 0, 0, 0.103);
+    -fx-text-fill: rgb(184, 0, 0) ;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-font-size: 14;
+}
+
+.jfx-hamburger *{
+     -fx-background-color: white;
+}
+
+.error Label{
+    
+    -fx-text-fill: rgb(180, 79, 79) ;
+}
+
+.inf-card{
+    -fx-alignment: center;
+    -fx-font-size: 14;
+    -fx-padding: 10;
+}
+
+.inf-card .jfx-button{
+    -fx-border-color: transparent transparent #CB2020 transparent;
+    -fx-padding: 5;
+    -fx-font-size: 12;
+}
+
+.shimmer-light {
+    -fx-background-color: linear-gradient(
+        to right,
+        transparent 0%,
+        #f5f5f5B3 50%, /* B3 = 70% opacity em hexadecimal */
+        transparent 100%
+    );
+    -fx-opacity: 0.7;
+    -fx-effect: dropshadow(gaussian, rgba(255,255,255,0.5), 10, 0, 0, 0);
+}
+
+/* progress-style.css */
+.custom-progress {
+    -fx-progress-color: #CB2020; /* Verde */
+    -fx-background-color: transparent;
+}
+
+.mini-bar .aux{
+
+    -fx-opacity: 0;
+
+}
+
+
+.max-bar .aux{
+
+    -fx-opacity: 1;
+
+}
+

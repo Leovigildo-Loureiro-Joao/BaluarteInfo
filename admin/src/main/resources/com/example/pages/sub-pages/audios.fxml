@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="content" styleClass="tela" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.AudiosController">
+<stylesheets>
+      <URL value="@../../styles/geral.css" />
+      <URL value="@../../styles/audio.css" />
+   </stylesheets>
+
+   <children>
+      <VBox layoutX="40.0" layoutY="48.0" prefHeight="599.0" prefWidth="536.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="24.0" AnchorPane.topAnchor="48.0">
+         <children>
+            <HBox>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Audios" />
+                  <Region prefHeight="30.0" prefWidth="562.0" HBox.hgrow="ALWAYS" />
+                  <JFXButton maxWidth="138.0" minWidth="138.0" onAction="#Add" prefHeight="35.0" prefWidth="138.0" styleClass="buttonColor" text="Adicionar audio">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding></JFXButton>
+               </children>
+            </HBox>
+            <HBox prefHeight="42.0" prefWidth="369.0">
+               <children>
+                  <TextField prefHeight="34.0" prefWidth="369.0" promptText="Pesquisar audios" styleClass="fieldTextLine" />
+                  <JFXButton prefHeight="33.0" prefWidth="25.0" text=" ">
+                     <HBox.margin>
+                        <Insets left="-50.0" />
+                     </HBox.margin>
+                     <graphic>
+                        <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" translateY="2.0">
+                           <image>
+                              <Image url="@../../assets/0001.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </JFXButton>
+               </children>
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </HBox>
+            <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefHeight="495.0" prefWidth="479.0">
+               <VBox.margin>
+                  <Insets top="40.0" />
+               </VBox.margin>
+               <content>
+                  <FlowPane fx:id="listAudios" hgap="10.0" prefHeight="200.0" prefWidth="200.0" vgap="10.0" />
+               </content>
+            </ScrollPane>
+         </children>
+      </VBox>
+   </children>
+   
+</AnchorPane>

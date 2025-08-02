@@ -1,0 +1,40 @@
+.audio-model{
+    -fx-alignment: center;
+    -fx-pref-width: 380;
+    -fx-max-width: 380;
+    -fx-padding: 30;
+    -fx-spacing: 20;
+    -fx-min-height: 380;
+}
+
+
+.audio-model .titleModel{
+    -fx-font-weight: bold;
+    -fx-font-size: 18;
+    -fx-padding: 0 0 0 0;
+    -fx-text-fill: #333333;
+}
+
+.audio-model Text{
+    -fx-font-weight: bold;
+}
+
+
+.audio-model Label{
+    -fx-wrap-text: true;
+    
+}
+
+
+
+.midia-controller{
+    -fx-alignment: center;
+    -fx-max-height: 50;
+    -fx-spacing: 90;
+}
+
+
+
+.audio-model-block{
+    -fx-max-width: 380;
+}
