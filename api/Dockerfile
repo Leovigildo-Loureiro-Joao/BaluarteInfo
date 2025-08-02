@@ -1,23 +1,48 @@
-# Dockerfile
-FROM eclipse-temurin:21-jdk
+# ============================
+# ⚙️ 1️⃣ STAGE DE BUILD
+# ============================
+FROM maven:3.9-eclipse-temurin-21 AS build
 
-ARG UID=1000
-ARG GID=1000
-# Cria usuário com UID/GID certos
-RUN addgroup --gid ${GID} devgroup && \
-    adduser --disabled-password --gecos '' --uid ${UID} --gid ${GID} devuser
-USER devuser
+# Define diretório de trabalho
+WORKDIR /app
+
+# Copia apenas o pom.xml primeiro (aproveita cache do Maven)
+COPY pom.xml .
+
+# Baixa dependências para acelerar build
+RUN mvn dependency:go-offline
+
+# Copia o restante do projeto
+COPY src ./src
+
+# Executa o build — para PROD, é melhor rodar testes!
+RUN mvn clean package -DskipTests
+
+# Renomeia o JAR para app.jar
+RUN mv target/*.jar target/app.jar
+
+# ============================
+# ⚙️ 2️⃣ STAGE DE RUNTIME
+# ============================
+FROM eclipse-temurin:21-jre
+
+# Evita rodar como root
+RUN addgroup --system spring && adduser --system --ingroup spring spring
 
 WORKDIR /app
 
-COPY . /app
+# Copia o jar gerado do stage anterior
+COPY --from=build /app/target/app.jar /app/app.jar
 
-# 🔑 Garantir permissão de execução do Maven Wrapper
-RUN chmod +x mvnw
+# Permissão do jar para o user não-root
+RUN chown spring:spring /app/app.jar
 
-# Pré-instala dependências Maven
-RUN ./mvnw dependency:resolve
+# Usa o user não-root
+USER spring
 
-CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Xms256m -Xmx512m"]
+# Exponha a porta — Railway vai injetar a variável PORT
+EXPOSE 8080
 
+# Entrypoint robusto
+ENTRYPOINT ["java", "-Xmx512m", "-jar", "/app/app.jar"]
 

@@ -30,7 +30,7 @@ import lombok.Setter;
 @Entity
 @Getter@Setter
 @NoArgsConstructor
-@Table(name = "user")
+@Table(name = "users")
 public class UserModel implements UserDetails{
 
     @Id

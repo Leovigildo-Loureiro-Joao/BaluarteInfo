@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.igreja.api.enums.ActividadeType;
+import com.igreja.api.enums.DuracaoActividade;
 import com.igreja.api.enums.PublicoAlvoType;
 
 import jakarta.persistence.CascadeType;
@@ -49,6 +50,9 @@ public class ActividadeModel {
 
     @Enumerated(EnumType.STRING)
     private PublicoAlvoType publicoAlvo;
+
+    @Enumerated(EnumType.STRING)
+    private DuracaoActividade duracao;
 
     @NotBlank
     private String organizador;

@@ -14,9 +14,7 @@ public class VistosJob implements Job{
     @Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
         try {
-            System.out.println("Iniciando o job das vistos...");
             notificacaoService.NotifyVistos();
-            System.out.println("Job executado com sucesso...");
         } catch (Exception e) {
             System.out.println("Job falhou vistos:  "+e.getMessage()); 
         }

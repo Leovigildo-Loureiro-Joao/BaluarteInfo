@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: baluarte-api
+    env: docker
+    plan: free
+    dockerfilePath: api/Dockerfile
+    buildContext: ./api
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8080
+

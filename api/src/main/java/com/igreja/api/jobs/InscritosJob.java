@@ -14,9 +14,7 @@ public class InscritosJob implements Job{
     @Override
     public void execute(JobExecutionContext arg0) throws JobExecutionException {
         try {
-            System.out.println("Iniciando o job dos Inscritos...");
             notificacaoService.NotifyActividadeLimiteInscritos();;
-            System.out.println("Job executado com sucesso...");
         } catch (Exception e) {
             System.out.println("Job falhou Inscritos:  "+e.getMessage()); 
         }
