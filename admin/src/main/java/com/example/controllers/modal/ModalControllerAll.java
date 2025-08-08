@@ -31,6 +31,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -79,6 +80,8 @@ public class ModalControllerAll implements Initializable{
     private VBox form;
 
     private Controller controller;
+    @FXML
+    private JFXButton cancel;
 
     @FXML
     private TextField nome;
@@ -100,6 +103,10 @@ public class ModalControllerAll implements Initializable{
 
     public AnchorPane content;
 
+    private boolean isEdit=false;
+    private int id=-1;
+
+
     public void setController(Controller controller){
         this.controller=controller;
         if(ActividadesController.class.equals(controller.getClass())){
@@ -108,7 +115,7 @@ public class ModalControllerAll implements Initializable{
             tipo.getItems().addAll(ActividadeType.Lista());
         }else if (ArtigoController.class.equals(controller.getClass())) {
              tipo.getItems().addAll(ArtigoType.Lista());
-        }else{
+        }else if(AudiosController.class.equals(controller.getClass())) {
              tipo.getItems().addAll(AudioType.Lista());
         }
     }
@@ -118,6 +125,33 @@ public class ModalControllerAll implements Initializable{
     
     }
 
+    public void Edit(Object value){
+        isEdit=true;
+        if (value.getClass().equals(ActividadeDtoSimple.class)) {
+            PreencherActividade((ActividadeDtoSimple)value);
+        }
+    }
+
+    private void PreencherActividade(ActividadeDtoSimple actividade){
+        try {
+             descricao.setText(actividade.descricao());
+            tema.setText(actividade.tema());
+            titulo.setText(actividade.titulo());
+            endereco.setText(actividade.endereco());
+            tipo.setValue(actividade.tipoEvento().name());
+            publico_alvo.setValue(actividade.publicoAlvo().name());
+            duracao.setValue(actividade.duracao().name());
+            organizador.setText(actividade.organizador());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
+            data_hora.setText(actividade.dataPublicacao().format(formatter));
+            contactos.setText(actividade.contactos());
+            imgSrc.setImage(new Image(actividade.img()));
+            id=actividade.id();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+       
+    }
 
      @FXML
     void EnviarAudio(ActionEvent event) {
@@ -132,6 +166,7 @@ public class ModalControllerAll implements Initializable{
                         audioSrc.getText(),
                         MidiaType.AUDIO,
                         AudioType.fromValue(tipo.getValue())),form,imgSrc);
+            cancel.fire();
         }else {
             actionButton.setDisable(false);
         }
@@ -151,6 +186,10 @@ public class ModalControllerAll implements Initializable{
         UploadFiles.Uplaod(FileType.Audio, audioSrc, content);
     }
 
+    public void EditActividade(JFXButton actionButton,ActividadeDtoRegister actividadeModel, ActividadesController control) {
+        control.EditActividade(actionButton,actividadeModel, id, form);
+        cancel.fire();
+    }
 
 
      @FXML
@@ -158,9 +197,10 @@ public class ModalControllerAll implements Initializable{
         JFXButton actionButton = (JFXButton) event.getSource();
         actionButton.setDisable(true);
         if (! FormAnaliserUtil.isEmpty(form)) {
+           
             ActividadesController control=(ActividadesController)controller;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
-            control.AddActividade(actionButton,  new ActividadeDtoRegister(
+            ActividadeDtoRegister act = new ActividadeDtoRegister(
                 descricao.getText(),
                 tema.getText(),
                 titulo.getText(),
@@ -171,8 +211,14 @@ public class ModalControllerAll implements Initializable{
                 organizador.getText(),
                 LocalDateTime.parse(data_hora.getText(),formatter),
                 contactos.getText(),
-                UploadFiles.imgFile.getPath()
-            ),form);
+                UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath()
+            );
+             if (isEdit) {
+                EditActividade(actionButton,act,control);
+                return ;
+            }
+            control.AddActividade(actionButton,act,form);
+            cancel.fire();
         }else {
             actionButton.setDisable(false);
         }
@@ -190,6 +236,7 @@ public class ModalControllerAll implements Initializable{
                         nome.getText(),
                         upload.getText(),
                         ArtigoType.fromValue(tipo.getValue())),form);
+            cancel.fire();
         }else {
             actionButton.setDisable(false);
         }
@@ -205,6 +252,7 @@ public class ModalControllerAll implements Initializable{
                         descricao.getText(),
                         url.getText(),
                         MidiaType.VIDEO),form);
+            cancel.fire();
         }else {
             actionButton.setDisable(false);
         }

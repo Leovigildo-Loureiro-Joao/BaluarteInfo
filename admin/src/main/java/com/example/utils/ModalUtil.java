@@ -75,6 +75,28 @@ public class ModalUtil {
 
     }
 
+
+    public static void ShowEdit(String modalFxml,Controller controllerModal,AnchorPane content,Object value){
+        try {
+            MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
+            StackPane fundo=  controller.conteinerModal ;
+            fundo.setVisible(true);
+            Node modal=App.loadFXMLModal(modalFxml);
+            if (ApiCache.getTelaCache(modalFxml)[0].getClass().equals(ModalControllerAll.class)) {
+                ModalControllerAll modalControllerAll=(ModalControllerAll)ApiCache.getTelaCache(modalFxml)[0];
+                modalControllerAll.setController(controllerModal);
+                modalControllerAll.content=content;
+                modalControllerAll.Edit(value);
+            }
+            
+            ShowMethod(modal, fundo);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public static void ShowMethod(Node modal,StackPane fundo){
        Platform.runLater(() -> {
         fundo.setMouseTransparent(false); // 🔥 Permite clique novamente

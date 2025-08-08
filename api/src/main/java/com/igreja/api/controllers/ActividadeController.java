@@ -37,7 +37,7 @@ public class ActividadeController {
         }
     }
 
-    @DeleteMapping(value = "/admin/actividade/delete/{id}")
+    @DeleteMapping(value = "/admin/actividade/{id}")
     public ResponseEntity<?> Delete(@PathVariable(name = "id") int id) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(actividadeService.delete(id));
@@ -46,7 +46,7 @@ public class ActividadeController {
         }
     }
 
-    @PutMapping(value = "/admin/actividade/edit/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/admin/actividade/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> Editar(@PathVariable(name = "id") int id,@ModelAttribute @Valid ActividadeDto actividadeDto) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(actividadeService.edit(id,actividadeDto));

@@ -41,7 +41,7 @@
             <Insets right="10.0" top="10.0" />
          </VBox.margin>
       </HBox>
-      <VBox maxHeight="-Infinity" prefHeight="564.0" prefWidth="446.0" spacing="20.0" styleClass="card">
+      <VBox maxHeight="-Infinity" prefHeight="564.0" prefWidth="446.0" spacing="20.0">
          <padding>
             <Insets bottom="40.0" left="40.0" right="40.0" top="10.0" />
          </padding>

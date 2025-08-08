@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public class ApiService {
-    private static final String BASE_URL = "https://baluarteinfo-production.up.railway.app"; // Ou o IP público
+    private static final String BASE_URL = "http://localhost:8080"; // Ou o IP público
     private static final String boundary = "----JavaBoundary" + System.currentTimeMillis();
     public static String post(String endpoint, Map<String, String> params) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();

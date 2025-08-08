@@ -17,6 +17,7 @@ import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.ModalUtil;
 import com.example.utils.RedoundImageUtil;
+import com.example.controllers.pages.*;
 import com.jfoenix.controls.JFXButton;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
@@ -58,14 +59,17 @@ public class ActividadeModel extends StackPane{
     private StackPane control=new StackPane();
     private StackPane block=new StackPane();
     private VBox bloco;
+    HBox blocTopBox;
+    VBox blocVBox;
     private VBox inputBloco=new VBox();
     private JFXButton addAtributos;
     private JFXButton expandir=new JFXButton("Expandir");
     private JFXButton more=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.ELLIPSIS_H,"25"));
     private JFXButton edit=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.EDIT,"20"));
     private JFXButton trash=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.TRASH,"20"));
+    private ActividadesController aController;
 
-    public ActividadeModel(ActividadeDtoSimple data, boolean mini) {
+    public ActividadeModel(ActividadeDtoSimple data,ActividadesController aController) {
         dados=data;
         this.titulo=new Label(data.titulo());
         this.tema=new Label(data.tema());
@@ -80,16 +84,12 @@ public class ActividadeModel extends StackPane{
         this.data=new Label("Marcado para "+data.dataEvento().toLocalDate().toString());
         this.hora=new Label("Às  "+data.dataEvento().toLocalTime().getHour()+":"+
         data.dataEvento().toLocalTime().getMinute());
-       
+        this.aController=aController;
         imagemAtual.setPrefSize(50, 50);
         imagemAtual.getStyleClass().add("custom-progress");
         this.url.getChildren().add(imagemAtual);
-        addAtributos=new JFXButton("Adicionar atributos");
-        if(mini) {
-            OrdenarModelMini(imagemUrl);
-        } else {
-            OrdenarModel(imagemUrl);
-        }
+        addAtributos=new JFXButton("Adicionar atributos");  
+        OrdenarModel(imagemUrl);
         AddStyleClass();
         preocessarBackground(imagemUrl, 300, 130);
         Buttons();
@@ -98,8 +98,6 @@ public class ActividadeModel extends StackPane{
 
     private void OrdenarModel(String url){
         Region spacer = new Region();
-        VBox vb=new VBox(new Text("Descrição: "),this.descricao);
-        vb.getStyleClass().add("desc");
         HBox moreBox=new HBox(spacer,more);
         HBox box=new HBox(data,hora);
         box.getStyleClass().add("seg-text");
@@ -107,32 +105,8 @@ public class ActividadeModel extends StackPane{
         moreBox.setHgrow(spacer, Priority.ALWAYS);
         block.getChildren().addAll(moreBox,this.titulo);
         this.url.getChildren().addAll(block);
-        
-        bloco=new VBox(
-            new HBox(new FontAwesomeIconView(FontAwesomeIcon.LINK,"20"),new Text("Tema: "),this.tema),
-            new HBox(new FontAwesomeIconView(FontAwesomeIcon.TICKET,"20"),new Text("Tipo de evento: "),this.tipoEvento),
-            new HBox(new FontAwesomeIconView(FontAwesomeIcon.USER,"20"),new Text("Organizador: "),this.organizador),
-            new HBox(new FontAwesomeIconView(FontAwesomeIcon.GROUP,"20"),new Text("Público alvo: "),this.publicoAlvo),
-           box);
-        HBox blocTopBox=new HBox(bloco);
-        inputBloco.getChildren().addAll(this.url,blocTopBox,
-            vb,
-            new HBox(new FontAwesomeIconView(FontAwesomeIcon.WHATSAPP,"20"),this.telefone),
-            new HBox(new FontAwesomeIconView(FontAwesomeIcon.MAP_MARKER,"20"),this.endereco)
-            ,addAtributos);   
-        this.getChildren().add(inputBloco);
-        this.getChildren().add(control);
-    }
-
-    private void OrdenarModelMini(String url){
-        Region spacer = new Region();
-        HBox moreBox=new HBox(spacer,more);
-        HBox box=new HBox(data,hora);
-        box.getStyleClass().add("seg-text");
-        moreBox.setMargin(titulo, new javafx.geometry.Insets(0, 0, -20, 0));
-        moreBox.setHgrow(spacer, Priority.ALWAYS);
-        block.getChildren().addAll(moreBox,this.titulo);
-        this.url.getChildren().addAll(block);
+         VBox vb=new VBox(new Text("Descrição: "),this.descricao);
+       
          HBox hb=new HBox(addAtributos,expandir);
          hb.getStyleClass().add("botao-box");
         bloco=new VBox(
@@ -141,8 +115,14 @@ public class ActividadeModel extends StackPane{
             new HBox(new FontAwesomeIconView(FontAwesomeIcon.USER,"20"),new Text("Organizador: "),this.organizador),
             new HBox(new FontAwesomeIconView(FontAwesomeIcon.GROUP,"20"),new Text("Público alvo: "),this.publicoAlvo),
            box);
-        HBox blocTopBox=new HBox(bloco);
-         inputBloco.getChildren().addAll(new StackPane(this.url),blocTopBox,hb
+         blocTopBox=new HBox(bloco);
+         blocVBox=new VBox(
+            vb,
+            new HBox(new FontAwesomeIconView(FontAwesomeIcon.WHATSAPP,"20"),this.telefone),
+            new HBox(new FontAwesomeIconView(FontAwesomeIcon.MAP_MARKER,"20"),this.endereco)
+        );
+        blocVBox.setOpacity(0);
+         inputBloco.getChildren().addAll(new StackPane(this.url),new StackPane(blocTopBox,blocVBox),hb
            );   
         this.getChildren().add(inputBloco);
         this.getChildren().add(control);
@@ -164,6 +144,7 @@ public class ActividadeModel extends StackPane{
                 control.setMouseTransparent(true);
             }
         });
+
     }
 
     public void AddStyleClass(){
@@ -172,6 +153,7 @@ public class ActividadeModel extends StackPane{
         inputBloco.getStyleClass().add("actividade-model");
         this.titulo.getStyleClass().add("titleModel");
         this.descricao.getStyleClass().add("text-descricao");
+        blocVBox.getStyleClass().add("desc");
         bloco.getStyleClass().add("bloco");
         addAtributos.getStyleClass().add("buttonColor");
         expandir.getStyleClass().add("buttonWhite");
@@ -193,6 +175,34 @@ public class ActividadeModel extends StackPane{
         addAtributos.setOnAction(event -> {
             ModalUtil.Show( "modalActividadeDetalhes");
         });
+        
+        
+        expandir.setOnAction(event ->{
+            if(blocTopBox.getOpacity()==0){
+                FadeTrasitionUtil.Fade(.3, blocVBox, 0, 1);        
+                FadeTrasitionUtil.Fade(.3, blocTopBox, 1, 0);
+            }else{
+                FadeTrasitionUtil.Fade(.3, blocTopBox, 0, 1);        
+                FadeTrasitionUtil.Fade(.3, blocVBox, 1, 0);
+            }
+        });
+       
+        edit.setOnAction(event -> {
+            ModalUtil.ShowEdit("modalActividade",aController,aController.content,dados);
+            FadeTrasitionUtil.Fade(0.3, control, , 1);
+            control.setMouseTransparent(true);
+        });
+
+        trash.setOnAction(event -> {
+           ModalUtil.ShowDelete("modalActividade", aController, aController.content, dados.id(), dados.titulo(), () -> {
+                aController.getActividades().remove(dados);
+                aController.getActividadesTable().getItems().remove(dados);
+                aController.getActividadesTable().refresh();
+            });
+            FadeTrasitionUtil.Fade(0.3, control, 0, 1);
+            control.setMouseTransparent(true);
+        });
+        
     }
 
 

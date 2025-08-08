@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox maxHeight="500.0" maxWidth="418.0" prefHeight="352.0" prefWidth="418.0" styleClass="card" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.ModalControllerAll">
+<VBox maxHeight="352.0" maxWidth="418.0" prefHeight="352.0" prefWidth="418.0" styleClass="card" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.ModalControllerAll">
    <children>
       <HBox alignment="CENTER" prefHeight="34.0" prefWidth="408.0">
          <children>

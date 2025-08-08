@@ -53,7 +53,7 @@ import jfxtras.scene.control.LocalDateTimeTextField;
 public class ActividadesController implements Controller{
     
     @FXML
-    private AnchorPane content;
+    public AnchorPane content;
 
     @FXML
     private JFXComboBox<String> filtro;
@@ -74,7 +74,6 @@ public class ActividadesController implements Controller{
     private JFXComboBox<String> tipo;
 
     public CardProcess card = null;
-    private ActividadeService actividadeService=new ActividadeService();
 
     public  StackPane fundo;
 
@@ -99,7 +98,7 @@ public class ActividadesController implements Controller{
                 return null;
             }
             try {
-                return actividadeService.postActividade(act);
+                return ActividadeService.postActividade(act);
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
@@ -115,10 +114,50 @@ public class ActividadesController implements Controller{
                 }
                 if(listActividade.getChildren().contains(card))
                     listActividade.getChildren().remove(card);
-                listActividade.getChildren().add(0,new ActividadeModel(actividade,true));
+                listActividade.getChildren().add(0,new ActividadeModel(actividade,this));
                 FormAnaliserUtil.CleanForm(form);
                 img.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
                 ReacaoFormUtil.Reagir("corret","A Actividade foi adicionada com sucesso" , img, info);
+            });
+        });
+    }
+
+    public void EditActividade(JFXButton actionButton,ActividadeDtoRegister act,int id,VBox form){
+        
+        CompletableFuture.supplyAsync(() -> {
+            if (UploadFiles.imgFile == null || UploadFiles.imgFile.getPath() == null) {
+                ReacaoFormUtil.Reagir("error", "Erro! A imagem nao foi carregada", img, info);
+                return null;
+            }
+            try {
+                return ActividadeService.putActividade(act,id);
+            } catch (IOException | InterruptedException e) {
+                return null;
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+                return null;
+            }
+        }, App.getExecutorService()).thenAccept(actividade -> {
+            Platform.runLater(() -> {
+                actionButton.setDisable(false);
+                if (actividade == null) {
+                    ReacaoFormUtil.Reagir("error","Erro! A actividade não foi editada na base de dados" , img, info);
+                    return;
+                }
+                if(listActividade.getChildren().contains(card))
+                    listActividade.getChildren().remove(card);
+                List<Node> filteredList = listActividade.getChildren().stream()
+                    .filter(node -> node instanceof ActividadeModel)
+                    .map(node -> (ActividadeModel) node)
+                    .filter(model -> model.getDados().id() == id)
+                    .collect(Collectors.toList());
+                if (!filteredList.isEmpty()) {
+                    listActividade.getChildren().removeAll(filteredList);
+                }                    
+                listActividade.getChildren().add(0,new ActividadeModel(actividade,this));
+                FormAnaliserUtil.CleanForm(form);
+                img.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
+                ReacaoFormUtil.Reagir("corret","A Actividade foi editada com sucesso" , img, info);
             });
         });
     }
@@ -164,7 +203,7 @@ public class ActividadesController implements Controller{
     Platform.runLater(() -> {
           listActividade.getChildren().clear();
         for (ActividadeDtoSimple actividadeDtoSimple : actividades) {
-            listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple, true));
+            listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple, this));
         }
         String duracaoValue = Optional.ofNullable(duracao.getSelectionModel().getSelectedItem()).orElse("Todos");
         String tipoValue = Optional.ofNullable(tipo.getSelectionModel().getSelectedItem()).orElse("Todos");
@@ -216,7 +255,7 @@ private boolean correspondeAFiltros(ActividadeModel model, String duracaoValue, 
         listActividade.getChildren().add(card);
         CompletableFuture.supplyAsync(() -> {
             try {
-                return actividadeService.allActividades();    
+                return ActividadeService.allActividades();    
             } catch (Exception e) {
                 return null;
             }
@@ -234,7 +273,7 @@ private boolean correspondeAFiltros(ActividadeModel model, String duracaoValue, 
                 }else{
                     listActividade.getChildren().remove(card);
                     for (ActividadeDtoSimple actividadeDtoSimple : t) {
-                        listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple, true));
+                        listActividade.getChildren().addAll(new ActividadeModel(actividadeDtoSimple, this));
                     }
                 }
             });
@@ -259,7 +298,7 @@ private boolean correspondeAFiltros(ActividadeModel model, String duracaoValue, 
     LocalDateTime.now(),
     "955383237",
    "file:///home/devpro/Imagens/asd.jpeg"
-         ),true));
+         ),this));
         }
     }
 
