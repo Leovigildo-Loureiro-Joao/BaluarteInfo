@@ -5,8 +5,11 @@ import java.io.IOException;
 import com.example.App;
 import com.example.configs.ApiCache;
 import com.example.controllers.Controller;
+import com.example.controllers.modal.ModalComfirmController;
 import com.example.controllers.modal.ModalControllerAll;
 import com.example.controllers.pages.MainController;
+import com.example.dto.actividade.ActividadeDtoSimple;
+import com.example.enums.TableType;
 import com.example.models.user.UserModel;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextArea;
@@ -15,6 +18,7 @@ import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
@@ -91,6 +95,30 @@ public class ModalUtil {
             
             ShowMethod(modal, fundo);
             
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void ShowComfirm(TableType table,Object value){
+        try {
+            MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
+            StackPane fundo=  controller.conteinerModal ;
+            fundo.setVisible(true);
+            Node modal=App.loadFXMLModal("modalComfirm");
+            ModalComfirmController modalControllerAll=(ModalComfirmController)ApiCache.getTelaCache("modalComfirm")[0];
+            switch (table) {
+                case Actividade:
+                    ActividadeDtoSimple act=(ActividadeDtoSimple)value;
+                    modalControllerAll.Init("Deseja apagar esta actividade",act.titulo(),"Tema :"+act.tema(), new Image(act.img()));
+                    break;
+            
+                default:
+                    break;
+            }
+            ShowMethod(modal, fundo);
+        
         } catch (IOException e) {
             e.printStackTrace();
         }

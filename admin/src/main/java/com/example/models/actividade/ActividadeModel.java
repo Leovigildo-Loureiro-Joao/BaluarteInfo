@@ -13,6 +13,8 @@ import com.example.controllers.pages.MainController;
 import com.example.dto.actividade.ActividadeDtoSimple;
 import com.example.enums.ActividadeType;
 import com.example.enums.DuracaoActividade;
+import com.example.enums.TableType;
+import com.example.utils.DialogUtil;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.ModalUtil;
@@ -25,6 +27,7 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.Image;
@@ -59,8 +62,8 @@ public class ActividadeModel extends StackPane{
     private StackPane control=new StackPane();
     private StackPane block=new StackPane();
     private VBox bloco;
-    HBox blocTopBox;
-    VBox blocVBox;
+    private HBox blocTopBox;
+    private VBox blocVBox;
     private VBox inputBloco=new VBox();
     private JFXButton addAtributos;
     private JFXButton expandir=new JFXButton("Expandir");
@@ -189,16 +192,12 @@ public class ActividadeModel extends StackPane{
        
         edit.setOnAction(event -> {
             ModalUtil.ShowEdit("modalActividade",aController,aController.content,dados);
-            FadeTrasitionUtil.Fade(0.3, control, , 1);
+            FadeTrasitionUtil.Fade(0.3, control, 0, 1);
             control.setMouseTransparent(true);
         });
-
+        
         trash.setOnAction(event -> {
-           ModalUtil.ShowDelete("modalActividade", aController, aController.content, dados.id(), dados.titulo(), () -> {
-                aController.getActividades().remove(dados);
-                aController.getActividadesTable().getItems().remove(dados);
-                aController.getActividadesTable().refresh();
-            });
+           ModalUtil.ShowComfirm(TableType.Actividade,dados);
             FadeTrasitionUtil.Fade(0.3, control, 0, 1);
             control.setMouseTransparent(true);
         });

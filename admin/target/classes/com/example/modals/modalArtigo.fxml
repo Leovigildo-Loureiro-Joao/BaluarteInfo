@@ -31,7 +31,7 @@
                <graphic>
                   <ImageView fitHeight="21.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../assets/close.png" />
+                        <Image url="@../assets/close.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -41,7 +41,7 @@
             <Insets right="10.0" top="10.0" />
          </VBox.margin>
       </HBox>
-      <VBox fx:id="form" maxHeight="-Infinity" prefHeight="423.0" prefWidth="418.0" spacing="20.0" styleClass="card">
+      <VBox fx:id="form" maxHeight="-Infinity" prefHeight="423.0" prefWidth="418.0" spacing="20.0">
          <padding>
             <Insets bottom="40.0" left="40.0" right="40.0" top="20.0" />
          </padding>
@@ -65,7 +65,7 @@
       </VBox>
    </children>
    <stylesheets>
-      <URL value="@../../styles/actividade.css" />
-      <URL value="@../../styles/geral.css" />
+      <URL value="@../styles/actividade.css" />
+      <URL value="@../styles/geral.css" />
    </stylesheets>
 </VBox>

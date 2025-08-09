@@ -21,9 +21,7 @@ public class DialogUtil {
         dialog.initModality(Modality.WINDOW_MODAL);
         JFXButton botao= (JFXButton) dialog.getDialogPane().lookup("#cancel");
         botao.setOnMouseClicked(event -> {
-          Platform.runLater(() -> {
-            dialog.hide();
-          });
+          Platform.runLater(dialog::hide);
       });
         Platform.runLater(() -> {
             Window window = parent.getScene().getWindow();

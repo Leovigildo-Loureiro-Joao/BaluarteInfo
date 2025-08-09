@@ -60,7 +60,7 @@ public class App extends Application {
     }
 
     public static  Node loadFXMLModal(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("components/modals/" +fxml + ".fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("modals/" +fxml + ".fxml"));
          Parent loadPane=fxmlLoader.load();
          ApiCache.addTelaCache(fxml,  fxmlLoader.getController(), loadPane);
         return loadPane;

@@ -93,6 +93,10 @@
     -fx-padding: 0 20;
 }
 
+.actividade-model .desc HBox{
+    -fx-padding: 0 0;
+}
+
 .actividade-model .bloco .glyph-icon {
     -fx-fill: #CB2020;
 }

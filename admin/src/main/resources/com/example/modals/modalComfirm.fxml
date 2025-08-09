@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="339.0" maxWidth="557.0" minHeight="187.0" prefHeight="339.0" prefWidth="557.0" styleClass="card" stylesheets="@../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.ModalComfirmController">
+   <children>
+      <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="26.0" prefWidth="538.0">
+         <children>
+            <Label fx:id="acao" prefHeight="26.0" prefWidth="127.0" text="Comfirmar açao" textFill="#c31f1f">
+               <HBox.margin>
+                  <Insets left="10.0" right="5.0" />
+               </HBox.margin>
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+            <JFXButton fx:id="cancel" alignment="CENTER" contentDisplay="CENTER" prefHeight="23.0" prefWidth="38.0" text=" ">
+               <graphic>
+                  <ImageView fitHeight="21.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../assets/close.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </JFXButton>
+         </children>
+      </HBox>
+      <HBox layoutX="11.0" layoutY="31.0">
+         <children>
+            <VBox spacing="8.0">
+               <children>
+                  <Label fx:id="titulo" prefHeight="15.0" prefWidth="199.0">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="outro" prefHeight="15.0" prefWidth="199.0">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <ImageView fx:id="img" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+               </children>
+            </VBox>
+            <VBox spacing="20.0">
+               <children>
+                  <Label prefHeight="89.0" prefWidth="313.0" text="Deseja continuar com esta operaçao todos dados adicionados ou removidos serao alterados e impossivel de recuperar" textFill="#6f6f6f" wrapText="true">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Deseja realmente continuar ?" textFill="#cb2020">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <Region prefHeight="88.0" prefWidth="332.0" VBox.vgrow="SOMETIMES" />
+                  <HBox alignment="TOP_RIGHT" spacing="20.0">
+                     <children>
+                        <JFXButton onAction="#Continuar" prefHeight="36.0" prefWidth="126.0" styleClass="buttonWhite" text="Continuar">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin></JFXButton>
+                     </children>
+                     <padding>
+                        <Insets left="20.0" right="40.0" />
+                     </padding>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>

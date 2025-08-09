@@ -13,6 +13,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/video/VideoDtoModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/artigo/ArtigoRegister.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/Perct_Card.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/TableType.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/audio/AudioModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/ShadowHoverScaleAnimation.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/DialogUtil.java
@@ -36,6 +37,7 @@
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/enums/DuracaoActividade.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/models/artigo/ArtigoModel.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/utils/DataFormater.java
+/home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalComfirmController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/dto/audio/AudioDtoRegister.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/controllers/modal/ModalSenhaController.java
 /home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/java/com/example/services/ActividadeService.java
