@@ -5,5 +5,6 @@ import javax.validation.constraints.NotBlank;
 public interface VideoProjection {
     Integer getId();
     String getDescricao();
+    String getTitulo();
     String getUrl();
 }
