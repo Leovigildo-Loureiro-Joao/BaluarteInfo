@@ -21,4 +21,15 @@ public class VideoService {
         String resposta=ApiService.post("/admin/midia/video", video.toMap());
         return VideoDtoModel.fromJson(resposta);
     }
+     
+       public static VideoDtoModel putVideo(VideoDtoRegister videoDtoRegister,int id) throws IOException, InterruptedException {
+        String resposta=ApiService.put("/admin/midia/video/"+id, videoDtoRegister.toMap());
+        return VideoDtoModel.fromJson(resposta);
+    }
+
+
+    public static boolean deleteVideo(int id) throws IOException, InterruptedException {
+        String resposta=ApiService.delete("/admin/midia/video/"+id);
+        return Boolean.valueOf(resposta);
+    }
 }

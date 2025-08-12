@@ -35,16 +35,16 @@ import javafx.scene.layout.VBox;
 public class VideosController implements Controller {
 
     @FXML
-    private FlowPane listVideos;
+    public FlowPane listVideos;
 
     @FXML
-    private AnchorPane content;
+    public AnchorPane content;
 
     private StackPane fundo;
 
-    private ImageView img;
+    public ImageView img;
 
-    private Label info;
+    public Label info;
    
     public CardProcess card;
 
@@ -80,7 +80,7 @@ public class VideosController implements Controller {
             }else{
                 Platform.runLater(() -> {
                     listVideos.getChildren().remove(card);
-                    listVideos.getChildren().add(0,new VideoModel(video));
+                    listVideos.getChildren().add(0,new VideoModel(video,this));
                     FormAnaliserUtil.CleanForm(form);
                     ReacaoFormUtil.Reagir("corret","O Video foi adicionado com sucesso" , img, info);
                 });
@@ -110,7 +110,7 @@ public class VideosController implements Controller {
                 }else{
                     listVideos.getChildren().remove(card);
                     for (VideoDtoModel video : t) {
-                        listVideos.getChildren().addAll(new VideoModel(video));
+                        listVideos.getChildren().addAll(new VideoModel(video,this));
                     }
                 }
             });
@@ -124,6 +124,28 @@ public class VideosController implements Controller {
         this.info=info;
         this.img=img;
       }
+
+    public void EditVideo(JFXButton actionButton, VideoDtoRegister video, int id, VBox form) {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return VideoService.postVideo(videoRegister);
+            } catch (IOException | InterruptedException e) {
+              return null;
+            }
+        }).thenAccept(video -> {
+            if (video==null) {
+                ReacaoFormUtil.Reagir("error","Erro! O Video nao foi adicionado a base de dados" , img, info);
+            }else{
+                Platform.runLater(() -> {
+                    listVideos.getChildren().remove(card);
+                    listVideos.getChildren().add(0,new VideoModel(video,this));
+                    FormAnaliserUtil.CleanForm(form);
+                    ReacaoFormUtil.Reagir("corret","O Video foi adicionado com sucesso" , img, info);
+                });
+            }
+            actionButton.setDisable(false);
+        });    
+    }
    
 
 }

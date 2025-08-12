@@ -6,7 +6,7 @@ import com.example.utils.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public record VideoDtoModel( String descricao,int id,String url) {
+public record VideoDtoModel( String descricao,String titulo,int id,String url) {
 
     public static VideoDtoModel fromJson(String resposta) {
         try {

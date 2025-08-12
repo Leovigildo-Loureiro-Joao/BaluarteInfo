@@ -1,6 +1,11 @@
 package com.example.models.video;
 
+import com.example.controllers.pages.VideosController;
 import com.example.dto.video.VideoDtoModel;
+import com.example.enums.TableType;
+import com.example.utils.FadeTrasitionUtil;
+import com.example.utils.ModalUtil;
+import com.example.utils.ReacaoFormUtil;
 import com.jfoenix.controls.JFXButton;
 
 import javafx.application.Platform;
@@ -23,13 +28,16 @@ public class VideoModel extends VBox{
     private HBox rown_button;
     private JFXButton editButton;
     private JFXButton trushButton;
+    private VideoDtoModel dados;
 
 
-    public VideoModel (VideoDtoModel video) {
+    public VideoModel (VideoDtoModel video,VideosController vController) {
         this.videoId=video.url();
+        dados=video;
         OrdenarModel(video.descricao());
         AddStyleClass();
         LoadVideo();
+        AddFunction(vController);
     }
 
     public void LoadVideo(){
@@ -58,6 +66,19 @@ public class VideoModel extends VBox{
         trushButton.getStyleClass().add("buttonColor");
         editButton.getStyleClass().add("buttonWhite");
         rown_button.getStyleClass().add("rown-button");
+    }
+
+    private void AddFunction(VideosController vController) {
+        editButton.setOnAction((a) -> {
+            ModalUtil.ShowEdit("modalVideoAdd",vController,vController.content,dados);
+        });
+        
+        trushButton.setOnAction((e) -> {
+             ModalUtil.ShowComfirm(TableType.Actividade,dados.id(),()->{
+                vController.listVideos.getChildren().remove(this);
+                ReacaoFormUtil.Reagir("corret","O Video foi eliminado da base de dados com sucesso" , vController.img, vController.info);
+           });
+        });
     }
 
   

@@ -23,6 +23,7 @@ import com.example.controllers.pages.VideosController;
 import com.example.dto.actividade.*;
 import com.example.dto.artigo.ArtigoRegister;
 import com.example.dto.audio.AudioDtoRegister;
+import com.example.dto.video.VideoDtoModel;
 import com.example.dto.video.VideoDtoRegister;
 import com.example.enums.*;
 import com.example.models.actividade.ActividadeModel;
@@ -129,50 +130,11 @@ public class ModalControllerAll implements Initializable{
         isEdit=true;
         if (value.getClass().equals(ActividadeDtoSimple.class)) {
             PreencherActividade((ActividadeDtoSimple)value);
+        }else if(value.getClass().equals(VideoDtoModel.class)){
+             PreencherActividade((ActividadeDtoSimple)value);
         }
     }
-
-    private void PreencherActividade(ActividadeDtoSimple actividade){
-        try {
-             descricao.setText(actividade.descricao());
-            tema.setText(actividade.tema());
-            titulo.setText(actividade.titulo());
-            endereco.setText(actividade.endereco());
-            tipo.setValue(actividade.tipoEvento().name());
-            publico_alvo.setValue(actividade.publicoAlvo().name());
-            duracao.setValue(actividade.duracao().name());
-            organizador.setText(actividade.organizador());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
-            data_hora.setDateTimeFormatter(formatter);
-            data_hora.setText(actividade.dataEvento().format(formatter));
-            System.out.println(data_hora.getText());
-            contactos.setText(actividade.contactos());
-            imgSrc.setImage(new Image(actividade.img()));
-            id=actividade.id();
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-       
-    }
-
-     @FXML
-    void EnviarAudio(ActionEvent event) {
-        JFXButton actionButton = (JFXButton) event.getSource();
-        actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
-             AudiosController control=(AudiosController)controller;
-             control.AddAudio(actionButton,new AudioDtoRegister(
-                        titulo.getText(),
-                        descricao.getText(),
-                        UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
-                        audioSrc.getText(),
-                        MidiaType.AUDIO,
-                        AudioType.fromValue(tipo.getValue())),form,imgSrc);
-            cancel.fire();
-        }else {
-            actionButton.setDisable(false);
-        }
-    }
+     
     @FXML
     void CarregarImagem(MouseEvent event) {
         UploadFiles.Uplaod(FileType.Image, imgSrc,  content); 
@@ -188,12 +150,12 @@ public class ModalControllerAll implements Initializable{
         UploadFiles.Uplaod(FileType.Audio, audioSrc, content);
     }
 
+    /*---------------------------------Actividades---------------------------------------*/
     public void EditActividade(JFXButton actionButton,ActividadeDtoRegister actividadeModel, ActividadesController control) {
         control.EditActividade(actionButton,actividadeModel, id, form);
         cancel.fire();
     }
-
-
+    
      @FXML
     void EnviarActividade(ActionEvent event) {
         JFXButton actionButton = (JFXButton) event.getSource();
@@ -226,6 +188,51 @@ public class ModalControllerAll implements Initializable{
         }
     }
 
+    private void PreencherActividade(ActividadeDtoSimple actividade){
+        try {
+             descricao.setText(actividade.descricao());
+            tema.setText(actividade.tema());
+            titulo.setText(actividade.titulo());
+            endereco.setText(actividade.endereco());
+            tipo.setValue(actividade.tipoEvento().name());
+            publico_alvo.setValue(actividade.publicoAlvo().name());
+            duracao.setValue(actividade.duracao().name());
+            organizador.setText(actividade.organizador());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
+            data_hora.setDateTimeFormatter(formatter);
+            data_hora.setText(actividade.dataEvento().format(formatter));
+            System.out.println(data_hora.getText());
+            contactos.setText(actividade.contactos());
+            imgSrc.setImage(new Image(actividade.img()));
+            id=actividade.id();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+    }
+
+    /*====================================================================================*/
+    
+    @FXML
+    void EnviarAudio(ActionEvent event) {
+        JFXButton actionButton = (JFXButton) event.getSource();
+        actionButton.setDisable(true);
+        if (! FormAnaliserUtil.isEmpty(form)) {
+             AudiosController control=(AudiosController)controller;
+             control.AddAudio(actionButton,new AudioDtoRegister(
+                        titulo.getText(),
+                        descricao.getText(),
+                        UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
+                        audioSrc.getText(),
+                        MidiaType.AUDIO,
+                        AudioType.fromValue(tipo.getValue())),form,imgSrc);
+            cancel.fire();
+        }else {
+            actionButton.setDisable(false);
+        }
+    }
+
+    
      @FXML
     void EnviarArtigo(ActionEvent event) {
         JFXButton actionButton = (JFXButton) event.getSource();
@@ -243,6 +250,8 @@ public class ModalControllerAll implements Initializable{
             actionButton.setDisable(false);
         }
     }
+    
+    /*---------------------------------Videos---------------------------------------*/
 
      @FXML
     void EnviarVideo(ActionEvent event) {
@@ -250,15 +259,32 @@ public class ModalControllerAll implements Initializable{
         actionButton.setDisable(true);
         if (! FormAnaliserUtil.isEmpty(form)) {
             VideosController control=(VideosController)controller;
-             control.AddVideo(actionButton,new VideoDtoRegister(titulo.getText(),
+            VideoDtoRegister video=new VideoDtoRegister(titulo.getText(),
                         descricao.getText(),
                         url.getText(),
-                        MidiaType.VIDEO),form);
+                        MidiaType.VIDEO);
+             if (isEdit) {
+                EditVideo(actionButton,video,control);
+                return ;
+            }
+             control.AddVideo(actionButton,video,form);
             cancel.fire();
         }else {
             actionButton.setDisable(false);
         }
     }
+    
+    private void PreencherVideo(VideoDtoModel video){
+        descricao.setText(video.descricao());
+        url.setText(video.url());
+        titulo.setText(video.titulo());
+        id=video.id();
+    }
+
+    private void EditVideo(JFXButton actionButton, VideoDtoRegister video, VideosController control) {
+        control.EditVideo(actionButton,video, id, form);
+    }
+
 
 
 }
