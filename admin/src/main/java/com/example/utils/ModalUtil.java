@@ -101,22 +101,14 @@ public class ModalUtil {
 
     }
 
-    public static void ShowComfirm(TableType table,Object value){
+    public static void ShowComfirm(TableType table,int id,Runnable action){
         try {
             MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
             StackPane fundo=  controller.conteinerModal ;
             fundo.setVisible(true);
             Node modal=App.loadFXMLModal("modalComfirm");
             ModalComfirmController modalControllerAll=(ModalComfirmController)ApiCache.getTelaCache("modalComfirm")[0];
-            switch (table) {
-                case Actividade:
-                    ActividadeDtoSimple act=(ActividadeDtoSimple)value;
-                    modalControllerAll.Init("Deseja apagar esta actividade",act.titulo(),"Tema :"+act.tema(), new Image(act.img()));
-                    break;
-            
-                default:
-                    break;
-            }
+            modalControllerAll.Init(id,table,action);
             ShowMethod(modal, fundo);
         
         } catch (IOException e) {

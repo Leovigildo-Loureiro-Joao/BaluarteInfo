@@ -47,7 +47,6 @@ public class VideosController implements Controller {
     private Label info;
    
     public CardProcess card;
-    public VideoService videoService=new VideoService();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -71,7 +70,7 @@ public class VideosController implements Controller {
     public void AddVideo(JFXButton actionButton,VideoDtoRegister videoRegister,VBox form){
         CompletableFuture.supplyAsync(() -> {
             try {
-                return videoService.postVideo(videoRegister);
+                return VideoService.postVideo(videoRegister);
             } catch (IOException | InterruptedException e) {
               return null;
             }
@@ -96,7 +95,7 @@ public class VideosController implements Controller {
         listVideos.getChildren().add(card);
         CompletableFuture.supplyAsync(() -> {
             try {
-                return videoService.allVideos();
+                return VideoService.allVideos();
             } catch (Exception e) {  // TODO Auto-generated method stub
                 return null;
             }

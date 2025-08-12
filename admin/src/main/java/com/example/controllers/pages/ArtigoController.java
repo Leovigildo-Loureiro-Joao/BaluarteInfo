@@ -53,7 +53,6 @@ public class ArtigoController implements Controller{
     @FXML
     private FlowPane listArtigo;
 
-    private ArtigoService artigoService = new ArtigoService();
 
     public CardProcess card = null;
 
@@ -80,7 +79,7 @@ public class ArtigoController implements Controller{
         
         CompletableFuture.supplyAsync(() -> {
             try {
-                return artigoService.postArtigo(artigoRegister);
+                return ArtigoService.postArtigo(artigoRegister);
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
@@ -138,7 +137,7 @@ public class ArtigoController implements Controller{
         listArtigo.getChildren().add(card);
         CompletableFuture.supplyAsync(() -> {
             try {
-                return artigoService.allArtigos();
+                return ArtigoService.allArtigos();
             } catch (Exception e) {
                 return null;
             }

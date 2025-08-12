@@ -12,7 +12,7 @@ import com.google.gson.Gson;
 
 public class LoginService {
     
-    public boolean autenticar(String email, String senha) throws Exception {
+    public static boolean autenticar(String email, String senha) throws Exception {
         Map<String, String> body = new HashMap<>();
         body.put("email", email);
         body.put("password", senha);

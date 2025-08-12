@@ -3,6 +3,8 @@ package com.example.controllers.modal;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import com.example.enums.TableType;
+import com.example.services.ActividadeService;
 import com.jfoenix.controls.JFXButton;
 
 import javafx.event.ActionEvent;
@@ -14,29 +16,22 @@ import javafx.scene.image.ImageView;
 
 public class ModalComfirmController implements Initializable {
 
+    private int id=-1;
+    private TableType tabela;
     @FXML
-    private Label acao;
-
-    @FXML
+    private JFXButton continuar;
+     @FXML
     private JFXButton cancel;
 
-    @FXML
-    private JFXButton cancel1;
-
-    @FXML
-    private ImageView img;
-
-    @FXML
-    private Label outro;
-
-    @FXML
-    private Label titulo;
-
-    public void Init(String titulo, String acao, String outro, Image img) {
-        this.titulo.setText(titulo);
-        this.acao.setText(acao);
-        this.outro.setText(outro);
-        this.img.setImage(img);
+    public void Init(int id,TableType tabela, Runnable action){
+        this.id = id;
+        this.tabela = tabela;
+        
+        continuar.setOnAction(event -> {
+            if(Continuar())
+                action.run();
+             cancel.fire();
+        });
     }
 
     @Override
@@ -45,9 +40,33 @@ public class ModalComfirmController implements Initializable {
         
     }
 
-     @FXML
-    void Continuar(ActionEvent event) {
+    boolean Continuar() {
+        try {
+            if(id!=-1){
+                switch (tabela) {
+                    case Actividade:
+                        return ActividadeService.deleteActividade(id);            
+                    case Artigo:
+                        return false;
+                    case Audio:
+                        return false;
+                    case Video:
+                        return false;
+                }
+            
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
 
+    }
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
 }

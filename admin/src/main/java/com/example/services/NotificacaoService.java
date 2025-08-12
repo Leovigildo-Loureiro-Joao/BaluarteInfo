@@ -16,7 +16,7 @@ import com.google.gson.reflect.TypeToken;
 
 public class NotificacaoService {
 
-     public NotificacaoModel Ler(int id) throws IOException, InterruptedException {
+     public static NotificacaoModel Ler(int id) throws IOException, InterruptedException {
         Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
             .create();
@@ -24,6 +24,24 @@ public class NotificacaoService {
         NotificacaoModel notificacaoModel=gson.fromJson(respostaJson, NotificacaoModel.class);
         return notificacaoModel;
      }
+
+    public static List<NotificacaoModel> TodasNotificacoesLidas() throws IOException, InterruptedException, JsonSyntaxException{
+        String respostaJson=ApiService.get("/admin/notificacao");
+        List<NotificacaoModel> notificacaoModels = ListUtil.fromJsonList(respostaJson, NotificacaoModel.class);
+        return notificacaoModels;
+    }
+
+    public static List<NotificacaoModel> TodasNotificacoes() throws IOException, InterruptedException, JsonSyntaxException{
+        String respostaJson=ApiService.get("/admin/notificacaoAll");
+        List<NotificacaoModel> notificacaoModels = ListUtil.fromJsonList(respostaJson, NotificacaoModel.class);
+        return notificacaoModels;
+    }
+
+
+    public static String LimparLidas() throws IOException, InterruptedException, JsonSyntaxException{
+        String respostaJson=ApiService.delete("/admin/notificacao");
+        return respostaJson;
+    }
    
 
 }

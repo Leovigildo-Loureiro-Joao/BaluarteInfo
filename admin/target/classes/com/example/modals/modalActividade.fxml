@@ -33,7 +33,7 @@
                <graphic>
                   <ImageView fitHeight="21.0" fitWidth="17.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../assets/close.png" />
+                        <Image url="@../assets/close.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -43,7 +43,7 @@
             <Insets right="10.0" top="10.0" />
          </VBox.margin>
       </HBox>
-      <VBox maxHeight="-Infinity" prefHeight="495.0" prefWidth="418.0" stylesheets="@../../styles/geral.css">
+      <VBox maxHeight="-Infinity" prefHeight="495.0" prefWidth="418.0">
          <padding>
             <Insets bottom="30.0" left="30.0" right="30.0" top="10.0" />
          </padding>
@@ -108,7 +108,7 @@
                                  <children>
                                     <ImageView fx:id="imgSrc" fitHeight="174.0" fitWidth="238.0" onMouseClicked="#CarregarImagem" pickOnBounds="true" preserveRatio="true">
                                        <image>
-                                          <Image url="@../../assets/foto.png" />
+                                          <Image url="@../assets/foto.png" />
                                        </image>
                                     </ImageView>
                                  </children>
@@ -133,7 +133,7 @@
       </VBox>
    </children>
    <stylesheets>
-      <URL value="@../../styles/actividade.css" />
-      <URL value="@../../styles/geral.css" />
+      <URL value="@../styles/actividade.css" />
+      <URL value="@../styles/geral.css" />
    </stylesheets>
 </VBox>

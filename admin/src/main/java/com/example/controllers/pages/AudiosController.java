@@ -48,8 +48,6 @@ public class AudiosController implements Controller{
 
     public CardProcess card;
 
-    private AudioService audioService=new AudioService();
-
     private StackPane fundo;
 
     private ImageView img;
@@ -86,7 +84,7 @@ public class AudiosController implements Controller{
         listAudios.getChildren().add(card);
         CompletableFuture.supplyAsync(() -> {
             try {
-                return audioService.allAudio();
+                return AudioService.allAudio();
             } catch (Exception e) {
                 return null;
             }
@@ -129,7 +127,7 @@ public class AudiosController implements Controller{
             }
             try {
                   System.out.println("Esperndo o AudioService.postAudio");
-                return audioService.postAudio(audioRegister);
+                return AudioService.postAudio(audioRegister);
             } catch ( IOException | InterruptedException e) {
                  System.out.println(e.getMessage());
               return null;

@@ -401,6 +401,7 @@ TextField.error {
     -fx-background-radius: 8;
     -fx-padding: 10;
     -fx-alignment: center;
+     -fx-background-color: rgb(255, 255, 255);
     -fx-font-size: 14;
     -fx-fill: #CB2020;
     -fx-text-fill: #CB2020;
@@ -408,8 +409,8 @@ TextField.error {
 
 .corret{
      -fx-alignment: center;
-    -fx-border-color: rgba(0, 184, 0, 0.308);
-    -fx-background-color: rgba(0, 128, 0, 0.103);
+    -fx-border-color: rgb(0, 184, 0);
+    -fx-background-color: rgb(255, 255, 255);
     -fx-text-fill: rgb(0, 184, 0) ;
     -fx-background-radius: 8;
     -fx-padding: 10;
@@ -423,7 +424,7 @@ TextField.error {
 
 .error{ 
     -fx-border-color: rgba(184, 0, 0, 0.308);
-    -fx-background-color: rgba(128, 0, 0, 0.103);
+     -fx-background-color: rgb(255, 255, 255);
     -fx-text-fill: rgb(184, 0, 0) ;
     -fx-background-radius: 8;
     -fx-padding: 10;

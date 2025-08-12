@@ -143,7 +143,9 @@ public class ModalControllerAll implements Initializable{
             duracao.setValue(actividade.duracao().name());
             organizador.setText(actividade.organizador());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
-            data_hora.setText(actividade.dataPublicacao().format(formatter));
+            data_hora.setDateTimeFormatter(formatter);
+            data_hora.setText(actividade.dataEvento().format(formatter));
+            System.out.println(data_hora.getText());
             contactos.setText(actividade.contactos());
             imgSrc.setImage(new Image(actividade.img()));
             id=actividade.id();

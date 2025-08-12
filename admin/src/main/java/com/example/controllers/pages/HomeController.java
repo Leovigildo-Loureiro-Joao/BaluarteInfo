@@ -103,7 +103,7 @@ public class HomeController implements Controller{
     void AddNotificacao(){
       try {
 
-        homeService.TodasNotificacoesLidas().forEach(t -> {
+        NotificacaoService.TodasNotificacoesLidas().forEach(t -> {
           notif.getItems().add(new ItemNotif(t));
         });;
       } catch (IOException | InterruptedException e) {
@@ -189,7 +189,7 @@ public class HomeController implements Controller{
     public void viewAll(ActionEvent event) {
       try {
         notif.getItems().clear();
-        homeService.TodasNotificacoes().forEach(t -> {
+        NotificacaoService.TodasNotificacoes().forEach(t -> {
           notif.getItems().add(new ItemNotif(t));
         });;
       } catch (IOException | InterruptedException e) {

@@ -13,12 +13,12 @@ import com.example.utils.ListUtil;
 
 public class AudioService {
 
-    public List<AudioDto> allAudio() throws IOException, InterruptedException {
+    public static List<AudioDto> allAudio() throws IOException, InterruptedException {
         String resposta=ApiService.get("/user/midia/audio");
         return ListUtil.fromJsonList(resposta, AudioDto.class);
     }
 
-    public AudioDto postAudio(AudioDtoRegister audioDtoRegister) throws IOException, InterruptedException {
+    public static AudioDto postAudio(AudioDtoRegister audioDtoRegister) throws IOException, InterruptedException {
         String resposta=ApiService.postForm("/admin/midia/audio", audioDtoRegister.toMap(),List.of(
             new FilePartUtil(Paths.get(audioDtoRegister.imagem()), "imagem", FilePartUtil.Formato("image", audioDtoRegister.imagem())),
             new FilePartUtil(Paths.get(audioDtoRegister.url()), "url", FilePartUtil.Formato("audio", audioDtoRegister.url()))

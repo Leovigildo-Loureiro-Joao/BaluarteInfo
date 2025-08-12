@@ -12,12 +12,12 @@ import com.example.utils.ListUtil;
 
 public class VideoService {
      
-    public List<VideoDtoModel> allVideos() throws IOException, InterruptedException{
+    public static List<VideoDtoModel> allVideos() throws IOException, InterruptedException{
         String resposta=ApiService.get("/user/midia/video");
         return ListUtil.fromJsonList(resposta, VideoDtoModel.class);
     }
 
-     public VideoDtoModel postVideo(VideoDtoRegister video) throws IOException, InterruptedException{
+     public static VideoDtoModel postVideo(VideoDtoRegister video) throws IOException, InterruptedException{
         String resposta=ApiService.post("/admin/midia/video", video.toMap());
         return VideoDtoModel.fromJson(resposta);
     }

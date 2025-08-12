@@ -18,6 +18,7 @@ import com.example.utils.DialogUtil;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
 import com.example.utils.ModalUtil;
+import com.example.utils.ReacaoFormUtil;
 import com.example.utils.RedoundImageUtil;
 import com.example.controllers.pages.*;
 import com.jfoenix.controls.JFXButton;
@@ -195,9 +196,12 @@ public class ActividadeModel extends StackPane{
             FadeTrasitionUtil.Fade(0.3, control, 0, 1);
             control.setMouseTransparent(true);
         });
-        
+
         trash.setOnAction(event -> {
-           ModalUtil.ShowComfirm(TableType.Actividade,dados);
+           ModalUtil.ShowComfirm(TableType.Actividade,dados.id(),()->{
+                aController.listActividade.getChildren().remove(this);
+                ReacaoFormUtil.Reagir("corret","A actividade foi eliminado da base de dados com sucesso" , aController.img, aController.info);
+           });
             FadeTrasitionUtil.Fade(0.3, control, 0, 1);
             control.setMouseTransparent(true);
         });

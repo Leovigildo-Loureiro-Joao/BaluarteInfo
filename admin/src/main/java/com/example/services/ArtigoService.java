@@ -11,12 +11,12 @@ import com.example.utils.ListUtil;
 
 public class ArtigoService {
     
-    public List<ArtigoDto> allArtigos() throws IOException, InterruptedException{
+    public static List<ArtigoDto> allArtigos() throws IOException, InterruptedException{
         String resposta=ApiService.get("/user/artigo");
         return ListUtil.fromJsonList(resposta, ArtigoDto.class);
     }
 
-    public ArtigoDto postArtigo(ArtigoRegister artigoRegister) throws IOException, InterruptedException {
+    public static ArtigoDto postArtigo(ArtigoRegister artigoRegister) throws IOException, InterruptedException {
         String resposta=ApiService.postForm("/admin/artigo", artigoRegister.toMap(),List.of(
             new FilePartUtil(Paths.get(artigoRegister.pdf()), "pdf", FilePartUtil.Formato("pdf", artigoRegister.pdf()))
         ));

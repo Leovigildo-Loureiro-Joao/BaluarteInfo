@@ -4,6 +4,7 @@ com/example/utils/DiaUtilAnimation.class
 com/example/utils/UploadFiles.class
 com/example/models/user/UsuarioModel.class
 com/example/services/VideoService.class
+com/example/controllers/modal/ModalComfirmController$1.class
 com/example/enums/ArtigoType.class
 com/example/services/ActividadeService.class
 com/example/components/progress/Circle_progress$1.class
@@ -73,7 +74,6 @@ com/example/models/audio/AudioModel.class
 com/example/dto/video/VideoDtoModel.class
 com/example/enums/TableType.class
 com/example/models/comentario/ComentModel.class
-com/example/utils/ModalUtil$1.class
 com/example/utils/TokenSeccao.class
 com/example/controllers/modal/ModalComfirmController.class
 com/example/utils/PasswordHiddenText.class
