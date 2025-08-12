@@ -29,7 +29,7 @@ public class VideoService {
 
 
     public static boolean deleteVideo(int id) throws IOException, InterruptedException {
-        String resposta=ApiService.delete("/admin/midia/video/"+id);
+        String resposta=ApiService.delete("/admin/midia/"+id);
         return Boolean.valueOf(resposta);
     }
 }

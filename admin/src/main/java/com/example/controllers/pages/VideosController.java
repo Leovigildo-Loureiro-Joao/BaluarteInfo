@@ -11,6 +11,7 @@ import com.example.controllers.Controller;
 import com.example.dto.video.VideoDtoModel;
 import com.example.dto.video.VideoDtoRegister;
 import com.example.enums.MidiaType;
+import com.example.models.actividade.ActividadeModel;
 
 import com.example.models.video.VideoModel;
 import com.example.services.VideoService;
@@ -18,11 +19,14 @@ import com.example.utils.FormAnaliserUtil;
 import com.example.utils.ModalUtil;
 import com.example.utils.ReacaoFormUtil;
 import com.jfoenix.controls.JFXButton;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -138,6 +142,14 @@ public class VideosController implements Controller {
             }else{
                 Platform.runLater(() -> {
                     listVideos.getChildren().remove(card);
+                    List<Node> filteredList = listVideos.getChildren().stream()
+                        .filter(node -> node instanceof VideoModel)
+                        .map(node -> (VideoModel) node)
+                        .filter(model -> model.getDados().id() == id)
+                        .collect(Collectors.toList());
+                    if (!filteredList.isEmpty()) {
+                        listVideos.getChildren().removeAll(filteredList);
+                    }      
                     listVideos.getChildren().add(0,new VideoModel(video,this));
                     FormAnaliserUtil.CleanForm(form);
                     ReacaoFormUtil.Reagir("corret","O Video foi alters com sucesso" , img, info);

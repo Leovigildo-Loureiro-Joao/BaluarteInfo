@@ -283,6 +283,7 @@ public class ModalControllerAll implements Initializable{
 
     private void EditVideo(JFXButton actionButton, VideoDtoRegister video, VideosController control) {
         control.EditVideo(actionButton,video, id, form);
+        cancel.fire();
     }
 
 
