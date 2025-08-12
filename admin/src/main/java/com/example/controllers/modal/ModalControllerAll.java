@@ -131,7 +131,7 @@ public class ModalControllerAll implements Initializable{
         if (value.getClass().equals(ActividadeDtoSimple.class)) {
             PreencherActividade((ActividadeDtoSimple)value);
         }else if(value.getClass().equals(VideoDtoModel.class)){
-             PreencherActividade((ActividadeDtoSimple)value);
+             PreencherVideo((VideoDtoModel)value);
         }
     }
      
@@ -276,7 +276,7 @@ public class ModalControllerAll implements Initializable{
     
     private void PreencherVideo(VideoDtoModel video){
         descricao.setText(video.descricao());
-        url.setText(video.url());
+        url.setText("https://www.youtube.com/watch?v="+video.url());
         titulo.setText(video.titulo());
         id=video.id();
     }

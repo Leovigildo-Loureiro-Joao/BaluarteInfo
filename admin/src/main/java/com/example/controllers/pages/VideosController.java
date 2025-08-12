@@ -125,22 +125,22 @@ public class VideosController implements Controller {
         this.img=img;
       }
 
-    public void EditVideo(JFXButton actionButton, VideoDtoRegister video, int id, VBox form) {
+    public void EditVideo(JFXButton actionButton, VideoDtoRegister videoR, int id, VBox form) {
         CompletableFuture.supplyAsync(() -> {
             try {
-                return VideoService.postVideo(videoRegister);
+                return VideoService.putVideo(videoR, id);
             } catch (IOException | InterruptedException e) {
               return null;
             }
         }).thenAccept(video -> {
             if (video==null) {
-                ReacaoFormUtil.Reagir("error","Erro! O Video nao foi adicionado a base de dados" , img, info);
+                ReacaoFormUtil.Reagir("error","Erro! O Video nao foi alterado na base de dados" , img, info);
             }else{
                 Platform.runLater(() -> {
                     listVideos.getChildren().remove(card);
                     listVideos.getChildren().add(0,new VideoModel(video,this));
                     FormAnaliserUtil.CleanForm(form);
-                    ReacaoFormUtil.Reagir("corret","O Video foi adicionado com sucesso" , img, info);
+                    ReacaoFormUtil.Reagir("corret","O Video foi alters com sucesso" , img, info);
                 });
             }
             actionButton.setDisable(false);
