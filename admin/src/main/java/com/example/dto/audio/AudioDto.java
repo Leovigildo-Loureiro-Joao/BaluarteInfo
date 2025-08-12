@@ -2,12 +2,12 @@ package com.example.dto.audio;
 
 import java.time.LocalDateTime;
 
-import com.example.dto.video.VideoDtoModel;
+import com.example.enums.*;
 import com.example.utils.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-public record AudioDto( int id,String titulo,String descricao,String imagem,String url) {
+public record AudioDto( int id,String titulo,AudioType audioType,String descricao,String imagem,String url) {
 
     public static AudioDto fromJson(String resposta) {
        try {

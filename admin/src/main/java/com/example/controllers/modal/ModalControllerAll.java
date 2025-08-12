@@ -21,7 +21,9 @@ import com.example.controllers.pages.ArtigoController;
 import com.example.controllers.pages.AudiosController;
 import com.example.controllers.pages.VideosController;
 import com.example.dto.actividade.*;
+import com.example.dto.artigo.ArtigoDto;
 import com.example.dto.artigo.ArtigoRegister;
+import com.example.dto.audio.AudioDto;
 import com.example.dto.audio.AudioDtoRegister;
 import com.example.dto.video.VideoDtoModel;
 import com.example.dto.video.VideoDtoRegister;
@@ -132,6 +134,10 @@ public class ModalControllerAll implements Initializable{
             PreencherActividade((ActividadeDtoSimple)value);
         }else if(value.getClass().equals(VideoDtoModel.class)){
              PreencherVideo((VideoDtoModel)value);
+        }else if(value.getClass().equals(ArtigoDto.class)){
+             PreencherArtigo((ArtigoDto)value);
+        }else if(value.getClass().equals(AudioDto.class)){
+             PreencherAudio((AudioDto)value);
         }
     }
      
@@ -213,6 +219,7 @@ public class ModalControllerAll implements Initializable{
 
     /*====================================================================================*/
     
+    /*---------------------------------Audio---------------------------------------*/
     @FXML
     void EnviarAudio(ActionEvent event) {
         JFXButton actionButton = (JFXButton) event.getSource();
@@ -231,7 +238,17 @@ public class ModalControllerAll implements Initializable{
             actionButton.setDisable(false);
         }
     }
+    
+     private void PreencherAudio(AudioDto audioDto) {
+        descricao.setText(audioDto.descricao());
+        audioSrc.setText(audioDto.url());
+        titulo.setText(audioDto.titulo());
+        tipo.setValue(audioDto.);
+     }
 
+    /*====================================================================================*/
+     
+     /*---------------------------------Artigo---------------------------------------*/
     
      @FXML
     void EnviarArtigo(ActionEvent event) {
@@ -250,6 +267,14 @@ public class ModalControllerAll implements Initializable{
             actionButton.setDisable(false);
         }
     }
+    
+    private void PreencherArtigo(ArtigoDto artigoDto) {
+        
+    }
+
+    
+    /*====================================================================================*/
+    
     
     /*---------------------------------Videos---------------------------------------*/
 
@@ -285,6 +310,8 @@ public class ModalControllerAll implements Initializable{
         control.EditVideo(actionButton,video, id, form);
         cancel.fire();
     }
+
+   
 
 
 

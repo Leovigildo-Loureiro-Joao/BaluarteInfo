@@ -2,7 +2,6 @@ package com.example.controllers.pages;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 
@@ -10,9 +9,6 @@ import com.example.App;
 import com.example.components.item_list.CardProcess;
 import com.example.controllers.Controller;
 import com.example.enums.ArtigoType;
-import com.example.enums.FileType;
-import com.example.dto.actividade.ActividadeDtoSimple;
-import com.example.models.actividade.ActividadeModel;
 import com.example.dto.artigo.ArtigoDto;
 import com.example.dto.artigo.ArtigoRegister;
 import com.example.models.artigo.ArtigoModel;
@@ -20,29 +16,23 @@ import com.example.services.ArtigoService;
 import com.example.utils.FormAnaliserUtil;
 import com.example.utils.ModalUtil;
 import com.example.utils.ReacaoFormUtil;
-import com.example.utils.UploadFiles;
+
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXButton;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
+
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
+
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class ArtigoController implements Controller{
-
-   
-    
+public class ArtigoController implements Controller{  
 
     @FXML
     private AnchorPane content;
@@ -95,7 +85,7 @@ public class ArtigoController implements Controller{
                 }
                 if(listArtigo.getChildren().contains(card))
                     listArtigo.getChildren().remove(card);
-                listArtigo.getChildren().add(0,new ArtigoModel(artigo));
+                listArtigo.getChildren().add(0,new ArtigoModel(artigo,this));
                 FormAnaliserUtil.CleanForm(form);
                 ReacaoFormUtil.Reagir("corret","O Artigo foi adicionado com sucesso" , img, info);
             });
@@ -152,7 +142,7 @@ public class ArtigoController implements Controller{
                 }else{
                   
                     for (ArtigoDto artigoDto : t) {
-                        listArtigo.getChildren().addAll(new ArtigoModel(artigoDto));
+                        listArtigo.getChildren().addAll(new ArtigoModel(artigoDto,this));
                     }
                 }
             });

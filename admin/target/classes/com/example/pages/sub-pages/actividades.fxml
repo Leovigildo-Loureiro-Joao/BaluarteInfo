@@ -25,7 +25,7 @@
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Actividades" wrappingWidth="117.41015625" />
                   <Region prefHeight="0.0" prefWidth="868.0" HBox.hgrow="ALWAYS" />
-                  <JFXButton contentDisplay="RIGHT" maxWidth="152.0" minWidth="152.0" onAction="#Add" prefHeight="34.0" prefWidth="152.0" styleClass="buttonColor" text="Adicionar actividade" />
+                  <JFXButton contentDisplay="RIGHT" maxHeight="34.0" maxWidth="152.0" minWidth="152.0" onAction="#Add" prefHeight="34.0" prefWidth="152.0" styleClass="buttonColor" text="Adicionar actividade" />
                </children>
             </HBox>
             <VBox prefHeight="150.0" prefWidth="450.0">

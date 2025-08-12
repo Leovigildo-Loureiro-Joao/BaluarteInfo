@@ -28,7 +28,7 @@
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="titulo" text="Artigos" />
                   <Region prefHeight="23.0" prefWidth="833.0" HBox.hgrow="ALWAYS" />
-                  <JFXButton onAction="#Add" prefHeight="45.0" prefWidth="178.0" styleClass="buttonColor" text="Adicionar artigo" />
+                  <JFXButton maxHeight="34.0" maxWidth="154.0" minHeight="34.0" minWidth="154.0" onAction="#Add" prefHeight="34.0" prefWidth="178.0" styleClass="buttonColor" text="Adicionar artigo" />
                </children>
             </HBox>
             <HBox prefHeight="42.0" prefWidth="369.0" spacing="10.0">

@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import com.example.enums.TableType;
 import com.example.services.ActividadeService;
+import com.example.services.VideoService;
 import com.jfoenix.controls.JFXButton;
 
 import javafx.event.ActionEvent;
@@ -51,7 +52,7 @@ public class ModalComfirmController implements Initializable {
                     case Audio:
                         return false;
                     case Video:
-                        return false;
+                        return VideoService.deleteVideo(id);    
                 }
             
             }

@@ -69,7 +69,7 @@ public class MidiaController {
         }
     }
 
-    @PutMapping("/admin/midia/edit/{id}")
+    @PutMapping("/admin/midia/video/{id}")
     public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@RequestBody @Valid MidiaDto midiaDto) {    
        try {
             return ResponseEntity.ok(midiaService.edit(midiaDto,id));
@@ -78,7 +78,7 @@ public class MidiaController {
         }
     }
 
-    @PutMapping(value="/admin/midia/editFile/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value="/admin/midia/audio/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@ModelAttribute @Valid MidiaFile midiaDto) {    
        try {
             return ResponseEntity.ok(midiaService.edit(midiaDto,id));

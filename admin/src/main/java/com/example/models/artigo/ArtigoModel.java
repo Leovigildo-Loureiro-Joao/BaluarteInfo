@@ -1,7 +1,11 @@
 package com.example.models.artigo;
 
+import com.example.controllers.pages.ArtigoController;
 import com.example.dto.artigo.ArtigoDto;
+import com.example.enums.TableType;
 import com.example.utils.LoadImageUtil;
+import com.example.utils.ModalUtil;
+import com.example.utils.ReacaoFormUtil;
 import com.jfoenix.controls.JFXButton;
 
 import javafx.scene.control.Label;
@@ -30,8 +34,9 @@ public class ArtigoModel extends HBox{
     private StackPane url=new StackPane();
     private JFXButton editButton;
     private JFXButton trushButton;
+    private ArtigoDto dados;
 
-    public ArtigoModel(ArtigoDto artigoDto){
+    public ArtigoModel(ArtigoDto artigoDto,ArtigoController aController){
         this.titulo=new Label(artigoDto.titulo());
         this.descricao=new Label(artigoDto.descricao());
         this.escritor=new Label(artigoDto.escritor());
@@ -40,6 +45,7 @@ public class ArtigoModel extends HBox{
         this.hora=new Label(artigoDto.dataPublicacao().toLocalTime().toString());
         this.url.getChildren().add(LoadImageUtil.ImageTime());
         OrdenarModel(artigoDto.img());
+        Fuctions(aController);
     }
 
     private void OrdenarModel(String url){
@@ -74,8 +80,17 @@ public class ArtigoModel extends HBox{
     
 
 
-    public void Buttons(){
-
+    public void Fuctions(ArtigoController aController){
+        trushButton.setOnAction((event) -> {
+             ModalUtil.ShowComfirm(TableType.Actividade,dados.id(),()->{
+                vController.listVideos.getChildren().remove(this);
+                ReacaoFormUtil.Reagir("corret","O Video foi eliminado da base de dados com sucesso" , vController.img, vController.info);
+           });
+        });
+        
+        editButton.setOnAction((event) -> {
+            
+        });
     }
 
 
