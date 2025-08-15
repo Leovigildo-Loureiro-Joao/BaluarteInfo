@@ -83,8 +83,8 @@ public class ArtigoModel extends HBox{
     public void Fuctions(ArtigoController aController){
         trushButton.setOnAction((event) -> {
              ModalUtil.ShowComfirm(TableType.Actividade,dados.id(),()->{
-                vController.listVideos.getChildren().remove(this);
-                ReacaoFormUtil.Reagir("corret","O Video foi eliminado da base de dados com sucesso" , vController.img, vController.info);
+                aController.listArtigo.getChildren().remove(this);
+                ReacaoFormUtil.Reagir("corret","O Video foi eliminado da base de dados com sucesso" , aController.img, aController.info);
            });
         });
         

@@ -1,5 +1,6 @@
 package com.example.models.audio;
 
+import com.example.controllers.pages.AudiosController;
 import java.lang.ModuleLayer.Controller;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -11,9 +12,12 @@ import java.util.concurrent.TimeUnit;
 
 import com.example.dto.audio.AudioDto;
 import com.example.dto.artigo.ArtigoDto;
+import com.example.enums.TableType;
 import com.example.utils.AudioMidiaUtil;
 import com.example.utils.FadeTrasitionUtil;
 import com.example.utils.LoadImageUtil;
+import com.example.utils.ModalUtil;
+import com.example.utils.ReacaoFormUtil;
 import com.example.utils.RedoundImageUtil;
 import com.example.utils.ShimmerUtil;
 import com.jfoenix.controls.JFXButton;
@@ -54,12 +58,13 @@ public class AudioModel extends StackPane{
     private JFXButton after=new JFXButton();
     private StackPane control=new StackPane();
     private VBox boxElements;
+    private AudioDto dados;
     private JFXButton before=new JFXButton();
     private JFXButton edit=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.EDIT,"20"));
     private JFXButton trash=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.TRASH,"20"));
     
    
-    public AudioModel(AudioDto audioDto){
+    public AudioModel(AudioDto audioDto,AudiosController controller){
         this.titulo=new Label(audioDto.titulo());
         this.descricao=new Label(audioDto.descricao());
         this.imageView=new ImageView();
@@ -79,6 +84,7 @@ public class AudioModel extends StackPane{
         }));
         OrdenarModel();
         carregarImagem(audioDto.imagem());
+        Buttons(controller);
     }
 
     public void CriarControl(){
@@ -95,6 +101,8 @@ public class AudioModel extends StackPane{
                 control.setMouseTransparent(true);
             }
         });
+        
+        
     }
 
 
@@ -174,6 +182,23 @@ public class AudioModel extends StackPane{
     public void finalize() throws Throwable {
         if (mediaPlayer != null) mediaPlayer.release();
         super.finalize();
+    }
+
+    private void Buttons(AudiosController aController) {
+         edit.setOnAction(event -> {
+            ModalUtil.ShowEdit("modalAudio",aController,aController.content,dados);
+            FadeTrasitionUtil.Fade(0.3, control, 0, 1);
+            control.setMouseTransparent(true);
+        });
+
+        trash.setOnAction(event -> {
+           ModalUtil.ShowComfirm(TableType.Audio,dados.id(),()->{
+                aController.listAudios.getChildren().remove(this);
+                ReacaoFormUtil.Reagir("corret","A actividade foi eliminado da base de dados com sucesso" , aController.img, aController.info);
+           });
+            FadeTrasitionUtil.Fade(0.3, control, 0, 1);
+            control.setMouseTransparent(true);
+        });
     }
 
 }

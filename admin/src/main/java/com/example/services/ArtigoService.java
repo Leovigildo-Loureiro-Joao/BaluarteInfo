@@ -22,4 +22,11 @@ public class ArtigoService {
         ));
         return ArtigoDto.fromJson(resposta);
     }
+    
+    public static ArtigoDto putArtigo(ArtigoRegister artigoRegister,int id) throws IOException, InterruptedException {
+        String resposta=ApiService.putForm("/admin/artigo/"+id, artigoRegister.toMap(),List.of(
+            new FilePartUtil(Paths.get(artigoRegister.pdf()), "pdf", FilePartUtil.Formato("pdf", artigoRegister.pdf()))
+        ));
+        return ArtigoDto.fromJson(resposta);
+    }
 }

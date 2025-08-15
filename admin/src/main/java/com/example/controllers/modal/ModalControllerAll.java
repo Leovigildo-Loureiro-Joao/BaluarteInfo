@@ -226,13 +226,18 @@ public class ModalControllerAll implements Initializable{
         actionButton.setDisable(true);
         if (! FormAnaliserUtil.isEmpty(form)) {
              AudiosController control=(AudiosController)controller;
-             control.AddAudio(actionButton,new AudioDtoRegister(
+             AudioDtoRegister audio =new AudioDtoRegister(
                         titulo.getText(),
                         descricao.getText(),
                         UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
                         audioSrc.getText(),
                         MidiaType.AUDIO,
-                        AudioType.fromValue(tipo.getValue())),form,imgSrc);
+                        AudioType.fromValue(tipo.getValue()));
+             if (isEdit) {
+                EditAudio(actionButton,audio,control);
+                return ;
+            }
+             control.AddAudio(actionButton,audio,form,imgSrc);
             cancel.fire();
         }else {
             actionButton.setDisable(false);
@@ -242,9 +247,16 @@ public class ModalControllerAll implements Initializable{
      private void PreencherAudio(AudioDto audioDto) {
         descricao.setText(audioDto.descricao());
         audioSrc.setText(audioDto.url());
+        imgSrc.setImage(new Image(audioDto.imagem()));
         titulo.setText(audioDto.titulo());
-        tipo.setValue(audioDto.);
+        tipo.setValue(audioDto.audioType().value);
+        id=audioDto.id();
      }
+     
+     public void EditAudio(JFXButton actionButton,AudioDtoRegister audio, AudiosController control) {
+        control.EditAudio(actionButton,audio, id, form);
+        cancel.fire();
+    }
 
     /*====================================================================================*/
      
@@ -256,12 +268,17 @@ public class ModalControllerAll implements Initializable{
         actionButton.setDisable(true);
         if (! FormAnaliserUtil.isEmpty(form)) {
             ArtigoController control=(ArtigoController)controller;
-            control.AddArtigo(actionButton,  new ArtigoRegister(
+            ArtigoRegister artigo= new ArtigoRegister(
                         descricao.getText(),
                         titulo.getText(),
                         nome.getText(),
                         upload.getText(),
-                        ArtigoType.fromValue(tipo.getValue())),form);
+                        ArtigoType.fromValue(tipo.getValue()));
+             if (isEdit) {
+                EditArtigo(actionButton,artigo,control);
+                return ;
+            }
+            control.AddArtigo(actionButton, artigo,form);
             cancel.fire();
         }else {
             actionButton.setDisable(false);
@@ -269,7 +286,17 @@ public class ModalControllerAll implements Initializable{
     }
     
     private void PreencherArtigo(ArtigoDto artigoDto) {
-        
+        descricao.setText(artigoDto.descricao());
+        upload.setText(artigoDto.pdf());
+        titulo.setText(artigoDto.titulo());
+        nome.setText(artigoDto.escritor());
+        tipo.setValue(artigoDto.tipo().value);
+        id=artigoDto.id();
+    }
+    
+     public void EditArtigo(JFXButton actionButton,ArtigoRegister audio, ArtigoController control) {
+        control.EditArtigo(actionButton,audio, id, form);
+        cancel.fire();
     }
 
     

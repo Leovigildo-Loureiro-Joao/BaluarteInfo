@@ -13,6 +13,8 @@ import com.example.dto.audio.AudioDtoRegister;
 import com.example.enums.AudioType;
 import com.example.enums.FileType;
 import com.example.enums.MidiaType;
+import com.example.models.actividade.ActividadeModel;
+import com.example.models.artigo.ArtigoModel;
 
 import com.example.models.audio.AudioModel;
 import com.example.services.AudioService;
@@ -22,10 +24,13 @@ import com.example.utils.ReacaoFormUtil;
 import com.example.utils.UploadFiles;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -41,18 +46,18 @@ import javafx.scene.layout.VBox;
 public class AudiosController implements Controller{
 
     @FXML
-    private FlowPane listAudios;
+    public FlowPane listAudios;
 
     @FXML
-    private AnchorPane content;
+    public AnchorPane content;
 
     public CardProcess card;
 
     private StackPane fundo;
 
-    private ImageView img;
+    public ImageView img;
 
-    private Label info;
+    public Label info;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -99,7 +104,7 @@ public class AudiosController implements Controller{
                 }else{
                     listAudios.getChildren().clear();
                     for (AudioDto audio : t) {
-                        listAudios.getChildren().addAll(new AudioModel(audio));
+                        listAudios.getChildren().addAll(new AudioModel(audio,this));
                     }
                 }
             });
@@ -110,7 +115,6 @@ public class AudiosController implements Controller{
      
 
     public void AddAudio(JFXButton actionButton,AudioDtoRegister audioRegister,VBox form,ImageView imgSrc){
-        System.out.println(UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath());
         CompletableFuture.supplyAsync(() -> {
             try {
                 if (UploadFiles.imgFile==null) {
@@ -144,9 +148,59 @@ public class AudiosController implements Controller{
                 }
                 if (listAudios.getChildren().contains(card))
                     listAudios.getChildren().remove(card);
-                listAudios.getChildren().add(0,new AudioModel(audio));
+                listAudios.getChildren().add(0,new AudioModel(audio,this));
                 FormAnaliserUtil.CleanForm(form);
                 imgSrc.setImage(new Image(App.class.getResourceAsStream("assets/audio.png")));
+                ReacaoFormUtil.Reagir("corret","O Audio foi adicionado com sucesso" , img, info);
+                actionButton.setDisable(false);
+            });
+        });    
+    }
+
+    public void EditAudio(JFXButton actionButton, AudioDtoRegister audioRegister, int id, VBox form) {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                if (UploadFiles.imgFile==null) {
+                    ReacaoFormUtil.Reagir("error","Erro! A imagem nao foi carregada" , img, info);
+                    return null;
+                }
+                if (UploadFiles.audioFile==null) {
+                    ReacaoFormUtil.Reagir("error","Erro! O audio nao foi carregado" , img, info);
+                    return null;
+                }
+            } catch (Exception e) {
+                ReacaoFormUtil.Reagir("error","Erro! Ocorreu um erro ao carregar os arquivos" , img, info);
+                return null;
+            }
+            try {
+                  System.out.println("Esperndo o AudioService.postAudio");
+                return AudioService.postAudio(audioRegister);
+            } catch ( IOException | InterruptedException e) {
+                 System.out.println(e.getMessage());
+              return null;
+            } catch ( Exception e) {
+                System.out.println(e.getMessage());
+              return null;
+            }
+        }).thenAccept(audio -> {
+            Platform.runLater(() -> {
+                if (audio==null) {
+                    ReacaoFormUtil.Reagir("error","Erro! O Audio nao foi adicionado a base de dados" , img, info);
+                    actionButton.setDisable(false);
+                    return;
+                }
+                if (listAudios.getChildren().contains(card))
+                    listAudios.getChildren().remove(card);
+                List<Node> filteredList = listAudios.getChildren().stream()
+                    .filter(node -> node instanceof AudioModel)
+                    .map(node -> (AudioModel) node)
+                    .filter(model -> model.getDados().id() == id)
+                    .collect(Collectors.toList());
+                if (!filteredList.isEmpty()) {
+                    listAudios.getChildren().removeAll(filteredList);
+                }    
+                listAudios.getChildren().add(0,new AudioModel(audio,this-----------------------));
+                FormAnaliserUtil.CleanForm(form);
                 ReacaoFormUtil.Reagir("corret","O Audio foi adicionado com sucesso" , img, info);
                 actionButton.setDisable(false);
             });

@@ -11,6 +11,7 @@ import com.example.controllers.Controller;
 import com.example.enums.ArtigoType;
 import com.example.dto.artigo.ArtigoDto;
 import com.example.dto.artigo.ArtigoRegister;
+import com.example.models.actividade.ActividadeModel;
 import com.example.models.artigo.ArtigoModel;
 import com.example.services.ArtigoService;
 import com.example.utils.FormAnaliserUtil;
@@ -19,10 +20,13 @@ import com.example.utils.ReacaoFormUtil;
 
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXButton;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 
 import javafx.scene.image.ImageView;
@@ -35,25 +39,25 @@ import javafx.scene.layout.VBox;
 public class ArtigoController implements Controller{  
 
     @FXML
-    private AnchorPane content;
+    public AnchorPane content;
 
     @FXML
     private JFXComboBox<String> filtro;
 
     @FXML
-    private FlowPane listArtigo;
+    public FlowPane listArtigo;
 
 
     public CardProcess card = null;
 
     private StackPane fundo;
 
-    private ImageView img;
+    public ImageView img;
 
     @FXML
     private VBox form;
 
-    private Label info;
+    public Label info;
 
 
    
@@ -148,6 +152,40 @@ public class ArtigoController implements Controller{
             });
         });
         
+    }
+
+    public void EditArtigo(JFXButton actionButton, ArtigoRegister artigoRegister, int id, VBox form) {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return ArtigoService.putArtigo(artigoRegister,id);
+            } catch (IOException | InterruptedException e) {
+                return null;
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+                return null;
+            }
+        }, App.getExecutorService()).thenAccept(artigo -> {
+            Platform.runLater(() -> {
+                actionButton.setDisable(false);
+                if (artigo == null) {
+                    ReacaoFormUtil.Reagir("error","Erro! O artigo não foi adicionado a base de dados" , img, info);
+                    return;
+                }
+                if(listArtigo.getChildren().contains(card))
+                    listArtigo.getChildren().remove(card);
+                List<Node> filteredList = listArtigo.getChildren().stream()
+                    .filter(node -> node instanceof ArtigoModel)
+                    .map(node -> (ArtigoModel) node)
+                    .filter(model -> model.getDados().id() == id)
+                    .collect(Collectors.toList());
+                if (!filteredList.isEmpty()) {
+                    listArtigo.getChildren().removeAll(filteredList);
+                }    
+                listArtigo.getChildren().add(0,new ArtigoModel(artigo,this));
+                FormAnaliserUtil.CleanForm(form);
+                ReacaoFormUtil.Reagir("corret","O Artigo foi adicionado com sucesso" , img, info);
+            });
+        });
     }
 
 }
