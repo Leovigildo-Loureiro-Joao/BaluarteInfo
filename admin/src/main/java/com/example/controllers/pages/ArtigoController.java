@@ -160,10 +160,6 @@ public class ArtigoController implements Controller{
     }
 
     public void EditArtigo(JFXButton actionButton, ArtigoRegister artigoRegister, int id, VBox form) {
-        if (artigoRegister.pdf() == null) {
-            ReacaoFormUtil.Reagir("error","Erro! Não add um arquivo ao artigo" , img, info);
-            return;
-        }
         CompletableFuture.supplyAsync(() -> {
             try {
                 return ArtigoService.putArtigo(artigoRegister,id);

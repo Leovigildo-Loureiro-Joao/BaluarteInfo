@@ -125,10 +125,6 @@ public class ActividadesController implements Controller{
     public void EditActividade(JFXButton actionButton,ActividadeDtoRegister act,int id,VBox form){
         
         CompletableFuture.supplyAsync(() -> {
-            if (UploadFiles.imgFile == null || UploadFiles.imgFile.getPath() == null) {
-                ReacaoFormUtil.Reagir("error", "Erro! A imagem nao foi carregada", img, info);
-                return null;
-            }
             try {
                 return ActividadeService.putActividade(act,id);
             } catch (IOException | InterruptedException e) {

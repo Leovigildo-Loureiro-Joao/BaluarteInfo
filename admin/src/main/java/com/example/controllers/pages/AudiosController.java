@@ -160,19 +160,6 @@ public class AudiosController implements Controller{
     public void EditAudio(JFXButton actionButton, AudioDtoRegister audioRegister, int id, VBox form) {
         CompletableFuture.supplyAsync(() -> {
             try {
-                if (audioRegister.imagem()==null) {
-                    ReacaoFormUtil.Reagir("error","Erro! A imagem nao foi carregada" , img, info);
-                    return null;
-                }
-                if (audioRegister.url()==null) {
-                    ReacaoFormUtil.Reagir("error","Erro! O audio nao foi carregado" , img, info);
-                    return null;
-                }
-            } catch (Exception e) {
-                ReacaoFormUtil.Reagir("error","Erro! Ocorreu um erro ao carregar os arquivos" , img, info);
-                return null;
-            }
-            try {
                   System.out.println("Esperndo o AudioService.postAudio");
                 return AudioService.putAudio(audioRegister,id);
             } catch ( IOException | InterruptedException e) {
