@@ -41,6 +41,7 @@ public class ArtigoModel extends HBox{
         this.descricao=new Label(artigoDto.descricao());
         this.escritor=new Label(artigoDto.escritor());
         this.tipo=new Label(artigoDto.tipo().name());
+        dados=artigoDto;
         this.data=new Label(artigoDto.dataPublicacao().toLocalDate().toString());
         this.hora=new Label(artigoDto.dataPublicacao().toLocalTime().toString());
         this.url.getChildren().add(LoadImageUtil.ImageTime());

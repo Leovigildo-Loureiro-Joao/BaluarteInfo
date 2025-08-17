@@ -93,7 +93,7 @@ public class ActividadesController implements Controller{
     public void AddActividade(JFXButton actionButton,ActividadeDtoRegister act,VBox form){
         
         CompletableFuture.supplyAsync(() -> {
-            if (UploadFiles.imgFile == null || UploadFiles.imgFile.getPath() == null) {
+            if (act.img() == null) {
                 ReacaoFormUtil.Reagir("error", "Erro! A imagem nao foi carregada", img, info);
                 return null;
             }

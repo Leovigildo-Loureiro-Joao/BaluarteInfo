@@ -25,6 +25,14 @@ public class AudioService {
         ));
         return AudioDto.fromJson(resposta);
     }
+    
+    public static AudioDto putAudio(AudioDtoRegister audioDtoRegister,int id) throws IOException, InterruptedException {
+        String resposta=ApiService.putForm("/admin/midia/"+id, audioDtoRegister.toMap(),List.of(
+            new FilePartUtil(Paths.get(audioDtoRegister.imagem()), "imagem", FilePartUtil.Formato("image", audioDtoRegister.imagem())),
+            new FilePartUtil(Paths.get(audioDtoRegister.url()), "url", FilePartUtil.Formato("audio", audioDtoRegister.url()))
+        ));
+        return AudioDto.fromJson(resposta);
+    }
 
     
 }

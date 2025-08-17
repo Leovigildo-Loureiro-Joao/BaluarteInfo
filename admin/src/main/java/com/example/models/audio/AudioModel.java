@@ -19,7 +19,7 @@ import com.example.utils.LoadImageUtil;
 import com.example.utils.ModalUtil;
 import com.example.utils.ReacaoFormUtil;
 import com.example.utils.RedoundImageUtil;
-import com.example.utils.ShimmerUtil;
+
 import com.jfoenix.controls.JFXButton;
 
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
@@ -69,6 +69,7 @@ public class AudioModel extends StackPane{
         this.descricao=new Label(audioDto.descricao());
         this.imageView=new ImageView();
         // Carregar o áudio
+        dados=audioDto;
         play.setDisable(true);
         after.setDisable(true);
         before.setDisable(true);
@@ -144,9 +145,13 @@ public class AudioModel extends StackPane{
     }
 
     public void carregarImagem(String urls){
-        double width = 318, height = 204;
-        StackPane stack = (StackPane) ((ScrollPane) boxElements.getChildren().get(1)).getContent();
-        ShimmerUtil.carregarImagem(urls, width, height, stack, imageView);
+        Platform.runLater(() -> {
+            imageView.setPreserveRatio(false);
+            imageView.setImage(new Image(urls));
+            imageView.setClip(new javafx.scene.shape.Circle(100, 100, 100));
+            imageView.setFitWidth(200);
+            imageView.setFitHeight(200);
+        });
     }
 
 

@@ -160,11 +160,11 @@ public class AudiosController implements Controller{
     public void EditAudio(JFXButton actionButton, AudioDtoRegister audioRegister, int id, VBox form) {
         CompletableFuture.supplyAsync(() -> {
             try {
-                if (UploadFiles.imgFile==null) {
+                if (audioRegister.imagem()==null) {
                     ReacaoFormUtil.Reagir("error","Erro! A imagem nao foi carregada" , img, info);
                     return null;
                 }
-                if (UploadFiles.audioFile==null) {
+                if (audioRegister.url()==null) {
                     ReacaoFormUtil.Reagir("error","Erro! O audio nao foi carregado" , img, info);
                     return null;
                 }
@@ -174,7 +174,7 @@ public class AudiosController implements Controller{
             }
             try {
                   System.out.println("Esperndo o AudioService.postAudio");
-                return AudioService.postAudio(audioRegister);
+                return AudioService.putAudio(audioRegister,id);
             } catch ( IOException | InterruptedException e) {
                  System.out.println(e.getMessage());
               return null;
@@ -199,7 +199,7 @@ public class AudiosController implements Controller{
                 if (!filteredList.isEmpty()) {
                     listAudios.getChildren().removeAll(filteredList);
                 }    
-                listAudios.getChildren().add(0,new AudioModel(audio,this-----------------------));
+                listAudios.getChildren().add(0,new AudioModel(audio,this));
                 FormAnaliserUtil.CleanForm(form);
                 ReacaoFormUtil.Reagir("corret","O Audio foi adicionado com sucesso" , img, info);
                 actionButton.setDisable(false);

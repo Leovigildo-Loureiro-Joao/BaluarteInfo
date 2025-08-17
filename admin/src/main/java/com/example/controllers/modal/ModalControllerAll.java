@@ -147,7 +147,7 @@ public class ModalControllerAll implements Initializable{
     }
 
      @FXML
-    void CarregarPdf(ActionEvent event) {
+    void CarregarPdf(MouseEvent event) {
         UploadFiles.Uplaod(FileType.Pdf, upload, content);
     }
 
@@ -249,7 +249,8 @@ public class ModalControllerAll implements Initializable{
         audioSrc.setText(audioDto.url());
         imgSrc.setImage(new Image(audioDto.imagem()));
         titulo.setText(audioDto.titulo());
-        tipo.setValue(audioDto.audioType().value);
+         System.out.println(audioDto);
+        tipo.setValue(audioDto.audioType().toString());
         id=audioDto.id();
      }
      

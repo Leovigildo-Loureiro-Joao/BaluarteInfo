@@ -79,7 +79,6 @@ com/example/controllers/modal/ModalComfirmController.class
 com/example/utils/PasswordHiddenText.class
 com/example/utils/ReacaoFormUtil.class
 com/example/controllers/pages/LoginController.class
-com/example/utils/ShimmerUtil.class
 com/example/dto/video/VideoDtoRegister.class
 com/example/utils/FilePartUtil.class
 com/example/services/HomeService$1.class

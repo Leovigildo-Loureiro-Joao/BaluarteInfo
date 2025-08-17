@@ -3,6 +3,11 @@ package com.example.utils;
 import java.io.File;
 
 import com.example.enums.FileType;
+import static com.example.enums.FileType.Image;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -13,9 +18,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 
 public class UploadFiles {
-    public static  File artigoFile;
-    public static  File audioFile;
-    public static  File imgFile;
+    public static File artigoFile;
+    public static File audioFile;
+    public static File imgFile;
+    public static URL artigoUrl;
+    public static URL audioUrl;
+    public static URL imgUrl;
     public static void Uplaod(FileType tipo,Node node,Node parent){
         try {
             FileChooser f = new FileChooser();
@@ -50,6 +58,25 @@ public class UploadFiles {
             //buffer=select.getPath();
             //nomeImg=select.getName();
         } catch (Exception ex) {
+        }
+    }
+    
+    public static void Value(FileType tipo,String src){
+        try {
+            switch (tipo) {
+                case Image:
+                    imgUrl=new URL(src);
+                    break;
+                case Audio:
+                    audioUrl=new URL(src);
+                    break;
+                case Pdf:
+                    artigoUrl=new URL(src);
+                    break;
+
+            }
+        } catch (MalformedURLException ex) {
+           Logger.getLogger(UploadFiles.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
