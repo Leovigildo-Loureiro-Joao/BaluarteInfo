@@ -12,6 +12,8 @@ import com.example.utils.ListUtil;
 import com.example.utils.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class ActividadeService {
 
@@ -34,9 +36,12 @@ public class ActividadeService {
     }
 
      public static ActividadeDtoSimple putActividade(ActividadeDtoRegister actividadeDtoRegister,int id) throws IOException, InterruptedException {
-        String resposta=ApiService.putForm("/admin/actividade/"+id, actividadeDtoRegister.toMap(),List.of(
-            new FilePartUtil(Paths.get(actividadeDtoRegister.img()), "img", FilePartUtil.Formato("image", actividadeDtoRegister.img()))
-        ));
+         List<FilePartUtil> parts = Stream.of(
+            Optional.ofNullable(actividadeDtoRegister.img())
+                .map(img -> new FilePartUtil(Paths.get(img), "imagem", FilePartUtil.Formato("image", img))))
+        .flatMap(Optional::stream)
+        .toList();
+        String resposta=ApiService.putForm("/admin/actividade/"+id, actividadeDtoRegister.toMap(),parts);
         return ActividadeDtoSimple.fromJson(resposta);
     }
 

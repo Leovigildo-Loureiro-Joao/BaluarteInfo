@@ -10,6 +10,8 @@ import com.example.dto.video.VideoDtoModel;
 import com.example.dto.artigo.ArtigoDto;
 import com.example.utils.FilePartUtil;
 import com.example.utils.ListUtil;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class AudioService {
 
@@ -27,12 +29,22 @@ public class AudioService {
     }
     
     public static AudioDto putAudio(AudioDtoRegister audioDtoRegister,int id) throws IOException, InterruptedException {
-        String resposta=ApiService.putForm("/admin/midia/"+id, audioDtoRegister.toMap(),List.of(
-            new FilePartUtil(Paths.get(audioDtoRegister.imagem()), "imagem", FilePartUtil.Formato("image", audioDtoRegister.imagem())),
-            new FilePartUtil(Paths.get(audioDtoRegister.url()), "url", FilePartUtil.Formato("audio", audioDtoRegister.url()))
-        ));
+        List<FilePartUtil> parts = Stream.of(
+            Optional.ofNullable(audioDtoRegister.imagem())
+                .map(img -> new FilePartUtil(Paths.get(img), "imagem", FilePartUtil.Formato("image", img))),
+            Optional.ofNullable(audioDtoRegister.url())
+                .map(url -> new FilePartUtil(Paths.get(url), "url", FilePartUtil.Formato("audio", url)))
+        )
+        .flatMap(Optional::stream)
+        .toList();
+
+        String resposta=ApiService.putForm("/admin/midia/audio/"+id, audioDtoRegister.toMap(),parts);
         return AudioDto.fromJson(resposta);
     }
 
+     public static boolean deleteAudio(int id) throws IOException, InterruptedException {
+        String resposta=ApiService.delete("/admin/midia/"+id);
+        return Boolean.valueOf(resposta);
+    }
     
 }
