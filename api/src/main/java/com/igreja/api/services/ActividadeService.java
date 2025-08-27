@@ -1,5 +1,5 @@
 package com.igreja.api.services;
-
+import com.igreja.api.dto.inscrito.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -23,6 +23,7 @@ import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
+import com.igreja.api.models.InscritosModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.projection.ActividadeProjection;
 import com.igreja.api.repositories.ActividadeRepository;
@@ -79,6 +80,17 @@ public class ActividadeService {
       }
       return comentarios;
    }
+  
+    public List<InscritosData> InscritosAll(int id) {
+      List<InscritosData> inscritos=new ArrayList<>();
+      ActividadeModel actividadeModel=Select(id);
+      for (InscritosModel inscrito : actividadeModel.getInscritos()) {
+         UserModel user=inscrito.getUser();
+         inscritos.add(new InscritosData(user.getId(), actividadeModel.getTitulo(), actividadeModel.getTema(),actividadeModel.getDataEvento(),inscrito.getStatus()));
+      }
+      return inscritos;
+   }
+
 
     public boolean delete(int id) throws InternalError, IOException {
         ActividadeModel actividade= Select(id);

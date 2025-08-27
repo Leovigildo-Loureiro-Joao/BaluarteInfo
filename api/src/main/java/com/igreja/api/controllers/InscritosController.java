@@ -2,7 +2,7 @@ package com.igreja.api.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.igreja.api.dto.InscritosDto;
+import com.igreja.api.dto.inscrito.*;
 import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.services.InscritosService;
 

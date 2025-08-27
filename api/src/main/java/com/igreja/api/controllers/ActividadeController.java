@@ -83,7 +83,7 @@ public class ActividadeController {
         }
     }
 
-    @GetMapping(value = "/user/actividade/{id}/comentarioAll")
+    @GetMapping(value = "/user/actividade/{id}/comentarios")
     public ResponseEntity<?> AllComentarios(@PathVariable int id) throws IOException {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(actividadeService.ComentariosAll(id));
@@ -91,6 +91,16 @@ public class ActividadeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    
+        @GetMapping(value = "/user/actividade/{id}/inscritos")
+    public ResponseEntity<?> AllInscritos(@PathVariable int id) throws IOException {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(actividadeService.InscritosAll(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
 
 }

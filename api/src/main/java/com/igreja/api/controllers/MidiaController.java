@@ -87,11 +87,11 @@ public class MidiaController {
         } 
     }
 
-    @DeleteMapping("/admin/midia/delete/{id}")
-    public ResponseEntity<?> DeleteComentario(@PathVariable("id") int id) {    
+    @DeleteMapping("/admin/midia/{id}")
+    public ResponseEntity<?> Delete(@PathVariable("id") int id) {    
        try {
             midiaService.delete(id);
-            return ResponseEntity.ok("Deletado");
+            return ResponseEntity.ok(true);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

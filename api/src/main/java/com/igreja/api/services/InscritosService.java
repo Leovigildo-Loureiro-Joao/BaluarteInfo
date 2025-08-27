@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.igreja.api.dto.InscritosDto;
+import com.igreja.api.dto.inscrito.*;
 import com.igreja.api.enums.StatusIncritos;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.InscritosModel;
