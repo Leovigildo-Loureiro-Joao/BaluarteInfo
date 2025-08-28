@@ -30,6 +30,7 @@ public class ComentarioController {
        try {
             return ResponseEntity.ok(comentarioService.save(comentarioDto));
         } catch (Exception e) {
+             System.out.println("Erro: "+e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

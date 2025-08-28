@@ -194,7 +194,7 @@ public class MidiaService {
         MidiaModel artigo=Select(id);
         for (ComentarioModel comentario : artigo.getComentarios()) {
             UserModel user=comentario.getUser();
-            comentarios.add(new ComentarioResult(user.getImg(), user.getUsername(), comentario.getDescricao()));
+            comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getUsername(), comentario.getDescricao()));
         }
         return comentarios;
     }

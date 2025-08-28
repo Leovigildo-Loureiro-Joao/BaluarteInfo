@@ -45,7 +45,7 @@ public class UserModel implements UserDetails{
     private String img;
     private String roles;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "user", fetch = FetchType.EAGER)
     private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "user")

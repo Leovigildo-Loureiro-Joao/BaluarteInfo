@@ -41,7 +41,7 @@ public class InscritosController {
 
 
     @PostMapping("/user/inscritos/auntenticar")
-    public ResponseEntity<?> Register(@RequestBody @Valid JSONObject inscritosDto) {
+    public ResponseEntity<?> Autenticar(@RequestBody @Valid JSONObject inscritosDto) {
         try {
             return ResponseEntity.ok().body(inscritosService.MarcarPresenca(inscritosDto));    
         } catch (Exception e) {

@@ -66,12 +66,12 @@ public class ActividadeModel {
 
     private String img;
 
-     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
+     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade", fetch = FetchType.EAGER)
     private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
     private List<MidiaModel> midia=new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade" )
     private List<InscritosModel> inscritos=new ArrayList<>();
 }

@@ -31,7 +31,7 @@ public class ComentarioModel {
     private int id;
 
     @ManyToOne
-    @JoinColumn(referencedColumnName = "id",nullable = false)
+    @JoinColumn(name = "user_id",referencedColumnName = "id",nullable = false,unique = true)
     private UserModel user;
 
     @ManyToOne

@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioDto;
+import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
+import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.ArtigosRepository;
@@ -38,11 +40,13 @@ public class ComentarioService {
     public ComentarioModel save(ComentarioDto dto){
         UserModel user=userRepository.findById(dto.idUser()).orElseThrow(()-> new NoSuchElementException("Este user mão existe verifique se o id esta correto"));
         ComentarioModel comentario= new ComentarioModel();
+        System.out.println("Cheguei aqui");
         var seccao=Seccao(dto).orElseThrow(()-> new NoSuchElementException("Este dado ja foi eliminado da base de dados"));
         BeanUtils.copyProperties(dto, comentario);
         comentario.setUser(user);
         comentario.setDataPublicacao(LocalDate.now());
         comentario=swSeccao(comentario,seccao);
+         System.out.println("Terminei aqui"+comentario);
         return comentarioRepository.save(comentario);
     }
 
@@ -50,8 +54,14 @@ public class ComentarioService {
         if (seccao instanceof ArtigoModel) {
             comentario.setArtigo((ArtigoModel) seccao);
             return comentario;
+        } else  if (seccao instanceof ActividadeModel) {
+            comentario.setActividade((ActividadeModel) seccao);
+            return comentario;
+        } else if (seccao instanceof MidiaModel) {
+            comentario.setMidia((MidiaModel) seccao);
+            return comentario;
         } else {
-            return null;
+            throw new IllegalArgumentException("Seccão invalida");
         }
     }
 
