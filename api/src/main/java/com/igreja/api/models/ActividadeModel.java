@@ -66,7 +66,7 @@ public class ActividadeModel {
 
     private String img;
 
-     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade", fetch = FetchType.EAGER)
+     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")
     private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "actividade")

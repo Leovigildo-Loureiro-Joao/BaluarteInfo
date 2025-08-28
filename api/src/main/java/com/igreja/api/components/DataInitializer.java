@@ -22,7 +22,7 @@ public class DataInitializer implements CommandLineRunner{
 
     @Override 
     public void run(String... args) throws Exception {
-        System.out.println("Initializing data..."); 
+        //System.out.println("Initializing data..."); 
         if (userRepository.count() == 0) {
             UserModel admin = new UserModel("admin", passwordEncoder.encode("1234"),"leovigildojoao902@gmail.com", "ADMIN,USER");
             userRepository.save(admin);

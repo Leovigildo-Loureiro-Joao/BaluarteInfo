@@ -84,7 +84,7 @@ public class ConfigService {
 
 
     public ConfiguracaoModel SelectByType(ConfigType limiteInscritos)  {
-        System.out.println(limiteInscritos.name());
+        //System.out.println(limiteInscritos.name());
         return configurationRepository.findByType(limiteInscritos).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este config não existe na base dados"));
     }
 
@@ -118,7 +118,7 @@ public class ConfigService {
             }
         }
         lista.forEach((t, u) -> {
-            System.out.println(t.name()+" "+u.value()+" tot "+u.tot());
+            //System.out.println(t.name()+" "+u.value()+" tot "+u.tot());
         });
         return lista;
     }

@@ -16,7 +16,7 @@ public class GaleriaJob implements Job{
         try {
             notificacaoService.NotifyActividadeGaleria();;
         } catch (Exception e) {
-            System.out.println("Job falhou galeria:  "+e.getMessage()); 
+            //System.out.println("Job falhou galeria:  "+e.getMessage()); 
         }
     }
     

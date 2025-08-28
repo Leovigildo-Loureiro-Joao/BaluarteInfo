@@ -40,13 +40,13 @@ public class ComentarioService {
     public ComentarioModel save(ComentarioDto dto){
         UserModel user=userRepository.findById(dto.idUser()).orElseThrow(()-> new NoSuchElementException("Este user mão existe verifique se o id esta correto"));
         ComentarioModel comentario= new ComentarioModel();
-        System.out.println("Cheguei aqui");
+        //System.out.println("Cheguei aqui");
         var seccao=Seccao(dto).orElseThrow(()-> new NoSuchElementException("Este dado ja foi eliminado da base de dados"));
         BeanUtils.copyProperties(dto, comentario);
         comentario.setUser(user);
         comentario.setDataPublicacao(LocalDate.now());
         comentario=swSeccao(comentario,seccao);
-         System.out.println("Terminei aqui"+comentario);
+         //System.out.println("Terminei aqui"+comentario);
         return comentarioRepository.save(comentario);
     }
 

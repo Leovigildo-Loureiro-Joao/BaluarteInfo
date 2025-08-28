@@ -16,7 +16,7 @@ public class VistosJob implements Job{
         try {
             notificacaoService.NotifyVistos();
         } catch (Exception e) {
-            System.out.println("Job falhou vistos:  "+e.getMessage()); 
+            //System.out.println("Job falhou vistos:  "+e.getMessage()); 
         }
     }
 }

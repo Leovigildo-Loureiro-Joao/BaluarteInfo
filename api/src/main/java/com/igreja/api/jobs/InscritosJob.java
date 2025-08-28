@@ -16,7 +16,7 @@ public class InscritosJob implements Job{
         try {
             notificacaoService.NotifyActividadeLimiteInscritos();;
         } catch (Exception e) {
-            System.out.println("Job falhou Inscritos:  "+e.getMessage()); 
+            //System.out.println("Job falhou Inscritos:  "+e.getMessage()); 
         }
     }
 }

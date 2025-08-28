@@ -17,7 +17,7 @@ public class MensagemPendenteJob implements Job{
         try {
             mensagemService.EnviarAsPendentes();
         } catch (Exception e) {
-            System.out.println("Job falhou Mensagens:  "+e.getMessage()); 
+            //System.out.println("Job falhou Mensagens:  "+e.getMessage()); 
         }
     }
     

@@ -27,12 +27,17 @@ import com.igreja.api.models.InscritosModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.projection.ActividadeProjection;
 import com.igreja.api.repositories.ActividadeRepository;
+import com.igreja.api.repositories.ComentarioRepository;
 
 @Service
 public class ActividadeService {
     
     @Autowired
     private ActividadeRepository actividadeRepository;
+
+    @Autowired
+    private ComentarioRepository comentarioRepository;
+
 
     @Autowired
     private CloudDinaryService upload;
@@ -74,9 +79,9 @@ public class ActividadeService {
   public List<ComentarioResult> ComentariosAll(int id) {
       List<ComentarioResult> comentarios=new ArrayList<>();
       ActividadeModel artigo=Select(id);
-      for (ComentarioModel comentario : artigo.getComentarios()) {
+      for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
          UserModel user=comentario.getUser();
-         comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getUsername(), comentario.getDescricao()));
+         comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getNome(), comentario.getDescricao()));
       }
       return comentarios;
    }

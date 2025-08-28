@@ -137,10 +137,10 @@ public class MidiaService {
         MidiaModel midia=Select(id);
         if (midia.getType().equals(MidiaType.IMAGE) && dto.url() != null) {
             if (upload.deleteFileAsync(midia.getUrl()).join()) {
-                System.out.println("Deletado com sucesso");
+                //System.out.println("Deletado com sucesso");
                 midia.setUrl(upload.uploadFileAsync(dto.url(),"image"));
             } else {
-                System.out.println("Falha ao deletar o arquivo");
+                //System.out.println("Falha ao deletar o arquivo");
             }
         }else  if (dto.type().equals(MidiaType.IMAGE)) {
             upload.generateUniqueName(dto.url().getOriginalFilename());
@@ -155,10 +155,10 @@ public class MidiaService {
         MidiaModel midia=Select(id);
         if (midia.getType().equals(MidiaType.IMAGE)) {
             if (upload.deleteFileAsync(midia.getUrl()).join()) {
-                System.out.println("Deletado com sucesso");
+                //System.out.println("Deletado com sucesso");
                 midiaRepository.delete(midia);
             } else {
-                System.out.println("Falha ao deletar o arquivo");
+                //System.out.println("Falha ao deletar o arquivo");
             }
             
         }else
