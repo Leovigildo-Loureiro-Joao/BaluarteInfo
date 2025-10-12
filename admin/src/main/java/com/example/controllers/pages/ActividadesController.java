@@ -20,8 +20,8 @@ import com.example.enums.ActividadeType;
 import com.example.enums.DuracaoActividade;
 import com.example.enums.FileType;
 import com.example.enums.PublicoAlvoType;
+import com.example.models.ActividadeModel;
 import com.example.dto.actividade.*;
-import com.example.models.actividade.ActividadeModel;
 import com.example.services.ActividadeService;
 import com.example.utils.FormAnaliserUtil;
 import com.example.utils.ModalUtil;
@@ -102,7 +102,7 @@ public class ActividadesController implements Controller{
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
                 return null;
             }
         }, App.getExecutorService()).thenAccept(actividade -> {
@@ -130,7 +130,7 @@ public class ActividadesController implements Controller{
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
                 return null;
             }
         }, App.getExecutorService()).thenAccept(actividade -> {
@@ -258,8 +258,7 @@ private boolean correspondeAFiltros(ActividadeModel model, String duracaoValue, 
         },App.getExecutorService()).thenAccept(t -> {
             actividades=t;
             Platform.runLater(() -> {
-                if(App.teste)
-                    AddTestActividade();
+               
                 if (t == null) {
                     card.Error("Erro ao buscar actividades",() -> LoadActividades());
                     return;
@@ -275,27 +274,6 @@ private boolean correspondeAFiltros(ActividadeModel model, String duracaoValue, 
             });
         });
         
-    }
-
-    private void AddTestActividade(){
-         listActividade.getChildren().clear();
-        for (int i = 0; i < 5; i++) {
-                listActividade.getChildren().add(new ActividadeModel(new ActividadeDtoSimple(
-            i,
-    "sdsd fsdf sdf sdf sdf",
-    "sdfsdfsdf",
-    "asdasdasdasd",
-"sdfsd sdddf dfdf",
-    ActividadeType.Acampamento,
-    DuracaoActividade.Anual,
-    PublicoAlvoType.Criancas,
-    "sdfsdfds",
-    LocalDateTime.now(),
-    LocalDateTime.now(),
-    "955383237",
-   "file:///home/devpro/Imagens/asd.jpeg"
-         ),this));
-        }
     }
 
     private void AddDetails(){

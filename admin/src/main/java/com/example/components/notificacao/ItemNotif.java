@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.example.App;
 import com.example.enums.NotificacaoType;
-import com.example.models.notification.NotificacaoModel;
+import com.example.models.NotificacaoModel;
 import com.example.services.NotificacaoService;
 import com.example.utils.DataFormater;
 import com.jfoenix.controls.JFXComboBox;

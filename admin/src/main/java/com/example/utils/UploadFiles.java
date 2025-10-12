@@ -21,9 +21,6 @@ public class UploadFiles {
     public static File artigoFile;
     public static File audioFile;
     public static File imgFile;
-    public static URL artigoUrl;
-    public static URL audioUrl;
-    public static URL imgUrl;
     public static void Uplaod(FileType tipo,Node node,Node parent){
         try {
             FileChooser f = new FileChooser();
@@ -61,23 +58,5 @@ public class UploadFiles {
         }
     }
     
-    public static void Value(FileType tipo,String src){
-        try {
-            switch (tipo) {
-                case Image:
-                    imgUrl=new URL(src);
-                    break;
-                case Audio:
-                    audioUrl=new URL(src);
-                    break;
-                case Pdf:
-                    artigoUrl=new URL(src);
-                    break;
-
-            }
-        } catch (MalformedURLException ex) {
-           Logger.getLogger(UploadFiles.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
 
 }

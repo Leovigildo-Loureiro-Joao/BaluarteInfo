@@ -15,6 +15,7 @@ import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.utils.GravatarUtils;
 import com.mchange.v2.beans.BeansUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -48,14 +49,24 @@ public class UserService implements UserDetailsService{
         }
     }
 
-    public List<UserModel> findAll(){
-        return userRepository.findAll();
+    public List<UserDtoData> findAll(){
+        List<UserDtoData> userDtoDatas=new ArrayList<>();
+        for (UserModel user : userRepository.findAll()) {
+            userDtoDatas.add(new UserDtoData(user.getId(), user.getNome(), user.getEmail(), user.getImg(), user.getRoles()));
+        }
+        return userDtoDatas;
     }
 
 
     public UserModel findById(long id){
         return userRepository.findById(id).orElseThrow(()->new NoSuchElementException("It is user not exists"));
     }
+
+       public UserDtoData findByIdData(long id){
+        UserModel user=findById(id);
+        return new UserDtoData(user.getId(), user.getNome(), user.getUsername(), user.getImg(), user.getRoles());
+    }
+
 
     public UserDtoData findByIdData(String username){
         UserModel user=loadUserByEmail(username);

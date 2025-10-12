@@ -1,11 +1,14 @@
 package com.example.services;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.example.models.user.UserDtoData;
 import com.example.models.user.UserModel;
 import com.example.models.user.UsuarioModel;
+import com.example.utils.ListUtil;
 import com.example.utils.TokenSeccao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -35,5 +38,21 @@ public class LoginService {
             return false;
         }
         return true;
+    }
+
+    public static UserDtoData FindUser(long user) throws IOException, InterruptedException{
+        String respostaJson = ApiService.get("/auth/"+user);
+        if (respostaJson == null || respostaJson.isEmpty()) {
+           return null;
+        }
+        return UserDtoData.fromJson(respostaJson);
+    }
+
+    public static List<UserDtoData> AllUser(long user) throws IOException, InterruptedException{
+        String respostaJson = ApiService.get("/admin/users");
+        if (respostaJson == null || respostaJson.isEmpty()) {
+           return null;
+        }
+        return ListUtil.fromJsonList(respostaJson, UserDtoData.class);
     }
 }

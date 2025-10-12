@@ -28,6 +28,7 @@ import com.igreja.api.models.UserModel;
 import com.igreja.api.projection.ActividadeProjection;
 import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
+import com.igreja.api.repositories.InscritosRepository;
 
 @Service
 public class ActividadeService {
@@ -37,6 +38,9 @@ public class ActividadeService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+     @Autowired
+    private InscritosRepository inscritosRepository;
 
 
     @Autowired
@@ -80,8 +84,11 @@ public class ActividadeService {
       List<ComentarioResult> comentarios=new ArrayList<>();
       ActividadeModel artigo=Select(id);
       for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
-         UserModel user=comentario.getUser();
-         comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getNome(), comentario.getDescricao()));
+        if (comentario.isAnalise()==false) {
+            UserModel user=comentario.getUser();
+            comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getNome(), comentario.getDescricao(),comentario.isAnalise()));    
+        }
+        
       }
       return comentarios;
    }
@@ -89,10 +96,11 @@ public class ActividadeService {
     public List<InscritosData> InscritosAll(int id) {
       List<InscritosData> inscritos=new ArrayList<>();
       ActividadeModel actividadeModel=Select(id);
-      for (InscritosModel inscrito : actividadeModel.getInscritos()) {
+      for (InscritosModel inscrito : inscritosRepository.findByActividade(actividadeModel)) {
          UserModel user=inscrito.getUser();
          inscritos.add(new InscritosData(user.getId(), actividadeModel.getTitulo(), actividadeModel.getTema(),actividadeModel.getDataEvento(),inscrito.getStatus()));
       }
+      //System.out.println(inscritos);
       return inscritos;
    }
 

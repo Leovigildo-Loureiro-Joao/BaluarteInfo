@@ -28,7 +28,7 @@ import com.example.dto.audio.AudioDtoRegister;
 import com.example.dto.video.VideoDtoModel;
 import com.example.dto.video.VideoDtoRegister;
 import com.example.enums.*;
-import com.example.models.actividade.ActividadeModel;
+import com.example.models.ActividadeModel;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -166,7 +166,7 @@ public class ModalControllerAll implements Initializable{
     void EnviarActividade(ActionEvent event) {
         JFXButton actionButton = (JFXButton) event.getSource();
         actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
+        if (! FormAnaliserUtil.isEmpty(form).isHasError()) {
            
             ActividadesController control=(ActividadesController)controller;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
@@ -207,8 +207,9 @@ public class ModalControllerAll implements Initializable{
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm:ss");
             data_hora.setDateTimeFormatter(formatter);
             data_hora.setText(actividade.dataEvento().format(formatter));
-            System.out.println(data_hora.getText());
+            //System.out.println(data_hora.getText());
             contactos.setText(actividade.contactos());
+     
             imgSrc.setImage(new Image(actividade.img()));
             id=actividade.id();
         } catch (Exception e) {
@@ -224,13 +225,13 @@ public class ModalControllerAll implements Initializable{
     void EnviarAudio(ActionEvent event) {
         JFXButton actionButton = (JFXButton) event.getSource();
         actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
+        if (! FormAnaliserUtil.isEmpty(form).isHasError()) {
              AudiosController control=(AudiosController)controller;
              AudioDtoRegister audio =new AudioDtoRegister(
                         titulo.getText(),
                         descricao.getText(),
                         UploadFiles.imgFile==null?null:UploadFiles.imgFile.getPath(),
-                        audioSrc.getText(),
+                        UploadFiles.audioFile==null?null:UploadFiles.audioFile.getPath(),
                         MidiaType.AUDIO,
                         AudioType.fromValue(tipo.getValue()));
              if (isEdit) {
@@ -249,7 +250,7 @@ public class ModalControllerAll implements Initializable{
         audioSrc.setText(audioDto.url());
         imgSrc.setImage(new Image(audioDto.imagem()));
         titulo.setText(audioDto.titulo());
-         System.out.println(audioDto);
+         //System.out.println(audioDto);
         tipo.setValue(audioDto.audioType().toString());
         id=audioDto.id();
      }
@@ -267,13 +268,13 @@ public class ModalControllerAll implements Initializable{
     void EnviarArtigo(ActionEvent event) {
         JFXButton actionButton = (JFXButton) event.getSource();
         actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
+        if (! FormAnaliserUtil.isEmpty(form).isHasError()) {
             ArtigoController control=(ArtigoController)controller;
             ArtigoRegister artigo= new ArtigoRegister(
                         descricao.getText(),
                         titulo.getText(),
                         nome.getText(),
-                        upload.getText(),
+                        UploadFiles.artigoFile==null?null:UploadFiles.artigoFile.getPath(),
                         ArtigoType.fromValue(tipo.getValue()));
              if (isEdit) {
                 EditArtigo(actionButton,artigo,control);
@@ -310,7 +311,7 @@ public class ModalControllerAll implements Initializable{
     void EnviarVideo(ActionEvent event) {
         JFXButton actionButton = (JFXButton) event.getSource();
         actionButton.setDisable(true);
-        if (! FormAnaliserUtil.isEmpty(form)) {
+        if (! FormAnaliserUtil.isEmpty(form).isHasError()) {
             VideosController control=(VideosController)controller;
             VideoDtoRegister video=new VideoDtoRegister(titulo.getText(),
                         descricao.getText(),

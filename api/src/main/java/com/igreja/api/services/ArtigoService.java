@@ -111,7 +111,7 @@ public class ArtigoService{
       ArtigoModel artigo=Select(id);
       for (ComentarioModel comentario : artigo.getComentarios()) {
          UserModel user=comentario.getUser();
-         comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getUsername(), comentario.getDescricao()));
+         comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getUsername(), comentario.getDescricao(),comentario.isAnalise()));
       }
       return comentarios;
    }

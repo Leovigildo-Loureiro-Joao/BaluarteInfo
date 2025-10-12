@@ -24,12 +24,14 @@ public class ReacaoFormUtil {
             box.getProperties().remove("fadeTransition");
             
             FadeTransition fadeOut = FadeTrasitionUtil.Fade(0.3, box, 1, 0);
-            fadeOut.setOnFinished(event -> {
+            
+            box.getProperties().put("fadeTransition", fadeOut);
+            box.setOnMouseClicked(arg0 -> {
                 FadeTransition fadeIn = FadeTrasitionUtil.Fade(1, box, 0, 1);
                 box.getProperties().put("fadeTransition", fadeIn);
                 fadeIn.play();
+               
             });
-            box.getProperties().put("fadeTransition", fadeOut);
             fadeOut.play();
         });
     }

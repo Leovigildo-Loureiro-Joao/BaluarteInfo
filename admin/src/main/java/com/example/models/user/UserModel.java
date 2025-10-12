@@ -31,7 +31,8 @@ public class UserModel extends HBox{
     private VBox blocBox;
     private UserDataType userDataType;
 
-    public UserModel(String src,String name,String descricao,UserDataType type) {
+
+    public UserModel(String src,String name,String descricao,UserDataType type,int id,int idC) {
         LoadImageUtil.preocessarBackground(this.img, src, 50, 50,true);
         this.name=new Text(name);
         this.descricao=new Label(descricao);
@@ -43,7 +44,7 @@ public class UserModel extends HBox{
         setOnMouseClicked(event -> {
              MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
             if (userDataType.equals(UserDataType.Comentarios)) {
-                ModalUtil.ShowComentario(controller.conteinerModal, "modalUserComent",this,()->{ModalUtil.Show("modalActividadeDetalhes");});
+                ModalUtil.ShowComentario(controller.conteinerModal,idC, "modalUserComent",this,()->{ModalUtil.Show("modalActividadeDetalhes",id);});
             }
         });
     }

@@ -12,8 +12,8 @@ public class ListUtil {
     public static <T> List<T> fromJsonList(String json, Class<T> clazz) {
         Type listType = TypeToken.getParameterized(List.class, clazz).getType();
         Gson gson = new GsonBuilder()
-            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-            .create();
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .create();
         return gson.fromJson(json, listType);
     }
 }

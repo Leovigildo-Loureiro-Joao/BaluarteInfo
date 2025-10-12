@@ -11,5 +11,8 @@ import com.igreja.api.models.UserModel;
 public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     Optional<UserModel> findByEmail(String email);
+
+
+    
     
 }

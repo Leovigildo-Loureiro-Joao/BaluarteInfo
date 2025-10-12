@@ -35,7 +35,7 @@ public record ActividadeDtoRegister(
             map.put("duracao", tipo.name());
             map.put("dataEvento", dataEvento.toString());
             map.put("contactos", contactos);
-            System.out.println(map);
+            //System.out.println(map);
             return map;
         }
     

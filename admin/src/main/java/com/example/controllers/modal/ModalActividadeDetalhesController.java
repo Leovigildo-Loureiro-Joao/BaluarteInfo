@@ -5,10 +5,20 @@ import java.util.ResourceBundle;
 
 import com.example.configs.ApiCache;
 import com.example.controllers.pages.MainController;
+import com.example.dto.InscritoDto;
+import com.example.dto.comentario.ComentarioDto;
 import com.example.enums.UserDataType;
+import com.example.models.user.UserDtoData;
 import com.example.models.user.UserModel;
+import com.example.services.ActividadeService;
+import com.example.services.LoginService;
 import com.example.utils.ModalUtil;
 import com.jfoenix.controls.JFXButton;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -17,6 +27,7 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -62,19 +73,28 @@ public class ModalActividadeDetalhesController implements Initializable{
 
     @FXML
     private VBox use_box;
+    
+    @FXML
+    private Label comment;
+
+    @FXML
+    private Label inscrit;
     RotateTransition rTransition;
     private StackPane fundo;
+    private int id;
 
     private double startValue;
+    private List<ComentarioDto> comments=new ArrayList<>();
+    private List<InscritoDto> inscritos=new ArrayList<>();
 
     @FXML
     void AddTrailer(ActionEvent event) {
-        ModalUtil.Show("modalVideo",() ->  ModalUtil.Show("modalActividadeDetalhes"));
+        ModalUtil.Show("modalVideo",() ->  ModalUtil.Show("modalActividadeDetalhes",id));
     }
 
     @FXML
     void AddimageGaleria(MouseEvent event) {
-        ModalUtil.Show("modalImagemAdd",() ->  ModalUtil.Show("modalActividadeDetalhes"));
+        ModalUtil.Show("modalImagemAdd",() ->  ModalUtil.Show("modalActividadeDetalhes",id));
     }
 
 
@@ -105,23 +125,26 @@ public class ModalActividadeDetalhesController implements Initializable{
         AnimationScrollOverflow(2);
     }
 
+ 
     
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // TODO Auto-generated method stub
-        Select1(null);
+           // TODO Auto-generated method stub
         MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
         fundo=controller.conteinerModal;
     }
 
     @FXML
-    public void Select1(MouseEvent event) {
+    public void Select1(MouseEvent event) throws IOException, InterruptedException {
+        Actualizar();
         RemoveSelectCard();
         comentCard.getStyleClass().add("select");
         titleUser.setText("Comentarios da actividade");
-        use_box.getChildren().add(new UserModel("file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/user2.png","Carla dos Samtos","Mas que lixo e esse nao faz sentido nada escrito neste artigo ",UserDataType.Comentarios));
         
+        for (ComentarioDto comment : comments) {
+            use_box.getChildren().add(new UserModel(comment.imagem(),comment.name(),comment.descricao(),UserDataType.Comentarios,id,comment.id()));    
+        }
         CircleRotate(circle1);
     }
 
@@ -134,14 +157,33 @@ public class ModalActividadeDetalhesController implements Initializable{
         }
         
     }
+    
+    public void Actualizar(){
+       try {
+           comments=ActividadeService.getComentarios(id);
+           inscritos=ActividadeService.getInscritos(id);
+           comment.setText( comments.size()+"");
+            inscrit.setText(inscritos.size()+"");
+       } catch (IOException ex) {
+           Logger.getLogger(ModalActividadeDetalhesController.class.getName()).log(Level.SEVERE, null, ex);
+       } catch (InterruptedException ex) {
+           Logger.getLogger(ModalActividadeDetalhesController.class.getName()).log(Level.SEVERE, null, ex);
+       }
+       
+
+    }
 
     @FXML
-    public void Select2(MouseEvent event) {
+    public void Select2(MouseEvent event) throws IOException, InterruptedException {
+         Actualizar();
         RemoveSelectCard();
-        use_box.getChildren().add(new UserModel("file:///home/devpro/Documentos/GitHub/BaluarteInfo/admin/src/main/resources/com/example/assets/user1.png","Tomas Tomshon","tomastomshon@gmail.com",UserDataType.Perfil));
+        for (InscritoDto inscrito : inscritos) {
+            UserDtoData user=LoginService.FindUser(inscrito.idUser());
+            use_box.getChildren().add(new UserModel(user.img(),user.nome(),user.email(),UserDataType.Perfil,id,0));    
+        }
         titleUser.setText("Pessoas inscritas para actividade");
         inscricaoCard.getStyleClass().add("select");
-        
+        //System.out.println(ActividadeService.getInscritos(id));
         CircleRotate(circle2);
     }
 
@@ -156,4 +198,20 @@ public class ModalActividadeDetalhesController implements Initializable{
 
 
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+        try {
+            Select1(null);
+        } catch (IOException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    
 }

@@ -13,10 +13,9 @@ import com.example.dto.audio.AudioDtoRegister;
 import com.example.enums.AudioType;
 import com.example.enums.FileType;
 import com.example.enums.MidiaType;
-import com.example.models.actividade.ActividadeModel;
-import com.example.models.artigo.ArtigoModel;
-
-import com.example.models.audio.AudioModel;
+import com.example.models.ActividadeModel;
+import com.example.models.ArtigoModel;
+import com.example.models.AudioModel;
 import com.example.services.AudioService;
 import com.example.utils.FormAnaliserUtil;
 import com.example.utils.ModalUtil;
@@ -130,13 +129,13 @@ public class AudiosController implements Controller{
                 return null;
             }
             try {
-                  System.out.println("Esperndo o AudioService.postAudio");
+                  //System.out.println("Esperndo o AudioService.postAudio");
                 return AudioService.postAudio(audioRegister);
             } catch ( IOException | InterruptedException e) {
-                 System.out.println(e.getMessage());
+                 //System.out.println(e.getMessage());
               return null;
             } catch ( Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
               return null;
             }
         }).thenAccept(audio -> {
@@ -160,13 +159,13 @@ public class AudiosController implements Controller{
     public void EditAudio(JFXButton actionButton, AudioDtoRegister audioRegister, int id, VBox form) {
         CompletableFuture.supplyAsync(() -> {
             try {
-                  System.out.println("Esperndo o AudioService.postAudio");
+                  //System.out.println("Esperndo o AudioService.postAudio");
                 return AudioService.putAudio(audioRegister,id);
             } catch ( IOException | InterruptedException e) {
-                 System.out.println(e.getMessage());
+                 //System.out.println(e.getMessage());
               return null;
             } catch ( Exception e) {
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
               return null;
             }
         }).thenAccept(audio -> {

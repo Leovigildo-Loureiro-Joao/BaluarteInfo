@@ -7,8 +7,8 @@ import java.util.Map;
 
 import com.example.dto.Perct_Card;
 import com.example.enums.ConfigType;
+import com.example.models.NotificacaoModel;
 import com.example.models.config.Statics_dto;
-import com.example.models.notification.NotificacaoModel;
 import com.example.models.user.UserDtoData;
 import com.example.utils.ListUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;

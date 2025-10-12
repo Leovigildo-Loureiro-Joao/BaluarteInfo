@@ -47,5 +47,7 @@ public class ComentarioModel {
     private String descricao;
 
     private LocalDate dataPublicacao;
+
+     private boolean analise=false;
     
 }

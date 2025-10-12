@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="410.0" prefWidth="387.0" spacing="20.0" styleClass="modal" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="410.0" prefWidth="387.0" spacing="20.0" styleClass="modal" stylesheets="@../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.analiticComment">
    <children>
       <HBox prefHeight="34.0" prefWidth="347.0">
          <children>
@@ -20,7 +20,7 @@
                <graphic>
                   <ImageView fitHeight="22.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../assets/arrow-go-back.png" />
+                        <Image url="@../assets/arrow-go-back.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -31,7 +31,7 @@
                <graphic>
                   <ImageView fitHeight="22.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../assets/close.png" />
+                        <Image url="@../assets/close.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -43,8 +43,8 @@
       <JFXTextArea fx:id="descricao" editable="false" maxWidth="280.0" prefHeight="116.0" prefWidth="280.0" wrapText="true" />
       <HBox prefHeight="42.0" prefWidth="347.0" spacing="20.0">
          <children>
-            <JFXButton prefHeight="32.0" prefWidth="162.0" styleClass="buttonColor" text="Aceitar" />
-            <JFXButton prefHeight="32.0" prefWidth="162.0" styleClass="buttonWhite" text="Negar" />
+            <JFXButton fx:id="choose" onAction="#Aceitar" prefHeight="32.0" prefWidth="162.0" styleClass="buttonColor" text="Manter" />
+            <JFXButton onAction="#Negar" prefHeight="32.0" prefWidth="162.0" styleClass="buttonWhite" text="Apagar" />
          </children>
       </HBox>
    </children>

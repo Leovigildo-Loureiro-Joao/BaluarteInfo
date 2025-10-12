@@ -53,7 +53,7 @@ public class ArtigoModel {
     @NotBlank
     private String pdf;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "artigo")
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,mappedBy = "artigo")
     private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "artigo")

@@ -137,8 +137,8 @@ public class NotificacaoService {
         userService.findAll().forEach(use -> {
             actividades.forEach(t -> {
                 if (t.getDataEvento().isBefore(LocalDateTime.now())) {
-                    String descricao = "Ola " + use.getUsername() + " a nossa actividade " + t.getTema() + " ja tem um trailer, aceda a nossa plataforma para mais detalhes";
-                    mensagemService.save(new MensagemDto("Notificacao de Actividade", descricao,use.getEmail()));
+                    String descricao = "Ola " + use.nome() + " a nossa actividade " + t.getTema() + " ja tem um trailer, aceda a nossa plataforma para mais detalhes";
+                    mensagemService.save(new MensagemDto("Notificacao de Actividade", descricao,use.email()));
                 }
                 
             });
@@ -150,8 +150,8 @@ public class NotificacaoService {
         userService.findAll().forEach(use -> {
             actividades.forEach(t -> {
                 if (t.getDataEvento().isBefore(LocalDateTime.now())) {
-                    String descricao = "Ola " + use.getUsername() + " a nossa actividade " + t.getTema() + " ja tem uma galeria actualizada, aceda a nossa plataforma para mais detalhes";
-                    mensagemService.save(new MensagemDto("Notificacao de Actividade", descricao,use.getEmail()));
+                    String descricao = "Ola " + use.nome() + " a nossa actividade " + t.getTema() + " ja tem uma galeria actualizada, aceda a nossa plataforma para mais detalhes";
+                    mensagemService.save(new MensagemDto("Notificacao de Actividade", descricao,use.email()));
                 }
                 
             });
@@ -162,8 +162,8 @@ public class NotificacaoService {
         //Quando muitos viram ou acederam muito um artigo ou um video 
         userService.findAll().forEach(use -> {
             artigos.forEach(t -> {
-                String descricao = "Ola " + use.getUsername() + " a nosso novo artigo " + t.getTitulo() + " ja esta disponivel, aceda a nossa plataforma para mais detalhes";
-                mensagemService.save(new MensagemDto( "Notificacao de Artigo", descricao,use.getEmail()));
+                String descricao = "Ola " + use.nome() + " a nosso novo artigo " + t.getTitulo() + " ja esta disponivel, aceda a nossa plataforma para mais detalhes";
+                mensagemService.save(new MensagemDto( "Notificacao de Artigo", descricao,use.email()));
             });
         });
     }

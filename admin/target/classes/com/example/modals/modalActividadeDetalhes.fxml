@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.jfoenix.controls.*?>
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.effect.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.shape.*?>
-<?import javafx.scene.text.*?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.effect.InnerShadow?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<VBox fx:id="modal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="491.0" prefWidth="699.0" styleClass="modal" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.ModalActividadeDetalhesController">
+<VBox fx:id="modal" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="491.0" prefWidth="699.0" styleClass="modal" stylesheets="@../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.modal.ModalActividadeDetalhesController">
    <children>
       <HBox prefHeight="36.0" prefWidth="401.0">
          <children>
@@ -25,7 +35,7 @@
                <graphic>
                   <ImageView fitHeight="22.0" fitWidth="27.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@../../assets/close.png" />
+                        <Image url="@../assets/close.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -90,7 +100,7 @@
                                              <children>
                                                 <Circle fx:id="circle1" fill="WHITE" radius="38.0" stroke="#686868" strokeMiterLimit="5.0" strokeType="INSIDE" styleClass="circle-rotate" />
                                                 <Circle fill="WHITE" radius="32.0" stroke="#686868" strokeMiterLimit="2.0" strokeType="INSIDE" styleClass="circle-rotate-inverse" />
-                                                <Label styleClass="titulo" text="150">
+                                                <Label fx:id="comment" styleClass="titulo" text="150">
                                                    <font>
                                                       <Font name="System Bold" size="19.0" />
                                                    </font>
@@ -99,7 +109,7 @@
                                           </StackPane>
                                           <ImageView fitHeight="137.0" fitWidth="164.0" layoutY="149.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../../assets/6199003_3156814.jpg" />
+                                                <Image url="@../assets/6199003_3156814.jpg" />
                                              </image>
                                           </ImageView>
                                           <AnchorPane layoutX="-2.0" layoutY="-2.0" prefHeight="296.0" prefWidth="178.0" styleClass="card-gradiente">
@@ -128,7 +138,7 @@
                                              <children>
                                                 <Circle fx:id="circle2" fill="WHITE" radius="38.0" stroke="#686868" strokeMiterLimit="2.0" strokeType="INSIDE" styleClass="circle-rotate" />
                                                 <Circle fill="WHITE" radius="32.0" stroke="#686868" strokeMiterLimit="2.0" strokeType="INSIDE" styleClass="circle-rotate-inverse" />
-                                                <Label styleClass="titulo" text="150">
+                                                <Label fx:id="inscrit" styleClass="titulo" text="150">
                                                    <font>
                                                       <Font name="System Bold" size="19.0" />
                                                    </font>
@@ -137,7 +147,7 @@
                                           </StackPane>
                                           <ImageView fitHeight="127.0" fitWidth="119.0" layoutX="30.0" layoutY="149.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@../../assets/5995357.jpg" />
+                                                <Image url="@../assets/5995357.jpg" />
                                              </image>
                                           </ImageView>
                                           <AnchorPane layoutX="-2.0" layoutY="-2.0" prefHeight="296.0" prefWidth="178.0" styleClass="card-gradiente">
@@ -195,7 +205,7 @@
                                                    <children>
                                                       <ImageView fitHeight="205.0" fitWidth="159.0" layoutX="-4.0" onMouseClicked="#AddimageGaleria" pickOnBounds="true" preserveRatio="true">
                                                          <image>
-                                                            <Image url="@../../assets/foto2.png" />
+                                                            <Image url="@../assets/foto2.png" />
                                                          </image>
                                                       </ImageView>
                                                    </children>
@@ -204,7 +214,7 @@
                                                    <children>
                                                       <ImageView fitHeight="205.0" fitWidth="159.0" layoutX="-4.0" pickOnBounds="true" preserveRatio="true">
                                                          <image>
-                                                            <Image url="@../../assets/foto2.png" />
+                                                            <Image url="@../assets/foto2.png" />
                                                          </image>
                                                       </ImageView>
                                                    </children>

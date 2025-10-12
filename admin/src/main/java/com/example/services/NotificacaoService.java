@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-import com.example.models.notification.NotificacaoModel;
+import com.example.models.NotificacaoModel;
 import com.example.utils.ListUtil;
 import com.example.utils.LocalDateTimeAdapter;
 import com.google.gson.Gson;

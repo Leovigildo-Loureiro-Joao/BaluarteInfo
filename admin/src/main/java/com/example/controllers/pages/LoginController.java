@@ -89,7 +89,6 @@ public class LoginController implements Initializable{
                     try {
                         App.setRoot("main");
                     } catch (IOException e) {
-                        ModalUtil.ShowTemporary(conteinerModal, "modalError","Erro",e.getMessage());
                     }
                 } else {
                     if (App.teste) {
@@ -104,7 +103,6 @@ public class LoginController implements Initializable{
                     info.setText("Tente novamente");
                     senha.getStyleClass().add("error");
                     senhaText.getStyleClass().add("error");
-                    ModalUtil.ShowTemporary(conteinerModal, "modalError","Erro","Dados invalidos");
                 }
             }));
     }

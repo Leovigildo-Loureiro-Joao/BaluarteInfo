@@ -59,7 +59,7 @@ public class MidiaModel {
 
     private LocalDate dataPublicacao;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "midia")
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,mappedBy = "midia")
     private List<ComentarioModel> comentarios=new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "midia")

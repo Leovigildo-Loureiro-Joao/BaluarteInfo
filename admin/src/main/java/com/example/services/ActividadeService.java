@@ -1,5 +1,6 @@
 package com.example.services;
 
+import com.example.dto.InscritoDto;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -7,11 +8,13 @@ import java.util.List;
 
 import com.example.dto.actividade.ActividadeDtoRegister;
 import com.example.dto.actividade.ActividadeDtoSimple;
+import com.example.dto.comentario.ComentarioDto;
 import com.example.utils.FilePartUtil;
 import com.example.utils.ListUtil;
 import com.example.utils.LocalDateTimeAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -49,6 +52,17 @@ public class ActividadeService {
     public static boolean deleteActividade(int id) throws IOException, InterruptedException {
         String resposta=ApiService.delete("/admin/actividade/"+id);
         return Boolean.valueOf(resposta);
+    }
+    
+    
+    public static List<ComentarioDto> getComentarios(int id) throws IOException, InterruptedException {
+        String resposta=ApiService.get("/user/actividade/"+id+"/comentarios");
+        return ListUtil.fromJsonList(resposta, ComentarioDto.class);
+    }
+    
+    public static List<InscritoDto> getInscritos(int id) throws IOException, InterruptedException {
+        String resposta=ApiService.get("/user/actividade/"+id+"/inscritos");
+        return ListUtil.fromJsonList(resposta, InscritoDto.class);
     }
 
 }

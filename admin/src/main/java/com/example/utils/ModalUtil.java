@@ -5,8 +5,11 @@ import java.io.IOException;
 import com.example.App;
 import com.example.configs.ApiCache;
 import com.example.controllers.Controller;
+import com.example.controllers.modal.MidiaController;
+import com.example.controllers.modal.ModalActividadeDetalhesController;
 import com.example.controllers.modal.ModalComfirmController;
 import com.example.controllers.modal.ModalControllerAll;
+import com.example.controllers.modal.analiticComment;
 import com.example.controllers.pages.MainController;
 import com.example.dto.actividade.ActividadeDtoSimple;
 import com.example.enums.TableType;
@@ -32,6 +35,28 @@ public class ModalUtil {
             StackPane fundo=  controller.conteinerModal ;
             fundo.setVisible(true);
             Node modal=App.loadFXMLModal(modalFxml);
+            ShowMethod(modal, fundo);
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+    
+     public static void Show(String modalFxml,int id){
+        try {
+            MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
+            StackPane fundo=  controller.conteinerModal ;
+            fundo.setVisible(true);
+            Node modal=App.loadFXMLModal(modalFxml);
+            if (modalFxml.equals("modalActividadeDetalhes")) {
+                ModalActividadeDetalhesController modalC=(ModalActividadeDetalhesController) ApiCache.getTelaCache(modalFxml)[0];
+                modalC.setId(id);
+            }else if(modalFxml.equals("modalVideo")|| modalFxml.equals("modalImagemAdd")){
+                MidiaController modalC=(MidiaController) ApiCache.getTelaCache(modalFxml)[0];
+                modalC.setId(id);
+            }
+           
             ShowMethod(modal, fundo);
             
         } catch (IOException e) {
@@ -125,7 +150,7 @@ public class ModalUtil {
             fundo.getChildren().removeIf(node -> node.getId() != null && node.getId().equals("modal"));
         }
         JFXButton botao= (JFXButton) modal.lookup("#cancel");
-        botao.setOnMouseClicked(event -> {
+        botao.setOnAction(event -> {
             Terminate(fundo);
         });
         fundo.setOpacity(0);
@@ -134,7 +159,7 @@ public class ModalUtil {
        });
     }
 
-    public static void ShowComentario(StackPane fundo,String modalFxml,UserModel model,Runnable action){
+    public static void ShowComentario(StackPane fundo,int id,String modalFxml,UserModel model,Runnable action){
         try {
             Node modal=App.loadFXMLModal(modalFxml);
             StackPane image=(StackPane) modal.lookup("#imagemCircular");
@@ -144,12 +169,13 @@ public class ModalUtil {
             ((Label)modal.lookup("#nome")).setText(model.getName().getText());
             ((JFXTextArea)modal.lookup("#descricao")).setText(model.getDescricao().getText());
             JFXButton botao= (JFXButton) modal.lookup("#back");
-            botao.setOnMouseClicked(event -> {
+            botao.setOnAction(event -> {
                 action.run();
             });
-            System.out.println("errr");
+            analiticComment a =(analiticComment) ApiCache.getTelaCache(modalFxml)[0];
+            a.setId(id);
             ShowMethod(modal, fundo);
-                        System.out.println("deu");
+                        //System.out.println("deu");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

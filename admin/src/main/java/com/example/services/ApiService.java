@@ -126,7 +126,7 @@ public class ApiService {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-         System.out.println(response);
+         //System.out.println(response);
         return response.body();
     }
 
@@ -141,7 +141,7 @@ public class ApiService {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Response from postMultipart: " + response.body());
+        //System.out.println("Response from postMultipart: " + response.body());
         return response.body();
     }
 

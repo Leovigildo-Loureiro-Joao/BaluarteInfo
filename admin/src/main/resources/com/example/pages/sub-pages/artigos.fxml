@@ -46,7 +46,7 @@
                         </ImageView>
                      </graphic>
                   </JFXButton>
-                  <JFXComboBox fx:id="filtro" focusColor="#bc3c28" prefHeight="32.0" prefWidth="98.0" promptText="Filtro" />
+                  <JFXComboBox fx:id="filtro" focusColor="#bc3c28" onAction="#Filtrar" prefHeight="32.0" prefWidth="98.0" promptText="Filtro" />
                </children>
                <VBox.margin>
                   <Insets top="20.0" />

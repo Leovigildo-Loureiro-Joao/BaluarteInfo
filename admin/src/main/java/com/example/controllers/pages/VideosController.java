@@ -11,9 +11,8 @@ import com.example.controllers.Controller;
 import com.example.dto.video.VideoDtoModel;
 import com.example.dto.video.VideoDtoRegister;
 import com.example.enums.MidiaType;
-import com.example.models.actividade.ActividadeModel;
-
-import com.example.models.video.VideoModel;
+import com.example.models.ActividadeModel;
+import com.example.models.VideoModel;
 import com.example.services.VideoService;
 import com.example.utils.FormAnaliserUtil;
 import com.example.utils.ModalUtil;

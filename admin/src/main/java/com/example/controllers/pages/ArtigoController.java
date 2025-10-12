@@ -8,11 +8,12 @@ import java.util.concurrent.CompletableFuture;
 import com.example.App;
 import com.example.components.item_list.CardProcess;
 import com.example.controllers.Controller;
+import com.example.dto.actividade.ActividadeDtoSimple;
 import com.example.enums.ArtigoType;
 import com.example.dto.artigo.ArtigoDto;
 import com.example.dto.artigo.ArtigoRegister;
-import com.example.models.actividade.ActividadeModel;
-import com.example.models.artigo.ArtigoModel;
+import com.example.models.ActividadeModel;
+import com.example.models.ArtigoModel;
 import com.example.services.ArtigoService;
 import com.example.utils.FormAnaliserUtil;
 import com.example.utils.ModalUtil;
@@ -20,7 +21,9 @@ import com.example.utils.ReacaoFormUtil;
 
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXButton;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
@@ -28,6 +31,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 
 import javafx.scene.image.ImageView;
 
@@ -54,11 +58,13 @@ public class ArtigoController implements Controller{
 
     public ImageView img;
 
-    @FXML
-    private VBox form;
 
     public Label info;
-
+    @FXML
+    private TextField pesqBlock;
+    @FXML
+    private ImageView imgSrc;
+    private List<ArtigoDto> artigos;
 
    
     @Override
@@ -82,7 +88,7 @@ public class ArtigoController implements Controller{
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
                 return null;
             }
         }, App.getExecutorService()).thenAccept(artigo -> {
@@ -101,10 +107,7 @@ public class ArtigoController implements Controller{
         });
     }
 
-    @FXML
-    void Pesquisar(ActionEvent event) {
 
-    }
 
      @FXML
     void Add(){
@@ -166,7 +169,7 @@ public class ArtigoController implements Controller{
             } catch (IOException | InterruptedException e) {
                 return null;
             }catch(Exception e){
-                System.out.println(e.getMessage());
+                //System.out.println(e.getMessage());
                 return null;
             }
         }, App.getExecutorService()).thenAccept(artigo -> {
@@ -193,4 +196,63 @@ public class ArtigoController implements Controller{
         });
     }
 
+    @FXML
+    private void Filtrar(ActionEvent event) {
+        Platform.runLater(() -> {
+          listArtigo.getChildren().clear();
+        for (ArtigoDto artigoDto : artigos) {
+            listArtigo.getChildren().addAll(new ArtigoModel(artigoDto, this));
+        }
+        String tipoValue = Optional.ofNullable(filtro.getSelectionModel().getSelectedItem()).orElse("Todos");
+
+        List<Node> filteredList = listArtigo.getChildren().stream()
+                .filter(node -> node instanceof ActividadeModel)
+                .map(node -> (ActividadeModel) node)
+                .filter(model -> correspondeAFiltros(model, tipoValue))
+                .collect(Collectors.toList());
+
+        if (filteredList.isEmpty()) {
+            listArtigo.getChildren().clear();
+            card.Vazio("Nenhum artigo encontrado", () -> Filtrar(event));
+            listArtigo.getChildren().add(card);
+        } else {
+            listArtigo.getChildren().setAll(filteredList);
+        }
+    });
+    }
+    
+    @FXML
+    void Pesquisar(ActionEvent event) {
+        String search = pesqBlock.getText().trim();
+        if (search.isEmpty()) {
+            ReacaoFormUtil.Reagir("error", "Erro! O campo de pesquisa está vazio", img, info);
+            return;
+        }
+        List<ArtigoModel> filteredList = new ArrayList<>();
+        for (ArtigoModel model : listArtigo.getChildren().stream()
+                .filter(node -> node instanceof ArtigoModel )
+                .map(node ->(ArtigoModel) node)
+                .toList()){
+            if (model.getDados().titulo().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            }else if (model.getDados().descricao().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            } else if (model.getDados().escritor().toLowerCase().contains(search.toLowerCase())) {
+                filteredList.add(model);
+            }
+        }
+        listArtigo.getChildren().setAll(filteredList);
+        if (filteredList.isEmpty()) {
+           listArtigo.getChildren().clear();
+            card.Vazio("Nenhum artigo encontrado", () -> Filtrar(event));
+            listArtigo.getChildren().add(card);
+        } else {
+            listArtigo.getChildren().setAll(filteredList);
+        }
+    }
+
+
+    private boolean correspondeAFiltros(ActividadeModel model, String tipoValue) {
+        return ((tipoValue.equals("Todos") || model.getDados().tipoEvento().name().equals(tipoValue)));
+    }
 }

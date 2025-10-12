@@ -61,7 +61,7 @@ public class ModalSenhaController implements Initializable{
 
     @FXML
     void Ocultar(ActionEvent event) {
-        System.out.println(event.getTarget().getClass().getName());
+        //System.out.println(event.getTarget().getClass().getName());
         if (bloco1.getChildren().contains((JFXButton)event.getTarget())) {
             PasswordHiddenText.Ocultar(senha, senhaText, eye,true);    
         }else if (bloco2.getChildren().contains((JFXButton)event.getTarget())) {

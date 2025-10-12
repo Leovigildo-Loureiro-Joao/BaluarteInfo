@@ -47,10 +47,10 @@ public class MensagemService {
     public void EnviarMensagem(MensagemDto mensagemDto){
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper;
-        //System.out.println("De: " + user);
-        //System.out.println("Para: " + mensagemDto.destino());
-        //System.out.println("Assunto: " + mensagemDto.assunto());
-        //System.out.println("Descrição: " + mensagemDto.descricao());
+        ////System.out.println("De: " + user);
+        ////System.out.println("Para: " + mensagemDto.destino());
+        ////System.out.println("Assunto: " + mensagemDto.assunto());
+        ////System.out.println("Descrição: " + mensagemDto.descricao());
         try {
             helper = new MimeMessageHelper(message, true);
             helper.setFrom(user);
@@ -75,7 +75,7 @@ public class MensagemService {
             EnviarMensagem(new MensagemDto(mensagemDto.descricao(), mensagemDto.assunto(),mensagensModel.getDestino()));    
             mensagensModel.setStatus(StatusMensage.ENVIADO);
         } catch (Exception e) {
-            //System.out.println(e.getMessage());
+            ////System.out.println(e.getMessage());
         }
         return mensagemRepository.save(mensagensModel);
     }
