@@ -29,9 +29,7 @@ ScrollBar .thumb {
     -fx-background-radius: 5px;
 }
 
-.scroll-bar .track {
-    -fx-background-color: #e0e0e0;
-}
+
 
 
 /* ListView */
@@ -291,12 +289,13 @@ ItemNotif {
 
 /* Gradients */
 .gradiente.select .card-gradiente {
-    -fx-background-color: linear-gradient(transparent, transparent, #CB2020);
+   -fx-border-color: transparent transparent #CB2020;
 }
 
-.gradiente .card-gradiente {
-    -fx-background-color: linear-gradient(transparent, transparent, #fff);
+ .card-gradiente {
+   
     -fx-background-radius: 8;
+
 }
 
 .gradiente.select .circle-rotate{
@@ -311,7 +310,25 @@ ItemNotif {
 /* User Cards */
 .user-card {
     -fx-padding: 5;
-    -fx-max-width: 230;
+    -fx-margin:0 5;
+    -fx-min-height: 80;
+    -fx-max-width: 300;
+}
+
+.user-card-min {
+    -fx-padding: 5;
+    -fx-margin:0 5;
+    -fx-min-height: 80;
+    -fx-max-height: 80;
+    -fx-min-width: 100;
+    -fx-max-width: 100;
+    -fx-effect: dropshadow(three-pass-box, #e5e5e5, 8, 0.1, 1, 1);
+    -fx-background-color: white;
+}
+
+
+.user-card.no_view {
+    -fx-background-color: rgba(154, 154, 212, 0.212);
 }
 
 .user-card Text {
@@ -323,7 +340,6 @@ ItemNotif {
 .user-card Label {
     -fx-font-size: 12;
     -fx-wrap-text: true;
-    -fx-max-width: 150;
 }
 
 .coment-model Label{
@@ -482,3 +498,29 @@ TextField.error {
 
 }
 
+
+.bolha-reacao .text{
+    -fx-fill: white;
+    -fx-text-fill: white;
+}
+
+.actividade-model .bloco .bolha-reacao .glyph-icon{
+      -fx-fill:  black;
+}
+
+.view.select{
+    -fx-background-color: black;
+    -fx-background-radius: 8;
+    -fx-text-fill: white;
+}
+
+.view.select *{
+    -fx-text-fill: white;
+}
+
+.view{
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-text-fill: black;
+     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0.3, 0, 2);
+}

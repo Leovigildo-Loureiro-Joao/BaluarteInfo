@@ -47,6 +47,7 @@ public class MainController implements Initializable{
     @FXML
     private ScrollPane box;
 
+
     @FXML
     private ImageView img;
 
@@ -157,6 +158,10 @@ public class MainController implements Initializable{
         ModalUtil.Show("modalSenha");
     }
 
+    public ScrollPane getBox() {
+        return box;
+    }
+
      @Override
      public void initialize(URL arg0, ResourceBundle arg1) {
         lista.getItems().add(new ItemDash("Home",FontAwesomeIcon.HOME));
@@ -164,7 +169,6 @@ public class MainController implements Initializable{
         lista.getItems().add(new ItemDash("Artigos",FontAwesomeIcon.BOOK));
         lista.getItems().add(new ItemDash("Videos",FontAwesomeIcon.FILM));
         lista.getItems().add(new ItemDash("Audios",FontAwesomeIcon.MUSIC));
-        lista.getItems().add(new ItemDash("Editar site",FontAwesomeIcon.EDIT));
         lista.getItems().add(new ItemDash("Configurações",FontAwesomeIcon.COGS));
         nome.setText(TokenSeccao.getUsuarioLogado().nome());
         role.setText(TokenSeccao.getUsuarioLogado().roles());

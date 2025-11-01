@@ -39,6 +39,7 @@ public class LoadImageUtil {
             url.getChildren().clear();
             url.setStyle("-fx-background-size:cover;-fx-background-image:url("+urls+")");
             url.setPrefSize(tamanho, altura);
+            url.setMinSize(tamanho, altura);
         });  
     }
 

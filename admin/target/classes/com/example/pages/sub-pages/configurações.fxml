@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.jfoenix.controls.*?>
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXCheckBox?>
+<?import com.jfoenix.controls.JFXToggleButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="659.0" prefWidth="1158.0" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="659.0" prefWidth="1158.0" stylesheets="@../../styles/geral.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.controllers.pages.ConfigController">
    <children>
       <HBox prefHeight="100.0" prefWidth="200.0" spacing="100.0">
          <children>
@@ -20,37 +27,53 @@
                   </Text>
                   <AnchorPane maxWidth="-Infinity" minWidth="-Infinity" prefHeight="559.0" prefWidth="417.0" styleClass="card">
                      <children>
-                        <VBox layoutX="51.0" layoutY="89.0" prefHeight="228.0" prefWidth="316.0" spacing="20.0">
-                           <children>
-                              <VBox prefHeight="46.0" prefWidth="365.0">
+                        <ScrollPane hbarPolicy="NEVER" layoutX="41.0" layoutY="89.0" prefHeight="291.0" prefWidth="330.0">
+                           <content>
+                              <VBox fx:id="pai" prefHeight="228.0" prefWidth="316.0" spacing="20.0">
                                  <children>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de incricao" />
-                                    <TextField disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
+                                    <VBox prefHeight="46.0" prefWidth="365.0">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de incricao" />
+                                          <TextField fx:id="totInsc" disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefHeight="49.0" prefWidth="365.0">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de comentarios das actividades" />
+                                          <TextField fx:id="totComent" disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex: 100" styleClass="fieldTextLine" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefHeight="49.0" prefWidth="365.0">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de inscritos nas actividades" />
+                                          <TextField fx:id="totAdIns" disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefHeight="49.0" prefWidth="365.0">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de visitas" />
+                                          <TextField fx:id="totVist" disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefHeight="49.0" prefWidth="365.0">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de interessados na organizacao " />
+                                          <TextField fx:id="totNewL" disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
+                                       </children>
+                                    </VBox>
+                                    <VBox prefHeight="49.0" prefWidth="365.0">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de usuarios" />
+                                          <TextField fx:id="totMemb" disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
+                                       </children>
+                                    </VBox>
+                                    <JFXCheckBox fx:id="limpar" disable="true" styleClass="textDataG" text="Limpar Todas notificaçoes lidas" />
                                  </children>
                               </VBox>
-                              <VBox prefHeight="49.0" prefWidth="365.0">
-                                 <children>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de comentarios das actividades" />
-                                    <TextField disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex: 100" styleClass="fieldTextLine" />
-                                 </children>
-                              </VBox>
-                              <VBox prefHeight="49.0" prefWidth="365.0">
-                                 <children>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de inscritos nas actividades" />
-                                    <TextField disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
-                                 </children>
-                              </VBox>
-                              <VBox prefHeight="49.0" prefWidth="365.0">
-                                 <children>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="textDataG" text="Numero total de visitas" />
-                                    <TextField disable="true" prefHeight="26.0" prefWidth="365.0" promptText="Ex:100" styleClass="fieldTextLine" />
-                                 </children>
-                              </VBox>
-                              <JFXCheckBox disable="true" styleClass="textDataG" text="Limpar Todas notificaçoes lidas" />
-                           </children>
-                        </VBox>
-                        <JFXToggleButton layoutX="31.0" layoutY="22.0" text="Deseja actualisar suas confiuguraçoes " toggleColor="#cb2020" toggleLineColor="#c92020c2" />
-                        <JFXButton disable="true" layoutX="48.0" layoutY="388.0" prefHeight="42.0" prefWidth="322.0" styleClass="buttonColor" text="Editar" />
+                           </content>
+                        </ScrollPane>
+                        <JFXToggleButton layoutX="31.0" layoutY="22.0" onAction="#Alterar" text="Deseja actualisar suas confiuguraçoes " toggleColor="#cb2020" toggleLineColor="#c92020c2" />
+                        <JFXButton fx:id="button" disable="true" layoutX="48.0" layoutY="388.0" onAction="#Submit" prefHeight="42.0" prefWidth="322.0" styleClass="buttonColor" text="Editar" />
                      </children>
                   </AnchorPane>
                </children>

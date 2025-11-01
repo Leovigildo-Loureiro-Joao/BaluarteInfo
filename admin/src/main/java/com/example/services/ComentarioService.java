@@ -9,10 +9,7 @@ import com.example.utils.ListUtil;
 
 public class ComentarioService {
     
-    public static List<ComentarioDto> getComentarios(int id) throws IOException, InterruptedException {
-        String resposta=ApiService.get("/user/actividade/"+id+"/comentarios");
-        return ListUtil.fromJsonList(resposta, ComentarioDto.class);
-    }
+   
 
      public static ComentarioDto find(int id) throws IOException, InterruptedException {
         String resposta=ApiService.get("/user/comentario/"+id);

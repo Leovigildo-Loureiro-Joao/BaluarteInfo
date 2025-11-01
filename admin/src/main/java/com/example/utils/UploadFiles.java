@@ -55,6 +55,7 @@ public class UploadFiles {
             //buffer=select.getPath();
             //nomeImg=select.getName();
         } catch (Exception ex) {
+            System.out.println("Erro ao carregar imagem: "+ex.getMessage());
         }
     }
     

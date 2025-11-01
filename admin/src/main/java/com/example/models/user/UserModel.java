@@ -33,21 +33,39 @@ public class UserModel extends HBox{
 
 
     public UserModel(String src,String name,String descricao,UserDataType type,int id,int idC) {
-        LoadImageUtil.preocessarBackground(this.img, src, 50, 50,true);
-        this.name=new Text(name);
-        this.descricao=new Label(descricao);
-        blocBox=new VBox(this.name,this.descricao);
-        this.getChildren().addAll(img,blocBox);
-        this.getStyleClass().addAll("card","user-card");
+        int tamanho=type==UserDataType.Comentarios?50:20;
+        LoadImageUtil.preocessarBackground(this.img, src, tamanho, tamanho,true);
+        SwType(type, name, descricao);
         this.setSpacing(10);
         userDataType=type;
         setOnMouseClicked(event -> {
              MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
             if (userDataType.equals(UserDataType.Comentarios)) {
-                ModalUtil.ShowComentario(controller.conteinerModal,idC, "modalUserComent",this,()->{ModalUtil.Show("modalActividadeDetalhes",id);});
+                ModalUtil.ShowComentario(controller.conteinerModal,idC, "modalUserComent",this,()->{ModalUtil.Show("modalActividadeDetalhes",(AnchorPane)controller.getBox().getContent(),id);});
             }
         });
     }
+
+    public void SwType(UserDataType type,String name,String descricao){
+        switch (type) {
+            case Comentarios:
+                this.name=new Text(name);
+                this.descricao=new Label(descricao);
+                blocBox=new VBox(this.name,this.descricao);
+                this.getChildren().addAll(img,blocBox);
+                this.getStyleClass().addAll("card","user-card");
+                break;
+        
+            default:
+                this.name=new Text(name);
+                blocBox=new VBox(img,this.name);
+                this.getStyleClass().addAll("card","user-card-min");
+                this.getChildren().add(blocBox);
+                break;
+        }
+    }
+
+    
 
     
     

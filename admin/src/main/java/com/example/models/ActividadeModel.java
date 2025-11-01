@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.example.App;
 import com.example.configs.ApiCache;
-import com.example.controllers.pages.MainController;
 import com.example.dto.actividade.ActividadeDtoSimple;
 import com.example.enums.ActividadeType;
 import com.example.enums.DuracaoActividade;
@@ -26,6 +25,7 @@ import com.jfoenix.controls.JFXButton;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Dialog;
@@ -39,6 +39,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import lombok.Getter;
 import lombok.Setter;
@@ -67,7 +68,7 @@ public class ActividadeModel extends StackPane{
     private VBox blocVBox;
     private VBox inputBloco=new VBox();
     private JFXButton addAtributos;
-    private JFXButton expandir=new JFXButton("Expandir");
+    private JFXButton expandir=new JFXButton("Ver mais");
     private JFXButton more=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.ELLIPSIS_H,"25"));
     private JFXButton edit=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.EDIT,"20"));
     private JFXButton trash=new JFXButton("", new FontAwesomeIconView(FontAwesomeIcon.TRASH,"20"));
@@ -99,6 +100,8 @@ public class ActividadeModel extends StackPane{
         Buttons();
         CriarControl();
     }
+
+
 
     private void OrdenarModel(String url){
         Region spacer = new Region();
@@ -177,7 +180,8 @@ public class ActividadeModel extends StackPane{
 
     public void Buttons(){
         addAtributos.setOnAction(event -> {
-            ModalUtil.Show( "modalActividadeDetalhes",dados.id());
+           
+            ModalUtil.Show( "modalActividadeDetalhes",aController.content,dados.id());
         });
         
         

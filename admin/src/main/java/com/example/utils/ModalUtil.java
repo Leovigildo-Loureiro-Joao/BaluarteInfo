@@ -43,7 +43,7 @@ public class ModalUtil {
 
     }
     
-     public static void Show(String modalFxml,int id){
+     public static void Show(String modalFxml,AnchorPane content,int id){
         try {
             MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
             StackPane fundo=  controller.conteinerModal ;
@@ -51,10 +51,16 @@ public class ModalUtil {
             Node modal=App.loadFXMLModal(modalFxml);
             if (modalFxml.equals("modalActividadeDetalhes")) {
                 ModalActividadeDetalhesController modalC=(ModalActividadeDetalhesController) ApiCache.getTelaCache(modalFxml)[0];
+                System.out.println("modal "+content);
+                modalC.content= content;
                 modalC.setId(id);
             }else if(modalFxml.equals("modalVideo")|| modalFxml.equals("modalImagemAdd")){
+                System.out.println("midia "+content);
                 MidiaController modalC=(MidiaController) ApiCache.getTelaCache(modalFxml)[0];
+                modalC.content= content;
                 modalC.setId(id);
+                
+                
             }
            
             ShowMethod(modal, fundo);
@@ -65,7 +71,7 @@ public class ModalUtil {
 
     }
 
-    public static void Show(String modalFxml,Runnable action){
+    public static void Show(String modalFxml,Runnable action,Object... params){
         try {
             MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
             StackPane fundo=  controller.conteinerModal ;
@@ -76,7 +82,11 @@ public class ModalUtil {
                 action.run();
             });
             ShowMethod(modal, fundo);
-            
+            if(modalFxml.equals("modalImagemAdd")){
+                MidiaController modalC=(MidiaController) ApiCache.getTelaCache(modalFxml)[0];
+                modalC.content= (AnchorPane) params[0];
+                modalC.setId((int) params[1]);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -155,7 +165,7 @@ public class ModalUtil {
         });
         fundo.setOpacity(0);
         fundo.getChildren().add(modal);
-        FadeTrasitionUtil.Fade(0.5, fundo, 1, 0);
+        FadeTrasitionUtil.Fade(0.3, fundo, 1, 0);
        });
     }
 
@@ -208,7 +218,7 @@ public class ModalUtil {
 
     private static void Terminate(StackPane fundo){
       
-        FadeTransition opacityTransition = new FadeTransition(Duration.seconds(0.5), fundo);
+        FadeTransition opacityTransition = new FadeTransition(Duration.seconds(0.3), fundo);
         opacityTransition.setFromValue(1);
         opacityTransition.setToValue(0);
         opacityTransition.play();

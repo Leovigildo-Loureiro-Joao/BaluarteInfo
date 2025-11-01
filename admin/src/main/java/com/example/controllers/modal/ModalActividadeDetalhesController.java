@@ -2,11 +2,13 @@ package com.example.controllers.modal;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 
 import com.example.configs.ApiCache;
 import com.example.controllers.pages.MainController;
 import com.example.dto.InscritoDto;
 import com.example.dto.comentario.ComentarioDto;
+import com.example.dto.midia.MidiaSimple;
 import com.example.enums.UserDataType;
 import com.example.models.user.UserDtoData;
 import com.example.models.user.UserModel;
@@ -24,6 +26,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -31,6 +34,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -69,16 +73,26 @@ public class ModalActividadeDetalhesController implements Initializable{
     private AnchorPane title;
 
     @FXML
-    private Text titleUser;
+    private StackPane commentAll;
+
+    @FXML
+    private StackPane commentNview;
+
+    @FXML
+    private StackPane commentView;
 
     @FXML
     private VBox use_box;
+     @FXML
+    private HBox use_box_min;
     
     @FXML
     private Label comment;
 
     @FXML
     private Label inscrit;
+     @FXML
+    private HBox contentComent;
     RotateTransition rTransition;
     private StackPane fundo;
     private int id;
@@ -86,15 +100,23 @@ public class ModalActividadeDetalhesController implements Initializable{
     private double startValue;
     private List<ComentarioDto> comments=new ArrayList<>();
     private List<InscritoDto> inscritos=new ArrayList<>();
+    private List<ComentarioDto> commentsUser;
+    private List<MidiaSimple> midia=new ArrayList<>();
+    @FXML
+    private GridPane galeria;
+    @FXML
+    private GridPane traillers;
+
+    public AnchorPane content;
 
     @FXML
     void AddTrailer(ActionEvent event) {
-        ModalUtil.Show("modalVideo",() ->  ModalUtil.Show("modalActividadeDetalhes",id));
+        ModalUtil.Show("modalVideo",() ->  ModalUtil.Show("modalActividadeDetalhes",content,id));
     }
 
     @FXML
     void AddimageGaleria(MouseEvent event) {
-        ModalUtil.Show("modalImagemAdd",() ->  ModalUtil.Show("modalActividadeDetalhes",id));
+        ModalUtil.Show("modalImagemAdd",() ->  ModalUtil.Show("modalActividadeDetalhes",content,id),content,id);
     }
 
 
@@ -102,6 +124,7 @@ public class ModalActividadeDetalhesController implements Initializable{
     @FXML
     public void Deslisa(MouseEvent event) {
         AnimationScrollOverflow(0);
+       
     }
 
     public void AnimationScrollOverflow(double value){
@@ -116,13 +139,56 @@ public class ModalActividadeDetalhesController implements Initializable{
         time.setOnFinished(event -> startValue=value);
     }
     @FXML
-    public void Deslisa1(MouseEvent event) {
+    public void Deslisa1(MouseEvent event)  {
         AnimationScrollOverflow(1);
+        galeria.getChildren().clear();
+        CompletableFuture.supplyAsync(() -> {
+             try {
+                return ActividadeService.galeriaGet(id);
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            } 
+           return null;
+        }).thenAccept(arg0 -> {
+            Platform.runLater(() -> {
+                int l=0,c=0;
+                for (MidiaSimple midiaSimple : arg0) {
+                    galeria.add(midiaSimple.GaleriaImage(), l, c);
+                    c++;
+                    if (c==2) {
+                        c=0;
+                        l++;
+                    }
+                }
+           });  
+        });
     }
 
     @FXML
-    public void Deslisa2(MouseEvent event) {
+    public void Deslisa2(MouseEvent event) throws IOException, InterruptedException {
         AnimationScrollOverflow(2);
+         traillers.getChildren().clear();
+         CompletableFuture.supplyAsync(() -> {
+            try {
+                List<MidiaSimple> lista=ActividadeService.trailerGet(id);
+                return lista;
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+         }).thenAccept((list)->{
+             Platform.runLater(() -> {
+                int l=0,c=0;
+                for (MidiaSimple midiaSimple : list) {
+                    traillers.add(midiaSimple.Trailler(), l, c);
+                    c++;
+                    if (c==2) {
+                        c=0;
+                        l++;
+                    }
+                }
+             });
+         });
     }
 
  
@@ -130,74 +196,39 @@ public class ModalActividadeDetalhesController implements Initializable{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-           // TODO Auto-generated method stub
         MainController controller=(MainController) ApiCache.getTelaCache("main")[0];
         fundo=controller.conteinerModal;
+        AnimationScrollOverflow(0);
     }
 
     @FXML
     public void Select1(MouseEvent event) throws IOException, InterruptedException {
         Actualizar();
-        RemoveSelectCard();
         comentCard.getStyleClass().add("select");
-        titleUser.setText("Comentarios da actividade");
-        
-        for (ComentarioDto comment : comments) {
-            use_box.getChildren().add(new UserModel(comment.imagem(),comment.name(),comment.descricao(),UserDataType.Comentarios,id,comment.id()));    
-        }
-        CircleRotate(circle1);
     }
 
-    public void RemoveSelectCard(){
-        comentCard.getStyleClass().remove("select");
-        inscricaoCard.getStyleClass().remove("select");
-        use_box.getChildren().clear();
-        if (rTransition!=null) {
-            rTransition.stop();
-        }
-        
-    }
+   
     
     public void Actualizar(){
-       try {
-           comments=ActividadeService.getComentarios(id);
-           inscritos=ActividadeService.getInscritos(id);
-           comment.setText( comments.size()+"");
-            inscrit.setText(inscritos.size()+"");
-       } catch (IOException ex) {
-           Logger.getLogger(ModalActividadeDetalhesController.class.getName()).log(Level.SEVERE, null, ex);
-       } catch (InterruptedException ex) {
-           Logger.getLogger(ModalActividadeDetalhesController.class.getName()).log(Level.SEVERE, null, ex);
-       }
-       
-
+        Platform.runLater(()->  SelectCommentView(1));
+        CompletableFuture.runAsync(() -> {
+            try {
+                inscritos=ActividadeService.getInscritos(id);
+                comment.setText( ActividadeService.getComentariosAll(id).size()+"");
+                inscrit.setText(inscritos.size()+"");
+                use_box_min.getChildren().clear();
+                for (InscritoDto inscrito : inscritos) {
+                    UserDtoData user=LoginService.FindUser(inscrito.idUser());
+                    use_box_min.getChildren().add(new UserModel(user.img(),user.nome(),user.email(),UserDataType.Perfil,id,0));    
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(ModalActividadeDetalhesController.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ModalActividadeDetalhesController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
 
-    @FXML
-    public void Select2(MouseEvent event) throws IOException, InterruptedException {
-         Actualizar();
-        RemoveSelectCard();
-        for (InscritoDto inscrito : inscritos) {
-            UserDtoData user=LoginService.FindUser(inscrito.idUser());
-            use_box.getChildren().add(new UserModel(user.img(),user.nome(),user.email(),UserDataType.Perfil,id,0));    
-        }
-        titleUser.setText("Pessoas inscritas para actividade");
-        inscricaoCard.getStyleClass().add("select");
-        //System.out.println(ActividadeService.getInscritos(id));
-        CircleRotate(circle2);
-    }
-
-
-    private void CircleRotate(Circle circle){
-        rTransition = new RotateTransition(Duration.seconds(2),circle);
-        rTransition.setFromAngle(0);
-        rTransition.setToAngle(360);
-        rTransition.setCycleCount(RotateTransition.INDEFINITE); // repetir pra sempre
-        rTransition.setInterpolator(javafx.animation.Interpolator.LINEAR); // rotação constante
-        rTransition.play();
-
-
-    }
 
     public int getId() {
         return id;
@@ -208,9 +239,55 @@ public class ModalActividadeDetalhesController implements Initializable{
         try {
             Select1(null);
         } catch (IOException | InterruptedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+       
+
+    private void SelectCommentView(int i){
+        contentComent.getChildren().forEach((node)-> node.getStyleClass().remove("select"));
+        contentComent.getChildren().get(i).getStyleClass().add("select");
+        use_box.getChildren().clear();
+            try {
+                switch (i) {
+                    case 1:
+                        commentsUser=ActividadeService.getComentariosAll(id);
+                        break;
+                    case 2:
+                        commentsUser=ActividadeService.getComentarios(id,false);       
+                        break;
+                    case 3:
+                        commentsUser=ActividadeService.getComentarios(id,true);       
+                        break;
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }       
+       CompletableFuture.runAsync(() -> {
+         for (ComentarioDto comment : commentsUser) {
+            UserModel userModel = new UserModel(comment.imagem(),comment.name(),comment.descricao(),UserDataType.Comentarios,id,comment.id());
+            if (!comment.analise()) 
+                userModel.getStyleClass().add("no_view");
+            use_box.getChildren().add(userModel);    
+        }
+       });
+
+    }
+
+    @FXML
+    void Todos(MouseEvent event) {
+        SelectCommentView(1);
+    }
+
+    @FXML
+    void Vistos(MouseEvent event) {
+        SelectCommentView(3);
+    }
+
+    @FXML
+    void NVistos(MouseEvent event) {
+        SelectCommentView(2);
     }
     
     

@@ -67,6 +67,7 @@ public class analiticComment implements Initializable {
     void Negar(ActionEvent event) {
         try {
             ComentarioService.Apagar(id);
+            back.fire();
         } catch (IOException | InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
