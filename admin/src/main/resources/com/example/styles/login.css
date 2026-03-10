@@ -13,11 +13,14 @@ VBox.card{
 .fieldTextLine {
    -fx-text-fill: white;
    -fx-prompt-text-fill: rgb(207, 207, 207);
+   -fx-background-color: transparent;
+   -fx-font-size: 12;
 }
 
 
 
 .fieldTextLine.error {
+    -fx-background-color: transparent;
     -fx-border-color: transparent transparent red ;
     -fx-border-width: 1px;
 }

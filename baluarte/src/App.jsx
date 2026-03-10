@@ -7,6 +7,7 @@ import { ModalProvider } from './components/Dialog/ModalContext'
 import { ModalManager } from './components/Dialog/ModalManager'
 
 
+
 function App() {
 
     const [modal,setModal]=useState(null)

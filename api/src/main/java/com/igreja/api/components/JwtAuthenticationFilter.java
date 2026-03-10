@@ -1,14 +1,19 @@
 package com.igreja.api.components;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.igreja.api.dto.error.ApiErrorResponse;
 import com.igreja.api.services.UserService;
 
 import jakarta.servlet.FilterChain;
@@ -19,15 +24,21 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private UserService userDetailsService;
+    private final UserService userDetailsService;
+    private final JwUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private JwUtil jwtUtil;
+    public JwtAuthenticationFilter(UserService userDetailsService, JwUtil jwtUtil, ObjectMapper objectMapper) {
+        this.userDetailsService = userDetailsService;
+        this.jwtUtil = jwtUtil;
+        this.objectMapper = objectMapper;
+    }
 
     // Rotas que não precisam de autenticação JWT
     private static final String[] PUBLIC_URLS = {
-        "/auth/",
+        "/auth/login",
+        "/auth/register",
+        "/health",
         "/swagger-ui/",
         "/v3/api-docs/",
         "/test/"
@@ -55,14 +66,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String username = null;
+        String username = jwtUtil.extractUsername(token);
 
-        try {
-            username = jwtUtil.extractUsername(token);
-        } catch (Exception e) {
-            // Token inválido, retorne 403 imediatamente
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("Token JWT inválido ou expirado.");
+        if (username == null) {
+            writeErrorResponse(
+                    response,
+                    request,
+                    HttpStatus.UNAUTHORIZED,
+                    "Token inválido",
+                    "O token JWT é inválido ou expirou.");
             return;
         }
 
@@ -74,12 +86,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             } else {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Token JWT inválido.");
+                writeErrorResponse(
+                        response,
+                        request,
+                        HttpStatus.UNAUTHORIZED,
+                        "Token inválido",
+                        "O token JWT enviado não é válido.");
                 return;
             }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void writeErrorResponse(
+            HttpServletResponse response,
+            HttpServletRequest request,
+            HttpStatus status,
+            String error,
+            String message) throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+
+        ApiErrorResponse body = new ApiErrorResponse(
+                LocalDateTime.now(),
+                status.value(),
+                error,
+                message,
+                request.getRequestURI(),
+                List.of());
+
+        objectMapper.writeValue(response.getWriter(), body);
     }
 }

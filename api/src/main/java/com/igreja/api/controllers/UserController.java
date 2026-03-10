@@ -1,11 +1,10 @@
 package com.igreja.api.controllers;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +21,9 @@ import com.igreja.api.models.UserModel;
 import com.igreja.api.services.UserService;
 
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
 
@@ -33,24 +31,28 @@ import javax.validation.Valid;
 @RestController
 public class UserController {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private DaoAuthenticationProvider authenticationManager;
-    @Autowired
-    private JwUtil jwtUtil;
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserController(
+            UserService userService,
+            AuthenticationManager authenticationManager,
+            JwUtil jwtUtil,
+            PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+    }
   
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody @Valid UserLoginDto userDto) {
-        UserDetails userDetails = userService.loadUserByUsername(userDto.email());
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userDetails.getUsername(), userDto.password()));
-        // Generate JWT token
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userDto.email(), userDto.password()));
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String token = jwtUtil.generateToken(userDetails);
         return ResponseEntity.ok(Map.of("token", token,"user",userService.findByIdData(userDto.email()))); 
     }
@@ -61,35 +63,23 @@ public class UserController {
         BeanUtils.copyProperties(userDto, user);
         user.setRoles("USER");
         user.setPassword(passwordEncoder.encode(userDto.password()));
-        try {
-            return ResponseEntity.ok(userService.save(user));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
-        }
-     
+        return ResponseEntity.ok(userService.save(user));
     }
 
 
-     @GetMapping("/auth/{id}")
-    public ResponseEntity<?> FindUser(@PathVariable("id") long user) {
-        ;
-        try {
-            return ResponseEntity.ok(userService.findByIdData(user));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
-        }
-     
+    @GetMapping("/user/me")
+    public ResponseEntity<?> currentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(userService.findByIdData(userDetails.getUsername()));
     }
 
      @GetMapping("/admin/user")
     public ResponseEntity<?> AllUser() {
-        ;
-        try {
-            return ResponseEntity.ok(userService.findAll());
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.FOUND).body(e.getMessage());
-        }
-     
+        return ResponseEntity.ok(userService.findAll());
+    }
+
+    @GetMapping("/admin/user/{id}")
+    public ResponseEntity<?> findUserById(@PathVariable("id") long user) {
+        return ResponseEntity.ok(userService.findByIdData(user));
     }
    
     

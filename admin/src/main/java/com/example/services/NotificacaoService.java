@@ -32,7 +32,7 @@ public class NotificacaoService {
     }
 
     public static List<NotificacaoModel> TodasNotificacoes() throws IOException, InterruptedException, JsonSyntaxException{
-        String respostaJson=ApiService.get("/admin/notificacaoAll");
+        String respostaJson=ApiService.get("/admin/notificacao/all");
         List<NotificacaoModel> notificacaoModels = ListUtil.fromJsonList(respostaJson, NotificacaoModel.class);
         return notificacaoModels;
     }

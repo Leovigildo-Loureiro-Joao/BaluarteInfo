@@ -54,8 +54,9 @@ public class ConfigService {
     @Autowired
     private ComentarioRepository comentarioRepository;
 
-    public List<ConfiguracaoModel> AllConfiguration() {
-        return configurationRepository.findAll();
+    public List<ConfiguracaoDto> AllConfiguration() {
+
+        return configurationRepository.All();
     }
 
     private ConfiguracaoModel save(ConfiguracaoDto dto){
@@ -90,7 +91,7 @@ public class ConfigService {
 
     public Map<ConfigType, Value> Estatisticas() {
         Map<ConfigType, Value> lista = new HashMap<>();
-        for (ConfiguracaoModel value : AllConfiguration()) {
+        for (ConfiguracaoModel value : configurationRepository.findAll()) {
 
             switch (value.getType()) {
                 case MembrosLimite:

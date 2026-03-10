@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
@@ -25,8 +26,12 @@ import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.dto.midia.ConnectMidiaDto;
+import com.igreja.api.dto.midia.MidiaActividade;
+import com.igreja.api.dto.midia.MidiaActividadeV;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
+import com.igreja.api.dto.midia.MidiaSimple;
+import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ComentarioModel;
@@ -63,6 +68,26 @@ public class MidiaService {
         return midiaRepository.save(midia);
     }
 
+       public Object addMidia(MidiaActividadeV actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        ActividadeModel actividadeModel= actividadeRepository.findById(actividadeDto.id()).orElseThrow();
+        MidiaModel midiaModel=save(new MidiaDto(actividadeDto.titulo(),"--/--/--",actividadeDto.img(),actividadeDto.type()));    
+        midiaModel.setActividade(actividadeModel);
+        midiaRepository.save(midiaModel);
+        actividadeRepository.save(actividadeModel);
+        return "Connectado com sucesso";
+    
+    }
+
+    public Object addMidia(MidiaActividade actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        ActividadeModel actividadeModel= actividadeRepository.findById(actividadeDto.id()).orElseThrow();
+        MidiaModel midiaModel=save(new MidiaFile(actividadeDto.titulo(),"--/--/--",null,actividadeDto.img(),actividadeDto.type() ,null));    
+        midiaModel.setActividade(actividadeModel);
+        midiaRepository.save(midiaModel);
+        actividadeRepository.save(actividadeModel);
+        return "Connectado com sucesso";
+    
+    }
+
     public String extractYoutubeId(String url) {
         if (url == null || url.isEmpty()) return null;
 
@@ -84,24 +109,28 @@ public class MidiaService {
         midia.setDataPublicacao(LocalDate.now());
         upload.generateUniqueName(midiaDto.imagem().getOriginalFilename());
         midia.setImagem(upload.uploadFileAsync(midiaDto.imagem(), "image"));
-        upload.generateUniqueName(midiaDto.url().getOriginalFilename());
-        midia.setUrl(upload.uploadFileAsync(midiaDto.url(), "raw"));
-    
-        // Extração da duração do áudio
-        try {
-            AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(midiaDto.url().getInputStream());
-            Map<String, Object> props = baseFileFormat.properties();
-            Object durationObj = props.get("duration");
-            if (durationObj != null) {
-                long microsegundos = (long) durationObj;
-                double segundos = microsegundos / 1_000_000.0;
-                midia.setTempo(formatarDuracao((int) segundos));
-            } else {
-                midia.setTempo("00:00"); // ou outro valor padrão
+        
+        if(midiaDto.type().equals(MidiaType.AUDIO)){
+            upload.generateUniqueName(midiaDto.url().getOriginalFilename());
+            midia.setUrl(upload.uploadFileAsync(midiaDto.url(), "raw"));
+             try {
+                AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(midiaDto.url().getInputStream());
+                Map<String, Object> props = baseFileFormat.properties();
+                Object durationObj = props.get("duration");
+                if (durationObj != null) {
+                    long microsegundos = (long) durationObj;
+                    double segundos = microsegundos / 1_000_000.0;
+                    midia.setTempo(formatarDuracao((int) segundos));
+                } else {
+                    midia.setTempo("00:00"); // ou outro valor padrão
+                }
+            } catch (Exception e) {
+                midia.setTempo("00:00"); // ou trate/log o erro conforme necessário
             }
-        } catch (Exception e) {
-            midia.setTempo("00:00"); // ou trate/log o erro conforme necessário
-        }
+        }else 
+            midia.setUrl(midia.getImagem());
+        // Extração da duração do áudio
+       
     
         BeanUtils.copyProperties(midiaDto, midia);
         return midiaRepository.save(midia);
@@ -187,6 +216,8 @@ public class MidiaService {
         actividadeRepository.save(actividadeModel);
         return "Connectado com sucesso";
     }
+
+
    
 
     public List<ComentarioResult> ComentariosAll(int id) {
@@ -199,5 +230,26 @@ public class MidiaService {
         return comentarios;
     }
 
+    public List<MidiaSimple> Galeria(int id) {
+        return GaleriaTrailler(id, MidiaType.IMAGE);
+    }
+
+    
+    public List<MidiaSimple> Trailler(int id) {
+        return GaleriaTrailler(id, MidiaType.VIDEO);
+    }
+
+
+    public List<MidiaSimple> GaleriaTrailler(int id,MidiaType tyoe) {
+        Optional<ActividadeModel> act=actividadeRepository.findById(id);
+        List<MidiaModel> midia=midiaRepository.findByActividade(act.get());
+        List<MidiaSimple> midiaSimples=new ArrayList<>();
+        for (MidiaModel midiaModel : midia) {
+            if(tyoe==midiaModel.getType())
+                midiaSimples.add(new MidiaSimple( midiaModel.getId(), midiaModel.getTitulo(), midiaModel.getUrl()));          
+        }
+        
+        return midiaSimples;
+    }
 
 }

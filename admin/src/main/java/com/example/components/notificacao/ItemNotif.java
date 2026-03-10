@@ -57,6 +57,8 @@ public class ItemNotif extends VBox{
                 return FontAwesomeIcon.BELL;
             case GALERIA:
                 return FontAwesomeIcon.PICTURE_ALT;
+            case VISTOS:
+                return FontAwesomeIcon.EYE;
             default:
                 return FontAwesomeIcon.SUBSCRIPT;
         }

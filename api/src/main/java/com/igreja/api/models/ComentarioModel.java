@@ -2,6 +2,7 @@ package com.igreja.api.models;
 
 import java.time.LocalDate;
 
+import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.enums.InfoType;
 
 import jakarta.persistence.CascadeType;
@@ -16,14 +17,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor
 @Table(name = "comentario")
+@Getter @Setter @NoArgsConstructor
 public class ComentarioModel {
 
     @Id
@@ -31,7 +32,7 @@ public class ComentarioModel {
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id",referencedColumnName = "id",nullable = false,unique = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
 
     @ManyToOne
@@ -46,8 +47,11 @@ public class ComentarioModel {
     @NotBlank
     private String descricao;
 
-    private LocalDate dataPublicacao;
+    private LocalDate dataPublicacao = LocalDate.now();
 
-     private boolean analise=false;
-    
+    /** Se já foi analisado ou respondido internamente */
+    private boolean analise = false;
+
+    /** Observação interna (visível apenas para administradores) */
+    private String notaInterna;
 }

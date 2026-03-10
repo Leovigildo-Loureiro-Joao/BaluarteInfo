@@ -52,8 +52,9 @@ public class ComentarioService {
         comentario.setDataPublicacao(LocalDate.now());
         comentario=swSeccao(comentario,seccao);
          ////System.out.println("Terminei aqui"+comentario);
-         ComentarioModel comment=comentarioRepository.save(comentario);
-        return new ComentarioResult(comment.id(), null, null, null, false);
+         //Object[] c=comentarioRepository.Result(comentarioRepository.save(comentario).getId());
+
+        return comentarioRepository.result(comentarioRepository.save(comentario).getId());
     }
 
     private ComentarioModel swSeccao(ComentarioModel comentario,Object seccao){

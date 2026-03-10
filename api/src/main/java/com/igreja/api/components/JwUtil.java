@@ -1,29 +1,43 @@
 package com.igreja.api.components;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 @Component
 public class JwUtil {
-    private static final String SECRET_KEY = "12#5#4#M4h!toMor??yCuho:G0j0U...=.=()>#??#<#??"; // Usa uma chave forte
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    private final Key signingKey;
+    private final long expirationMs;
+
+    public JwUtil(
+            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.expiration-ms:86400000}") long expirationMs) {
+        this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        this.expirationMs = expirationMs;
     }
 
     public String generateToken(UserDetails userDetails) {
+        long now = System.currentTimeMillis();
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 3600 * 24)) // 1 hora de validade
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(now + expirationMs))
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -32,27 +46,32 @@ public class JwUtil {
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        String username = extractUsername(token);
+        return username != null
+                && username.equals(userDetails.getUsername())
+                && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+        Date expiration = extractClaim(token, Claims::getExpiration);
+        return expiration == null || expiration.before(new Date());
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         try {
-            final Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
             return claimsResolver.apply(claims);
-        } catch (Exception e) {
-            ////System.out.println(e.getMessage());
+        } catch (ExpiredJwtException
+                | UnsupportedJwtException
+                | MalformedJwtException
+                | SignatureException
+                | IllegalArgumentException exception) {
             return null;
         }
-        
     }
 }
 

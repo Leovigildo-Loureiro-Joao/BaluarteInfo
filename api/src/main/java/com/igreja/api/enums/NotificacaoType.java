@@ -1,5 +1,5 @@
 package com.igreja.api.enums;
 
 public enum NotificacaoType {
-    GALERIA, LIMITE_INSCRITOS, LEMBRETE
+    GALERIA, LIMITE_INSCRITOS, LEMBRETE, VISTOS
 }

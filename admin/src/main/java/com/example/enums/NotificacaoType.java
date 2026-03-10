@@ -1,5 +1,5 @@
 package com.example.enums;
 
 public enum NotificacaoType {
-    GALERIA, LIMITE_INSCRITOS, LEMBRETE
+    GALERIA, LIMITE_INSCRITOS, LEMBRETE, VISTOS
 }

@@ -24,7 +24,7 @@
    <children>
       <BorderPane layoutY="-3.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="607.0" prefWidth="798.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <left>
-            <VBox fx:id="dashboard" minWidth="50.0" prefHeight="607.0" prefWidth="53.0" spacing="20.0" style="-fx-background-color: #CB2020;">
+            <VBox fx:id="dashboard" minWidth="50.0" prefHeight="607.0" prefWidth="53.0" spacing="20.0" styleClass="sidebar">
                <children>
                   <VBox>
                      <children>

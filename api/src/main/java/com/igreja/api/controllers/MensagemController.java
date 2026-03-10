@@ -3,8 +3,6 @@ package com.igreja.api.controllers;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,46 +26,26 @@ public class MensagemController {
 
     @PostMapping(value = "/user/mensagem/send")
     public ResponseEntity<?> Register(@RequestBody @Valid MensagemData mensagem) throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(mensagemService.save(new MensagemDto(mensagem.descricao(), mensagem.assunto(), null)));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        return ResponseEntity.ok(mensagemService.save(new MensagemDto(mensagem.descricao(), mensagem.assunto(), null)));
     }
 
     @PostMapping(value = "/admin/mensagem/{id}/received")
     public ResponseEntity<?> Responder(@PathVariable(name = "id") int id,@RequestBody @Valid MensagemData mensagem) throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(mensagemService.responder(id,mensagem));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        return ResponseEntity.ok(mensagemService.responder(id,mensagem));
     }
 
     @DeleteMapping(value = "/admin/mensagem/ignorar/{id}")
     public ResponseEntity<?> Delete(@PathVariable(name = "id") int id) throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(mensagemService.ignorar(id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return ResponseEntity.ok(mensagemService.ignorar(id));
     }
 
     @GetMapping(value = "/admin/mensagem/all")
     public ResponseEntity<?> AllMessages() throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(mensagemService.AllData());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return ResponseEntity.ok(mensagemService.AllData());
     }
 
     @GetMapping(value = "/admin/mensagem/{id}")
     public ResponseEntity<?> Select(@PathVariable int id) throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(mensagemService.Select(id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return ResponseEntity.ok(mensagemService.Select(id));
     }
 }

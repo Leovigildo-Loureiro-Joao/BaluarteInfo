@@ -2,19 +2,19 @@ package com.igreja.api.services;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.enums.InfoType;
-import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.repositories.InfoIgrejaRepository;
-import com.mchange.v2.beans.BeansUtils;
 
 import lombok.Getter;
 
@@ -31,27 +31,38 @@ public class InfoIgrejaService{
 
     public InfoIgrejaModel save(InfoDto dto) throws IOException{
         if (!Existis(dto.type())) {
-            InfoIgrejaModel model=new InfoIgrejaModel();
-            
+            return persist(new InfoIgrejaModel(), dto, false);
         }
-     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não pode haver duplicações de informações!");
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe uma informação cadastrada para este tipo.");
     }
 
     public InfoIgrejaModel update(InfoDto dto) throws IOException{
         if (Existis(dto.type())) {
-            InfoIgrejaModel model=findByType(dto.type());
-       
+            return persist(findByType(dto.type()), dto, true);
         }
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não pode haver duplicações de informações!");
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ainda não existe informação cadastrada para este tipo.");
     }
 
-    public InfoIgrejaModel save(InfoIgrejaModel model,InfoDto dto)  throws IOException{
+    private InfoIgrejaModel persist(InfoIgrejaModel model, InfoDto dto, boolean keepCurrentImage) throws IOException {
         BeanUtils.copyProperties(dto, model);
-        if (dto.type().equals(InfoType.QuemSomos)||dto.type().equals(InfoType.Salvacao)) {
-            //upload.uploadFile(dto.img(), "image");
-            model.setImg(upload.getUrl());
+        model.setImg(resolveImage(dto.img(), model.getImg(), keepCurrentImage));
+        return igrejaRepository.save(model);
+    }
+
+    private String resolveImage(MultipartFile file, String currentImage, boolean keepCurrentImage) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return keepCurrentImage ? currentImage : null;
         }
-       return igrejaRepository.save(model);    
+
+        upload.generateUniqueName(file.getOriginalFilename());
+        try {
+            return upload.uploadFileAsync(file, "image");
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IOException("O upload da imagem foi interrompido.", exception);
+        } catch (Exception exception) {
+            throw new IOException("Não foi possível fazer upload da imagem.", exception);
+        }
     }
 
     public boolean Existis (InfoType type){
@@ -59,12 +70,13 @@ public class InfoIgrejaService{
     }
 
     public InfoIgrejaModel findByType (InfoType type){
-        return igrejaRepository.findByType(type).orElse(null);
+        return igrejaRepository.findByType(type)
+                .orElseThrow(() -> new NoSuchElementException("Informação não encontrada para o tipo " + type.name()));
     }
 
-     public List<InfoIgrejaModel> AllData() throws IOException {
-      return igrejaRepository.findAll();
-   }
+     public List<InfoIgrejaModel> AllData() {
+        return igrejaRepository.findAll();
+    }
    
 
 }

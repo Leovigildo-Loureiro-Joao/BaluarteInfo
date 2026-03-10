@@ -1,29 +1,30 @@
 package com.igreja.api.services;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.igreja.api.dto.user.UserDto;
 import com.igreja.api.dto.user.UserDtoData;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.utils.GravatarUtils;
-import com.mchange.v2.beans.BeansUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 public class UserService implements UserDetailsService{
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final String DEFAULT_ROLE = "USER";
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
     
     
     @Override
@@ -42,11 +43,8 @@ public class UserService implements UserDetailsService{
     }
 
     public String[] Roles(UserModel user){
-        if (user.getRoles()==null) {
-            return new String[]{"USER"};
-        }else{
-            return user.getRoles().split(",");
-        }
+        String roles = normalizeRoles(user.getRoles());
+        return roles.split(",");
     }
 
     public List<UserDtoData> findAll(){
@@ -80,9 +78,25 @@ public class UserService implements UserDetailsService{
 
     public UserModel save(UserModel user){
         if (ExistsUser(user)) {
-            throw new NoSuchElementException("It is user exists"); 
+            throw new NoSuchElementException("Já existe um utilizador com este email.");
         }
+        user.setRoles(normalizeRoles(user.getRoles()));
         user.setImg( GravatarUtils.getGravatarUrl(user.getEmail()));
         return userRepository.save(user);
+    }
+
+    private String normalizeRoles(String roles) {
+        if (roles == null || roles.isBlank()) {
+            return DEFAULT_ROLE;
+        }
+
+        return java.util.Arrays.stream(roles.split(","))
+                .map(String::trim)
+                .filter(role -> !role.isBlank())
+                .map(role -> role.startsWith("ROLE_") ? role.substring(5) : role)
+                .map(String::toUpperCase)
+                .distinct()
+                .reduce((left, right) -> left + "," + right)
+                .orElse(DEFAULT_ROLE);
     }
 }

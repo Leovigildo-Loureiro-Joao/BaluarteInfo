@@ -1,9 +1,12 @@
 package com.igreja.api.controllers;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,7 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.igreja.api.dto.midia.ConnectMidiaDto;
+import com.igreja.api.dto.midia.MidiaActividade;
+import com.igreja.api.dto.midia.MidiaActividadeV;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
 import com.igreja.api.services.MidiaService;
@@ -33,95 +37,70 @@ public class MidiaController {
 
     @PostMapping("/admin/midia/video")
     public ResponseEntity<?> REgisterMidia(@RequestBody @Valid MidiaDto midiaDto) {    
-       try {
-            return ResponseEntity.ok(midiaService.save(midiaDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        return ResponseEntity.ok(midiaService.save(midiaDto));
     }
 
     @PostMapping(value = "/admin/midia/audio",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> REgisterMidiaFile(@ModelAttribute @Valid MidiaFile midiaDto) {    
-       try {
-            return ResponseEntity.ok(midiaService.save(midiaDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<?> REgisterMidiaFile(@ModelAttribute @Valid MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {    
+        return ResponseEntity.ok(midiaService.save(midiaDto));
     }
 
     @GetMapping("/user/midia/video")
     public ResponseEntity<?> AllDataVideo(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {    
-       try {
-            return ResponseEntity.ok(midiaService.AllVideo(page, size));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        return ResponseEntity.ok(midiaService.AllVideo(page, size));
     }
 
     @GetMapping("/user/midia/audio")
     public ResponseEntity<?> AllDataAudios(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {    
-       try {
-            return ResponseEntity.ok(midiaService.AllAudio(page, size));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        return ResponseEntity.ok(midiaService.AllAudio(page, size));
     }
 
     @PutMapping("/admin/midia/video/{id}")
     public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@RequestBody @Valid MidiaDto midiaDto) {    
-       try {
-            return ResponseEntity.ok(midiaService.edit(midiaDto,id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        return ResponseEntity.ok(midiaService.edit(midiaDto,id));
     }
 
     @PutMapping(value="/admin/midia/audio/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@ModelAttribute @Valid MidiaFile midiaDto) {    
-       try {
-            return ResponseEntity.ok(midiaService.edit(midiaDto,id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } 
+    public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@ModelAttribute @Valid MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException {    
+        return ResponseEntity.ok(midiaService.edit(midiaDto,id));
     }
 
     @DeleteMapping("/admin/midia/{id}")
     public ResponseEntity<?> Delete(@PathVariable("id") int id) {    
-       try {
-            midiaService.delete(id);
-            return ResponseEntity.ok(true);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        midiaService.delete(id);
+        return ResponseEntity.ok(true);
     }
 
     @GetMapping(value = "/user/midia/{id}/comentarioAll")
     public ResponseEntity<?> AllComentarios(@PathVariable int id) throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(midiaService.ComentariosAll(id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return ResponseEntity.ok(midiaService.ComentariosAll(id));
     }
 
 
     @GetMapping(value = "/user/midia/{id}")
     public ResponseEntity<?> SelectComentario(@PathVariable int id) throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(midiaService.Select(id));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return ResponseEntity.ok(midiaService.Select(id));
     }
 
-    @GetMapping(value = "/admin/midia/connect")
-    public ResponseEntity<?> ConnectActividade(@RequestBody @Valid ConnectMidiaDto connect) throws IOException {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(midiaService.ConnectActividade(connect));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+    @PostMapping(value = "/admin/actividade/trailer")
+    public ResponseEntity<?> trailer(@RequestBody @Valid MidiaActividadeV actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        return ResponseEntity.ok(midiaService.addMidia(actividadeDto));
+    }
+
+    @PostMapping(value = "/admin/actividade/galeria",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> galeria(@ModelAttribute @Valid MidiaActividade actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        return ResponseEntity.ok(midiaService.addMidia(actividadeDto));
+    }
+
+     @GetMapping(value = "/user/actividade/galeria/{id}")
+    public ResponseEntity<?> galeriaGet(@PathVariable int id) throws IOException {
+        return ResponseEntity.ok(midiaService.Galeria(id));
+    }
+
+    @GetMapping(value = "/user/actividade/trailler/{id}")
+    public ResponseEntity<?> traillerGet(@PathVariable int id) throws IOException {
+        return ResponseEntity.ok(midiaService.Trailler(id));
     }
 }

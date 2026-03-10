@@ -41,7 +41,7 @@ public class LoginService {
     }
 
     public static UserDtoData FindUser(long user) throws IOException, InterruptedException{
-        String respostaJson = ApiService.get("/auth/"+user);
+        String respostaJson = ApiService.get("/admin/user/"+user);
         if (respostaJson == null || respostaJson.isEmpty()) {
            return null;
         }
@@ -49,7 +49,7 @@ public class LoginService {
     }
 
     public static List<UserDtoData> AllUser(long user) throws IOException, InterruptedException{
-        String respostaJson = ApiService.get("/admin/users");
+        String respostaJson = ApiService.get("/admin/user");
         if (respostaJson == null || respostaJson.isEmpty()) {
            return null;
         }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.igreja.api.enums.MidiaType;
+import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.projection.midia.AudioProjection;
 import com.igreja.api.projection.midia.VideoProjection;
@@ -16,6 +17,8 @@ import com.igreja.api.projection.midia.VideoProjection;
 public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
 
     Page<VideoProjection> findAllVideoByTypeOrderByIdDesc(MidiaType type, Pageable pageable);
+
+    List<MidiaModel> findByActividade(ActividadeModel actividade);
 
     Page<AudioProjection> findAllAudioByTypeOrderByIdDesc(MidiaType type, Pageable pageable);
 }

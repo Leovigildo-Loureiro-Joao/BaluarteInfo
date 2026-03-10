@@ -1,5 +1,7 @@
 package com.igreja.api.services;
 import com.igreja.api.dto.inscrito.*;
+import com.igreja.api.dto.midia.MidiaActividade;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -19,16 +21,21 @@ import org.springframework.stereotype.Service;
 import com.igreja.api.dto.actividade.ActividadeDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.enums.ActividadeType;
+import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.InscritosModel;
+import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.projection.ActividadeProjection;
 import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.InscritosRepository;
+import com.igreja.api.repositories.MidiaRepository;
+
+import jakarta.validation.Valid;
 
 @Service
 public class ActividadeService {
@@ -42,6 +49,8 @@ public class ActividadeService {
      @Autowired
     private InscritosRepository inscritosRepository;
 
+        @Autowired
+    public MidiaRepository midiaRepository;
 
     @Autowired
     private CloudDinaryService upload;
@@ -84,7 +93,20 @@ public class ActividadeService {
       List<ComentarioResult> comentarios=new ArrayList<>();
       ActividadeModel artigo=Select(id);
       for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
-        if (comentario.isAnalise()==false) {
+      
+        UserModel user=comentario.getUser();
+        comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getNome(), comentario.getDescricao(),comentario.isAnalise()));    
+      
+        
+      }
+      return comentarios;
+   }
+
+     public List<ComentarioResult> ComentariosAllAnalisados(int id,boolean analise) {
+      List<ComentarioResult> comentarios=new ArrayList<>();
+      ActividadeModel artigo=Select(id);
+      for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
+        if (comentario.isAnalise()==analise) {
             UserModel user=comentario.getUser();
             comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getNome(), comentario.getDescricao(),comentario.isAnalise()));    
         }
@@ -125,6 +147,8 @@ public class ActividadeService {
     public List<LocalDateTime> AllDataActividade() {
         return actividadeRepository.DatasMarcadas();
     }
+
+    
    
 
 }

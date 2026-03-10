@@ -28,27 +28,17 @@ public class InscritosController {
     private UserRepository userRepository;
 
     @PostMapping("/user/inscritos/{idActividade}")
-    public ResponseEntity<?> Register(@PathVariable(name = "idActividade") @Valid int id) {
-        try {
-              Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(inscritosService.save(new InscritosDto(userRepository.findByEmail(authentication.getName()).get().getId(), id)));    
-        } catch (Exception e) {
-            // TODO: handle exception
-            return ResponseEntity.internalServerError().body(e.getMessage()); 
-        }
-        
+    public ResponseEntity<?> Register(@PathVariable(name = "idActividade") @Valid int id) throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(inscritosService.save(new InscritosDto(userRepository.findByEmail(authentication.getName()).get().getId(), id)));
     }
 
 
     @PostMapping("/user/inscritos/auntenticar")
     public ResponseEntity<?> Autenticar(@RequestBody @Valid JSONObject inscritosDto) {
-        try {
-            return ResponseEntity.ok().body(inscritosService.MarcarPresenca(inscritosDto));    
-        } catch (Exception e) {
-            // TODO: handle exception
-            return ResponseEntity.internalServerError().body(e.getMessage());
-        }
-        
+        return ResponseEntity.ok().body(inscritosService.MarcarPresenca(inscritosDto));
     }
     
 }

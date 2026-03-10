@@ -12,12 +12,16 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0.3, 0, 2);
 }
 
+.sidebar{
+    -fx-background-color: #cccccc50;
+}
+
 /* ScrollBar */
 ScrollBar .thumb {
     -fx-background-color: #cccccc8a;
     -fx-background-radius: 45;
     -fx-background-insets: 5;
-    -fx-primary: #CB2020;
+    -fx-primary: #f0f0f0;
 }
 
 .scroll-bar {
