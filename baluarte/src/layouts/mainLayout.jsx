@@ -1,16 +1,23 @@
-import { Outlet } from "react-router-dom";
-import { ModalProvider } from "../context/ModalContext";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import ModalManager from "../components/ModalManager";
+import { useState } from 'react'
+import { Header } from '../components/layout/Header.js'
+import { Footer } from '../components/layout/Footer.jsx'
+import { Outlet } from 'react-router-dom'
 
-export default function MainLayout() {
+
+
+function App() {
+
+    const [modal,setModal]=useState(null)
+
   return (
-    <ModalProvider>
+    <>
+     
       <Header />
-      <ModalManager />
-      <Outlet />
+        <Outlet context={{modal:modal,setModal:setModal}}/>
       <Footer />
-    </ModalProvider>
-  );
+
+    </>
+  )
 }
+
+export default App

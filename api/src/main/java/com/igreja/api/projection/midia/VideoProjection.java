@@ -1,10 +1,11 @@
 package com.igreja.api.projection.midia;
 
-import javax.validation.constraints.NotBlank;
+import com.igreja.api.enums.VideoType;
 
 public interface VideoProjection {
     Integer getId();
     String getDescricao();
     String getTitulo();
     String getUrl();
+    VideoType getVideoType();
 }

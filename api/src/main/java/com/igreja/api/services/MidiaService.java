@@ -70,7 +70,7 @@ public class MidiaService {
 
        public Object addMidia(MidiaActividadeV actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
         ActividadeModel actividadeModel= actividadeRepository.findById(actividadeDto.id()).orElseThrow();
-        MidiaModel midiaModel=save(new MidiaDto(actividadeDto.titulo(),"--/--/--",actividadeDto.img(),actividadeDto.type()));    
+        MidiaModel midiaModel=save(new MidiaDto(actividadeDto.titulo(),"--/--/--",actividadeDto.img(),actividadeDto.type(), null));    
         midiaModel.setActividade(actividadeModel);
         midiaRepository.save(midiaModel);
         actividadeRepository.save(actividadeModel);

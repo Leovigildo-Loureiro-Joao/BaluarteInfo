@@ -1,431 +1,328 @@
-/* Tailwind Base */
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Component Layer */
+@layer base {
+  /* Reset e estilos base */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 100%;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    overflow-x: hidden;
+    padding-top: 60px;
+  }
+
+  @media (min-width: 768px) {
+    body {
+      padding-top: 76px;
+    }
+  }
+
+  /* Melhorias de acessibilidade */
+  &:focus-visible {
+    outline: 2px solid #CB2020;
+    outline-offset: 2px;
+  }
+
+  /* Seleção de texto */
+  ::selection {
+    background-color: #CB2020;
+    color: #FFFFFF;
+  }
+
+  
+}
+
 @layer components {
-
-    /* Global Reset */
-    * {
-        @apply box-border m-0 p-0;
-        scrollbar-width: thin; /* Firefox */
-        scrollbar-color: #888 transparent; /* Firefox */
-       
-    }
-
-    /* Scrollbar Styles */
-    /* Firefox */
-    *::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    *::-webkit-scrollbar-thumb {
-        background-color: #888;
-        border-radius: 6px;
-    }
-    *::-webkit-scrollbar-thumb:hover {
-        background-color: #555;
-    }
-    *::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    /* Custom Scrollbar */
-    .custom-scrollbar {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: rgba(0, 0, 0, 0.2);
-        border-radius: 8px;
-    }
-
-    /* HTML Base Styles */
-    html {
-        @apply text-html-size;
-    }
-
-    /* Box Gallery */
-    #boxGaleria {
-        --width: 250px;
-    }
-
-    /* Section Image */
-    .section-img:hover img {
-        @apply transform scale-105;
-    }
-    .section-img {
-        @apply rounded-[10px] overflow-hidden [box-shadow:0_10px_30px_rgba(0,_0,_0,_0.1)] h-full;
-    }
-    .section-img img {
-        @apply w-full h-full object-cover [transition:transform_0.5s];
-    }
-
-    /* Grid Active */
-    .grid-active {
-      @apply opacity-0 transition-all duration-500 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 flex-shrink-0 w-[88%] mx-[6%]  h-auto;
-  }
-  .grid-active.selected{
-    opacity: 1;
+  /* Componentes reutilizáveis */
+  
+  /* Container padrão */
+  .container-custom {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
+  @media (min-width: 640px) {
+    .container-custom {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
 
-    /* Buttons */
-    .buttonRectangle:hover {
-        background-color: #cb2020a1; /* Dark elegant color */
-        color: white;
+  @media (min-width: 1024px) {
+    .container-custom {
+      padding-left: 2rem;
+      padding-right: 2rem;
     }
-    .buttonRectangle,
-    .buttonRectangle-white {
-        transition: all 0.3s ease-in-out;
-    }
+  }
 
-    /* Typography */
-    p, h3 {
-        @apply text-text-pargh;
-    }
+  /* Cards */
+  .card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
 
-    /* Text Styles */
-    .text-min-white {
-        @apply text-xl text-white;
-    }
-    .title-min-white {
-        @apply text-2xl text-white;
-    }
+  .card-primary {
+    @apply card border-t-4 border-primary;
+  }
 
-    /* Navigation Bar */
-    .liNavBar {
-        @apply text-black lg:text-white lg:text-li-nav text-3xl flex flex-col font-semibold cursor-pointer h-9 justify-center transition-all duration-300 ease-in-out relative -top-1;
-    }
-    .liNavBar:hover span {
-        @apply lg:bg-white bg-black rounded-full py-1 relative bottom-1 w-full transition-all duration-300;
-    }
-    .liNavBar span {
-        @apply bg-white rounded-full py-1 relative bottom-1 w-0 transition-all duration-300;
-    }
-    .liNavBar.selected span {
-        @apply bg-primary rounded-full py-1 relative bottom-1 w-full;
-    }
+  /* Botões */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-button font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
 
-    
-    .liNavBar p {
-        @apply px-2;
-    }
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-dark focus:ring-primary;
+  }
 
-    /* Footer */
-    footer li {
-        @apply text-text text-text-pargh flex flex-col font-semibold cursor-pointer h-9 justify-center transition-all duration-300 ease-in-out;
-    }
-    footer li:hover {
-        @apply text-primary;
-    }
+  .btn-secondary {
+    @apply btn bg-secondary text-text-primary hover:bg-secondary-dark focus:ring-secondary;
+  }
 
-    /* Input Styles */
-    .inputRectangle {
-        @apply bg-white rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none;
-    }
-    .inputLine {
-        @apply bg-white border-b p-4 border-solid border-gray-300 outline-none;
-    }
+  .btn-outline {
+    @apply btn border-2 border-primary text-primary hover:bg-primary hover:text-white;
+  }
 
-    /* Button Variants */
-    .buttonRectangle {
-        @apply bg-primary text-white text-text-pargh rounded-lg shadow-md p-4 flex flex-col gap-2 outline-none cursor-pointer transition-all duration-300;
-    }
-    .buttonRectangle-white {
-        @apply bg-white text-primary text-text-pargh rounded-lg shadow-md p-4 flex border-primary border flex-col gap-2 outline-none cursor-pointer transition-all duration-300;
-    }
-    .buttonRectangle-white:hover {
-        @apply bg-primary-50 text-white transition-all duration-300;
-    }
-    .buttonRectangle.min,
-    .buttonRectangle-white.min {
-        @apply w-[200px];
-    }
-    .buttonRectangle.artcle {
-        @apply rounded-none rounded-b-xl w-full rounded-r-none;
-    }
-    .buttonRectangle-white.artcle {
-        @apply rounded-none rounded-b-xl w-full rounded-l-none;
-    }
+  /* Inputs */
+  .input {
+    @apply w-full h-input px-4 py-3 rounded-input border border-secondary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all duration-300;
+  }
 
-    /* Titles */
-    .h2-title {
-        @apply text-primary font-semibold text-h2-title mb-2 flex flex-col;
-    }
-    .h2-title.sec {
-        @apply my-10 text-h2-title-big;
-    }
-    .h2-title.sec span {
-        @apply w-[50px] bg-primary rounded-lg py-1;
-    }
+  .input-label {
+    @apply block text-sm font-medium text-text-primary mb-2;
+  }
 
-    /* Carousel */
-    #carrosel {
-        will-change: transform;
-    }
-    
-    #carrosel p {
-        @apply text-center text-li-nav text-text tracking-[2px] leading-[30px] max-w-full mx-auto;
-        text-wrap: balance; /* CSS nativo moderno */
-        overflow-wrap: break-word;
-        white-space: pre-wrap;
-    }
-    
-    #carrosel div {
-        @apply transition-all duration-1000 ease-in-out;
-    }
-    
-    #carrosel div:not(.selected) {
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    #carrosel div.selected {
-        @apply opacity-100;
-    }
-    
-    #carrosel strong {
-        color: #CB2020;
-        font-size: 1.5rem;
-        font-weight: bolder;
-    }
+  .input-error {
+    @apply input border-status-error focus:border-status-error focus:ring-status-error;
+  }
 
-    #painel-corresel i{
-        @apply w-[10px] h-[10px] rounded-[100%] bg-[rgb(194,_194,_194)] m-[10px] cursor-pointer
-    }
+  .error-message {
+    @apply text-sm text-status-error mt-1;
+  }
 
-    #painel-corresel i.selected{
-        @apply w-[10px] h-[10px] rounded-[100%] bg-primary m-[10px]
-    }
-    
-    #painel-corresel{
-        @apply w-[10px] h-[10px] rounded-[100%] relative z-10 flex justify-around w-max
-    }
-    
-    ul.tema li{
-        @apply  md:text-li-nav text-base text-black tracking-[2px] leading-[30px] lg:px-5 px-2 flex flex-col cursor-pointer;
-    }
+  /* Seções */
+  .section {
+    @apply py-16 md:py-24;
+  }
 
-    ul.tema li p{
-        @apply  md:text-li-nav text-base  py-[5px];
-    }
+  .section-title {
+    @apply text-h1-title font-bold text-text-primary mb-4;
+  }
 
-    ul.tema li span{
-        @apply w-[0] bg-black rounded-lg py-[1px] transition-all duration-300 ease-in-out;
-    }
+  .section-subtitle {
+    @apply text-subtitle text-text-secondary mb-8;
+  }
 
-    ul.tema li:hover span{
-        @apply w-full bg-primary ;
-    }
+  /* Grids */
+  .grid-auto-fit {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+  }
 
-    ul.tema li.selected span{
-        @apply w-full bg-primary-45 px-5;
-    }
+  .grid-auto-fit-large {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
+  }
 
-   
-      
-      .selected {
-        opacity: 1;
-      }
-     
-      #painel-corresel i {
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-      }
-      
-      #painel-corresel i:hover {
-        background-color: #ccc !important;
-      }
-    
+  /* Navegação */
+  .nav-link {
+    @apply text-li-nav font-medium text-text-primary hover:text-primary transition-colors duration-300;
+  }
 
-    /* Modal */
-    #modal-content:not(.show) {
-        display: none;
-        opacity: 0;
-    }
+  .nav-link-active {
+    @apply text-primary font-semibold;
+  }
 
+  /* Animações de entrada */
+  .fade-in {
+    @apply animate-fade-in;
+  }
 
+  .slide-up {
+    @apply animate-slide-up;
+  }
 
-    .radio-item{
-        @apply flex gap-10 text-text-pargh w-72 justify-between 
-    }
+  /* Badges/Tags */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
 
-    .radio-item input{
-        @apply flex gap-10 text-text-pargh  
-    }
+  .badge-primary {
+    @apply badge bg-primary text-white;
+  }
 
-    /* Images */
-    .rect-image img {
-        @apply w-[250px] h-[350px] object-cover max-w-[250px] shadow-2xl opacity-50 transition-all duration-300;
-    }
-    .rect-image.selected img {
-        @apply w-[300px] h-[450px] object-cover max-w-[300px] opacity-100 shadow-xl transition-all duration-300;
-    }
-    .rect-image {
-        position: relative;
-        left: 100%;
-        width: var(--width);
-    }
-    .rect-image figure {
-        @apply w-[300px] h-[450px] object-cover max-w-[300px] opacity-100 shadow-xl transition-all duration-300;
-    }
+  .badge-secondary {
+    @apply badge bg-secondary text-text-primary;
+  }
 
-    /* Profile Image */
-    .perfil {
-        @apply rounded-full object-cover object-top border-black cursor-pointer;
-    }
+  /* Separadores */
+  .divider {
+    @apply w-full h-px bg-secondary my-8;
+  }
 
-    /* Gradients */
-    .gradient {
-        background: linear-gradient(transparent, #CB2020);
-    }
-    .gradient.black {
-        background: linear-gradient(transparent, #000000);
-    }
+  .divider-vertical {
+    @apply w-px h-full bg-secondary;
+  }
 
-    /* Article Hover Effects */
-    .artigo figure:hover div {
-        opacity: 1;
-        transition: 0.3s all;
-    }
-    .artigo figure:not(:hover) div {
-        opacity: 0.5;
-        transition: 0.3s all;
-    }
+  /* Mensagens e Alertas */
+  .alert {
+    @apply p-4 rounded-lg mb-4;
+  }
 
-    /* Utilities */
-    @layer utilities {
-        .bg-primary-45 {
-            background-color: rgba(203, 32, 32);
-            opacity: 0.45;
-        }
-        .bg-primary-50 {
-            background-color: rgba(203, 32, 32);
-            opacity: 0.50;
-        }
-    }
-    .comment-input-container {
-        @apply mb-4;
-      }
-      
-      .comment-input-container textarea {
-        min-height: 40px;
-        max-height: 150px;
-        scrollbar-width: thin;
-      }
-      
-      .comment-input-container textarea::-webkit-scrollbar {
-        width: 6px;
-      }
-      
-      .comment-input-container textarea::-webkit-scrollbar-thumb {
-        @apply bg-gray-300 rounded-full;
-      }
+  .alert-success {
+    @apply alert bg-status-success bg-opacity-10 text-status-success;
+  }
 
-      /* Adicione estas classes ao seu arquivo CSS global */
+  .alert-error {
+    @apply alert bg-status-error bg-opacity-10 text-status-error;
+  }
 
-/* Animações de entrada */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  .alert-info {
+    @apply alert bg-status-info bg-opacity-10 text-status-info;
+  }
+
+  /* Loading Spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-4 border-secondary border-t-primary;
+  }
 }
 
-.float-animation {
-  animation: float 3s ease-in-out infinite;
+@layer utilities {
+  /* Utilitários personalizados */
+
+  /* Gradientes */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #CB2020 0%, #540000 100%);
+  }
+
+  .bg-gradient-light {
+    background: linear-gradient(135deg, #F6F6F6 0%, #FFFFFF 100%);
+  }
+
+  /* Text gradients */
+  .text-gradient {
+    background: linear-gradient(135deg, #CB2020 0%, #540000 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animações personalizadas */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-sombra-vermelha;
+  }
+
+  /* Efeitos de overlay */
+  .overlay {
+    @apply absolute inset-0 bg-black bg-opacity-50;
+  }
+
+  .overlay-gradient {
+    @apply absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent;
+  }
+
+  /* Truncate com linhas personalizadas */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Aspect ratios */
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+
+  .aspect-portrait {
+    aspect-ratio: 3 / 4;
+  }
+
+  /* Efeitos de glassmorphism */
+  .glass {
+    @apply backdrop-blur-md bg-white bg-opacity-20;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-md bg-black bg-opacity-20;
+  }
+
+  /* Animações de hover para cards de mídia */
+  .media-card {
+    @apply relative overflow-hidden rounded-lg cursor-pointer;
+  }
+
+  .media-card-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 transition-opacity duration-300;
+  }
+
+  .media-card:hover .media-card-overlay {
+    @apply opacity-100;
+  }
+
+  /* Utilitários de texto responsivo */
+  .text-responsive {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .heading-responsive {
+    font-size: clamp(1.8rem, 4vw, 3.6rem);
+  }
 }
 
-/* Efeitos de brilho */
-.glow-effect {
-  position: relative;
-  overflow: hidden;
+/* Classes específicas para o tema da igreja */
+.baluarte-pattern {
+  background-color: #FFFFFF;
+  background-image: radial-gradient(#CB2020 0.5px, transparent 0.5px);
+  background-size: 20px 20px;
 }
 
-.glow-effect::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
+/* Media queries para impressão */
+@media print {
+  .no-print {
+    display: none;
+  }
+  
+  body {
+    font-size: 12pt;
+  }
 }
 
-.glow-effect:hover::after {
-  opacity: 1;
-}
-
-/* Gradientes personalizados */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, #CB2020 0%, #8B0000 100%);
-}
-
-.bg-gradient-overlay {
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
-}
-
-/* Efeitos de vidro (glassmorphism) */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.glass-effect-dark {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Animações de loading/skeleton */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    #f0f0f0 25%,
-    #e0e0e0 50%,
-    #f0f0f0 75%
-  );
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Efeitos de texto */
-.text-gradient {
-  background: linear-gradient(135deg, #CB2020 0%, #FF6B6B 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Scrollbar personalizada */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #CB2020;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #8B0000;
-}
+/* Suporte para modo escuro (se quiser implementar futuramente) */
+@media (prefers-color-scheme: dark) {
+  /* Estilos para modo escuro */
 }

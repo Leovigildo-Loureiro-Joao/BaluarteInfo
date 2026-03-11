@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
+import com.igreja.api.enums.VideoType;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -41,6 +42,10 @@ public class MidiaModel {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private AudioType audioType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private VideoType videoType;
 
     @NotBlank
     private String descricao;

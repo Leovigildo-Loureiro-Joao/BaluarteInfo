@@ -27,6 +27,7 @@ import org.springframework.test.context.ContextConfiguration;
 import com.igreja.api.controllers.MidiaController;
 import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.enums.MidiaType;
+import com.igreja.api.enums.VideoType;
 import com.igreja.api.exceptions.GlobalExceptionHandler;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.services.MidiaService;
@@ -50,6 +51,7 @@ class MidiaControllerTest {
         midia.setTitulo("Trailer");
         midia.setDescricao("Vídeo do evento");
         midia.setType(MidiaType.VIDEO);
+        midia.setVideoType(VideoType.SERMON);
         midia.setUrl("abc123xyz89");
         midia.setDataPublicacao(LocalDate.now());
 
@@ -63,7 +65,8 @@ class MidiaControllerTest {
                                   "titulo": "Trailer",
                                   "descricao": "Vídeo do evento",
                                   "url": "https://youtube.com/watch?v=abc123xyz89",
-                                  "type": "VIDEO"
+                                  "type": "VIDEO",
+                                  "videoType": "SERMON"
                                 }
                                 """))
                 .andExpect(status().isOk())
