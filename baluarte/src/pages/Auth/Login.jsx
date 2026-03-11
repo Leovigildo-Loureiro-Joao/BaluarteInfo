@@ -1,7 +1,7 @@
 // Login.jsx
 import { Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
-import { icone } from '../assets/Assets';
+import { icone } from '../../assets/Assets';
 
 export default function Login() {
   return (

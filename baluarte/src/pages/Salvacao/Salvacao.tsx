@@ -130,122 +130,17 @@ export const SalvacaoPage = () => {
 
       {/* Main Content */}
       <section className="py-16 container-custom">
-        <div className="max-w-4xl mx-auto">
-          {/* Cards de Decisão */}
-          {step === 1 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Você deseja aceitar a Jesus Cristo como seu Senhor e Salvador?
-              </h2>
-              <p className="text-gray-600 text-lg mb-12">
-                Esta é a decisão mais importante da sua vida. Deus te ama e tem um plano perfeito para você.
-              </p>
-
-              <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleDecision('sim')}
-                  className="group bg-green-500 text-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all"
-                >
-                  <FiHeart className="text-5xl mx-auto mb-4 group-hover:animate-pulse" />
-                  <h3 className="text-2xl font-bold mb-2">SIM</h3>
-                  <p className="text-white/80">Quero aceitar a Jesus hoje</p>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleDecision('nao')}
-                  className="group bg-gray-500 text-white p-8 rounded-2xl shadow-xl hover:shadow-2xl transition-all"
-                >
-                  <FiHeart className="text-5xl mx-auto mb-4 opacity-50" />
-                  <h3 className="text-2xl font-bold mb-2">AINDA NÃO</h3>
-                  <p className="text-white/80">Tenho dúvidas, quero saber mais</p>
-                </motion.button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Passo 2 - Oração de Decisão */}
-          {step === 2 && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 md:p-12"
-            >
-              <div className="text-center mb-8">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <GiCrossShield className="text-green-500 text-4xl" />
-                </div>
-                <h2 className="text-3xl font-bold mb-2">Que alegria!</h2>
-                <p className="text-gray-600">
-                  Você acaba de tomar a decisão mais importante da sua vida.
-                </p>
-              </div>
-
-              <div className="bg-primary/5 rounded-2xl p-6 mb-8">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <GiPrayer className="text-primary" />
-                  Faça esta oração com fé:
-                </h3>
-                
-                <div className="space-y-4 text-gray-700">
-                  <p className="italic border-l-4 border-primary pl-4">
-                    "Senhor Jesus, eu reconheço que sou pecador e preciso do Teu perdão.
-                  </p>
-                  <p className="italic border-l-4 border-primary pl-4">
-                    Creio que morreste na cruz por mim e ressuscitou ao terceiro dia.
-                  </p>
-                  <p className="italic border-l-4 border-primary pl-4">
-                    Neste momento, eu Te recebo como meu único e suficiente Salvador.
-                  </p>
-                  <p className="italic border-l-4 border-primary pl-4">
-                    Entrego minha vida em Tuas mãos e Te peço: escreve meu nome no Livro da Vida.
-                  </p>
-                  <p className="italic border-l-4 border-primary pl-4 font-bold">
-                    Em nome de Jesus, amém!"
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-gray-600 mb-6">
-                  Se você orou com fé, seja bem-vindo à família de Deus!
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    to="/artigos"
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors"
-                  >
-                    Primeiros Passos na Fé
-                    <FiArrowRight />
-                  </Link>
-                  <button
-                    onClick={() => setStep(4)}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-primary text-primary rounded-xl hover:bg-primary/5 transition-colors"
-                  >
-                    Quero ser contactado
-                    <FiMessageCircle />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
+        <div className="max-w-5xl mx-auto">
+      
           {/* Passo 3 - Conteúdo Evangelístico (Ainda com Dúvidas) */}
-          {step === 3 && (
+          { (
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
+              className="space-y-8  "
             >
-              <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+             <div className="flex gap-5 bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+               <div className="p-5">
                 <div className="text-center mb-8">
                   <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <LiaBibleSolid className="text-blue-500 text-4xl" />
@@ -276,20 +171,11 @@ export const SalvacaoPage = () => {
                   </p>
                 </div>
 
-                {/* Botão para continuar */}
-                <div className="text-center mt-8">
-                  <button
-                    onClick={() => setStep(1)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary-dark transition-colors"
-                  >
-                    Voltar e decidir
-                    <FiArrowRight />
-                  </button>
-                </div>
+                
               </div>
 
               {/* Lista de Áudios */}
-              <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+              <div className="border-separate border-gray-500 border-l p-5">
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <FiHeadphones className="text-primary" />
                   Mensagens para Ouvir
@@ -315,6 +201,7 @@ export const SalvacaoPage = () => {
                   ))}
                 </div>
               </div>
+             </div>
 
               {/* Artigo */}
               <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -351,137 +238,7 @@ export const SalvacaoPage = () => {
             </motion.div>
           )}
 
-          {/* Passo 4 - Quero ser contactado */}
-          {step === 4 && (
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-3xl shadow-2xl p-8 md:p-12"
-            >
-              <h2 className="text-3xl font-bold text-center mb-8">
-                Receba acompanhamento
-              </h2>
-
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <FiMessageCircle className="text-primary" />
-                    Deixe sua mensagem
-                  </h3>
-                  
-                  <form className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nome
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        E-mail
-                      </label>
-                      <input
-                        type="email"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Telefone/WhatsApp
-                      </label>
-                      <input
-                        type="tel"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Como podemos ajudar?
-                      </label>
-                      <textarea
-                        rows={4}
-                        value={prayerRequest}
-                        onChange={(e) => setPrayerRequest(e.target.value)}
-                        placeholder="Compartilhe suas dúvidas, pedidos de oração..."
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
-                    >
-                      Enviar mensagem
-                    </button>
-                  </form>
-                </div>
-
-                <div className="bg-primary/5 rounded-2xl p-6">
-                  <h3 className="text-xl font-bold mb-4">Outras formas de contato</h3>
-                  
-                  <div className="space-y-4">
-                    <a 
-                      href="https://wa.me/5511999999999" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-all"
-                    >
-                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
-                        <FiMessageCircle />
-                      </div>
-                      <div>
-                        <p className="font-semibold">WhatsApp</p>
-                        <p className="text-sm text-gray-500">(11) 99999-9999</p>
-                      </div>
-                    </a>
-
-                    <a 
-                      href="tel:1133334444"
-                      className="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-all"
-                    >
-                      <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
-                        <FiPhone />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Telefone</p>
-                        <p className="text-sm text-gray-500">(11) 3333-4444</p>
-                      </div>
-                    </a>
-
-                    <a 
-                      href="mailto:contato@igrejabaluarte.com"
-                      className="flex items-center gap-3 p-3 bg-white rounded-xl hover:shadow-md transition-all"
-                    >
-                      <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white">
-                        <FiMail />
-                      </div>
-                      <div>
-                        <p className="font-semibold">E-mail</p>
-                        <p className="text-sm text-gray-500">contato@igrejabaluarte.com</p>
-                      </div>
-                    </a>
-                  </div>
-
-                  <div className="mt-6 p-4 bg-white rounded-xl">
-                    <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <GiChurch className="text-primary" />
-                      Visite nossa igreja
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      Rua da Igreja, 123 - Centro<br />
-                      Cultos: Domingo 9h e 19h | Quarta 20h
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
+         
 
           {/* Versículos e Recursos - sempre visível */}
           <div className="mt-12 grid md:grid-cols-3 gap-6">

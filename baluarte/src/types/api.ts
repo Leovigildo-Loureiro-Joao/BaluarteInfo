@@ -382,3 +382,11 @@ export interface ComentarioProjectionResponse {
   };
   descricao: string;
 }
+
+
+export enum PrioridadeNotificacao {
+  BAIXA = 'baixa',
+  MEDIA = 'media',
+  ALTA = 'alta',
+  URGENTE = 'urgente'
+}

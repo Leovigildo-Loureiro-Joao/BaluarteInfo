@@ -57,7 +57,7 @@ const InscricaoForm = ({ actividade, onClose }: { actividade: any, onClose: () =
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4"
+      className="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full  mx-4"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center justify-between mb-6">
@@ -90,7 +90,7 @@ const InscricaoForm = ({ actividade, onClose }: { actividade: any, onClose: () =
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="max-h-[60vh] h-full overflow-y-auto">
         {step === 1 ? (
           <div className="space-y-4">
             <div>
@@ -644,7 +644,7 @@ export const ActividadeDetalhe = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0  bg-black/60 flex items-center justify-center z-50 p-4"
             onClick={() => setShowInscricao(false)}
           >
             <InscricaoForm actividade={actividade} onClose={() => setShowInscricao(false)} />
