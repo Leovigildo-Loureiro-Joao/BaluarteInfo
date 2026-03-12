@@ -45,14 +45,15 @@ interface NavigationItem {
 interface SidebarProps {
   mobileMenuOpen: boolean;
   onCloseMobileMenu: () => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) => {
+const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, isCollapsed, onToggleCollapse }) => {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
   const [showHelpMenu, setShowHelpMenu] = useState<boolean>(false);
@@ -67,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
 
   // Menu principal
   const mainNavigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/admin', icon: FiHome },
+    { name: 'Dashboard', href: '/admin/dashboard', icon: FiHome },
     { name: 'Artigos', href: '/admin/artigos', icon: FiFileText, badge: 3 },
     { name: 'Vídeos', href: '/admin/videos', icon: FiVideo, badge: 2 },
     { name: 'Áudios', href: '/admin/audios', icon: FiHeadphones },
@@ -80,7 +81,6 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
     { name: 'Usuários', href: '/admin/usuarios', icon: FiUsers, roles: ['admin'] },
     { name: 'Comentários', href: '/admin/comentarios', icon: FiMessageCircle, badge: 12 },
     { name: 'Inscrições', href: '/admin/inscricoes', icon: GiArchiveRegister },
-    { name: 'Relatórios', href: '/admin/relatorios', icon: FiBarChart2, roles: ['admin', 'manager'] },
   ];
 
   const configNavigation: NavigationItem[] = [
@@ -186,7 +186,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
         variants={sidebarVariants}
         initial="closed"
         animate={shouldShowSidebar ? "open" : "closed"}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 text-gray-900 shadow-2xl ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-gray-200 text-gray-900 shadow-2xl overflow-hidden dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 ${
           isDesktopCollapsed ? 'w-20' : 'w-72'
         }`}
       >
@@ -214,8 +214,8 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
 
           <div className="flex items-center gap-2">
             {/* Botão Collapse/Expand */}
-              <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
+            <button
+                onClick={onToggleCollapse}
                 className="hidden lg:flex p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
               <FiChevronLeft 
@@ -236,7 +236,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
         </div>
 
         {/* Navegação */}
-        <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent px-3 py-6">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent px-3 py-6">
           {/* Menu Principal */}
           <div className="space-y-1 mb-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
@@ -258,7 +258,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
                     className={`relative flex items-center px-3 py-2.5 rounded-xl transition-all group ${
                       isActive
                         ? 'bg-gradient-to-r from-primary/15 to-primary/5 text-primary border-l-4 border-primary'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                     }`}
                   >
                     <item.icon className={`w-5 h-5 ${isDesktopCollapsed ? 'mx-auto' : 'mr-3'}`} />
@@ -308,7 +308,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
                     className={`relative flex items-center px-3 py-2.5 rounded-xl transition-all group ${
                       isActive
                         ? 'bg-gradient-to-r from-primary/15 to-primary/5 text-primary border-l-4 border-primary'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                     }`}
                   >
                     <item.icon className={`w-5 h-5 ${isDesktopCollapsed ? 'mx-auto' : 'mr-3'}`} />
@@ -356,7 +356,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
                     className={`relative flex items-center px-3 py-2.5 rounded-xl transition-all group ${
                       isActive
                         ? 'bg-gradient-to-r from-primary/15 to-primary/5 text-primary border-l-4 border-primary'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
                     }`}
                   >
                     <item.icon className={`w-5 h-5 ${isDesktopCollapsed ? 'mx-auto' : 'mr-3'}`} />
@@ -378,7 +378,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
         </nav>
 
         {/* Footer com User */}
-        <div className={`mt-auto p-4 border-t border-gray-200 ${isDesktopCollapsed ? 'text-center' : ''}`}>
+        <div className={`mt-auto p-4 border-t border-gray-200 dark:border-gray-700 ${isDesktopCollapsed ? 'text-center' : ''}`}>
           {!isDesktopCollapsed ? (
             <div className="relative" ref={userMenuRef}>
               <button
@@ -419,7 +419,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu }) 
                       <button 
                         onClick={() => {
                           setShowUserMenu(false);
-                          navigate('/admin/perfil');
+                          navigate('/admin/perfil/1');
                         }}
                         className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center gap-2 transition-colors"
                       >

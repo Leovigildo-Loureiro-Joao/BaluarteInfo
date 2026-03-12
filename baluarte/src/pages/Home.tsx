@@ -177,7 +177,7 @@ export const Home = () => {
           transition={{ duration: 0.8 }}
         >
           <div className="max-w-3xl">
-            <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm mb-6">
+            <span className="inline-block py-2  backdrop-blur-sm rounded-full text-md mb-6">
               Bem-vindo à
             </span>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-4">

@@ -245,7 +245,7 @@ const Header: React.FC<HeaderProps> = ({ setIsDarkMode, isDarkMode, onOpenMobile
   };
 
 return (
-    <header className="bg-white dark:bg-gray-800 px-4 sm:px-6 py-3 sm:py-4 shadow-sm relative z-10 border-b border-gray-200 dark:border-gray-700">
+    <header className="sticky top-0 z-20 w-full bg-white dark:bg-gray-800 px-4 sm:px-6 py-3 sm:py-4 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         
         {/* Lado Esquerdo - Busca */}
@@ -261,7 +261,7 @@ return (
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Buscar alunos, turmas, relatórios..."
+              placeholder="Buscar artigos, actividades, midía..."
               value={searchQuery}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               onFocus={() => setShowSearchResults(true)}

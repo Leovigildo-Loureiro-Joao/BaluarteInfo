@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider,Link} from 'react-router-dom'
 import { Home } from './pages/Home.js'
 import { ActividadesPage } from './pages/Actividade/Actividade.js'
 import React from 'react';
-import { PerfilPage as Perfil } from './pages/Perfil.js';
+import { PerfilPage as Perfil } from './pages/Perfil/Perfil.js';
 import {ArtigosPage as Artigo   } from './pages/Artigos/Artigos.js'; 
 import './style/index.css'
 import AuthLayout from './layouts/authLayout.js';

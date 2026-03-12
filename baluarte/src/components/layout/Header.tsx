@@ -1,9 +1,14 @@
 // src/components/layout/Header.tsx
 import { Link } from "react-router-dom";
+import { FiMail } from "react-icons/fi";
 import { icone, perfil } from "../../assets/Assets";
 import Navbar from "./NavBar";
 
-export const Header = () => {
+type HeaderProps = {
+  onOpenMensagens?: () => void;
+};
+
+export const Header = ({ onOpenMensagens }: HeaderProps) => {
   return (
     <header 
       className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800 py-4 shadow-lg shadow-black/30"
@@ -32,7 +37,7 @@ export const Header = () => {
             <Navbar />
           </div>
 
-          {/* Perfil e Versículo */}
+          {/* Perfil, mensagens e versículo */}
           <div className="flex items-center gap-4">
             <div className="hidden md:block text-right">
               <h2 className="text-white text-lg font-light">Salmos 23:1</h2>
@@ -40,6 +45,15 @@ export const Header = () => {
                 "O Senhor é o meu pastor..."
               </p>
             </div>
+
+            <button
+              type="button"
+              onClick={() => onOpenMensagens?.()}
+              className="group rounded-full border border-white/20 p-2 text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              aria-label="Abrir minhas mensagens"
+            >
+              <FiMail className="w-5 h-5 transition-transform group-hover:scale-110" />
+            </button>
 
             {/* Perfil */}
             <Link 
