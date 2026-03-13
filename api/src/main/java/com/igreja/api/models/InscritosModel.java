@@ -1,5 +1,7 @@
 package com.igreja.api.models;
 
+import java.time.LocalDateTime;
+
 import com.igreja.api.enums.StatusIncritos;
 
 import jakarta.persistence.CascadeType;
@@ -25,12 +27,22 @@ public class InscritosModel {
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id",referencedColumnName = "id",nullable = false,unique = true)
+    @JoinColumn(name = "user_id",referencedColumnName = "id")
     private UserModel user;
 
     @ManyToOne
     @JoinColumn(name = "actividade_id",referencedColumnName = "id",nullable = false)
     private ActividadeModel actividade;
+
+    private String nome;
+
+    private String email;
+
+    private String telefone;
+
+    private LocalDateTime dataInscricao = LocalDateTime.now();
+
+    private LocalDateTime dataCheckin;
 
     @Enumerated(EnumType.STRING)
     private StatusIncritos status=StatusIncritos.PENDENTE;

@@ -3,11 +3,9 @@ package com.igreja.api.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.igreja.api.dto.midia.MidiaDto;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,6 +24,8 @@ import org.springframework.test.context.ContextConfiguration;
 
 import com.igreja.api.controllers.MidiaController;
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.dto.midia.MidiaFile;
+import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
 import com.igreja.api.enums.VideoType;
 import com.igreja.api.exceptions.GlobalExceptionHandler;
@@ -52,23 +52,23 @@ class MidiaControllerTest {
         midia.setDescricao("Vídeo do evento");
         midia.setType(MidiaType.VIDEO);
         midia.setVideoType(VideoType.SERMON);
-        midia.setUrl("abc123xyz89");
+        midia.setUrl("https://res.cloudinary.com/demo/video/upload/v123/trailer.mp4");
+        midia.setImagem("https://res.cloudinary.com/demo/image/upload/v123/capa.jpg");
         midia.setDataPublicacao(LocalDate.now());
 
-        when(midiaService.save(any(MidiaDto.class))).thenReturn(midia);
+        when(midiaService.save(any(MidiaFile.class))).thenReturn(midia);
 
-        mockMvc.perform(post("/admin/midia/video")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "titulo": "Trailer",
-                                  "descricao": "Vídeo do evento",
-                                  "url": "https://youtube.com/watch?v=abc123xyz89",
-                                  "type": "VIDEO",
-                                  "videoType": "SERMON"
-                                }
-                                """))
+        MockMultipartFile video = new MockMultipartFile("url", "video.mp4", "video/mp4", "fake-video".getBytes());
+        MockMultipartFile imagem = new MockMultipartFile("imagem", "capa.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes());
+
+        mockMvc.perform(multipart("/admin/midia/video")
+                        .file(video)
+                        .file(imagem)
+                        .param("titulo", "Trailer")
+                        .param("descricao", "Vídeo do evento")
+                        .param("type", "VIDEO")
+                        .param("videoType", "SERMON")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.type").value("VIDEO"));
@@ -85,7 +85,7 @@ class MidiaControllerTest {
         MockMultipartFile audio = new MockMultipartFile("url", "audio.mp3", "audio/mpeg", "fake-audio".getBytes());
         MockMultipartFile imagem = new MockMultipartFile("imagem", "capa.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes());
 
-        when(midiaService.save(any(MidiaDto.class))).thenReturn(midia);
+        when(midiaService.save(any(MidiaFile.class))).thenReturn(midia);
 
         mockMvc.perform(multipart("/admin/midia/audio")
                         .file(audio)
@@ -93,24 +93,25 @@ class MidiaControllerTest {
                         .param("titulo", "Áudio")
                         .param("descricao", "Pregação")
                         .param("type", "AUDIO")
+                        .param("audioType", AudioType.SERMON.name())
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(2));
     }
 
     @Test
-    void shouldReturnValidationErrorForInvalidUrl() throws Exception {
-        mockMvc.perform(post("/admin/midia/video")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "titulo": "Trailer",
-                                  "descricao": "Vídeo do evento",
-                                  "url": "invalido",
-                                  "type": "VIDEO"
-                                }
-                                """))
+    void shouldReturnValidationErrorForBlankTitle() throws Exception {
+        MockMultipartFile video = new MockMultipartFile("url", "video.mp4", "video/mp4", "fake-video".getBytes());
+        MockMultipartFile imagem = new MockMultipartFile("imagem", "capa.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes());
+
+        mockMvc.perform(multipart("/admin/midia/video")
+                        .file(video)
+                        .file(imagem)
+                        .param("titulo", "")
+                        .param("descricao", "Vídeo do evento")
+                        .param("type", "VIDEO")
+                        .param("videoType", "SERMON")
+                        .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Dados inválidos"));
     }
@@ -126,7 +127,7 @@ class MidiaControllerTest {
     @Test
     void shouldListMediaComments() throws Exception {
         when(midiaService.ComentariosAll(1)).thenReturn(List.of(
-                new ComentarioResult(1, "https://cdn/avatar.jpg", "Ana", "Gostei", true,LocalDate.now())));
+                new ComentarioResult(1, "https://cdn/avatar.jpg", "Ana", "Gostei", true,LocalDate.now(),0)));
 
         mockMvc.perform(get("/user/midia/1/comentarioAll"))
                 .andExpect(status().isOk())

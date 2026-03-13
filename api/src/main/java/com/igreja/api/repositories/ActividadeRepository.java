@@ -18,18 +18,69 @@ import com.igreja.api.projection.ActividadeProjection;
 
 public interface ActividadeRepository extends JpaRepository<ActividadeModel,Integer>{
     
+     @Query(
+        value = """
+            SELECT
+                a.id as id,
+                a.descricao as descricao,
+                a.tema as tema,
+                a.titulo as titulo,
+                a.endereco as endereco,
+                a.tipoEvento as tipoEvento,
+                a.duracao as duracao,
+                a.publicoAlvo as publicoAlvo,
+                a.organizador as organizador,
+                a.dataEvento as dataEvento,
+                a.dataPublicacao as dataPublicacao,
+                a.contactos as contactos,
+                a.img as img,
+                a.capacidade as capacidade,
+                (SELECT COUNT(i) FROM InscritosModel i WHERE i.actividade = a) as inscritos
+            FROM ActividadeModel a
+            ORDER BY a.id DESC
+        """,
+        countQuery = "SELECT COUNT(a) FROM ActividadeModel a"
+    )
      Page<ActividadeProjection> findAllByOrderByIdDesc(Pageable pageable);
 
-    @Query("""
-        SELECT a FROM ActividadeModel a
-        WHERE (:tipoEvento IS NULL OR a.tipoEvento = :tipoEvento)
-          AND (:publicoAlvo IS NULL OR a.publicoAlvo = :publicoAlvo)
-          AND (:duracao IS NULL OR a.duracao = :duracao)
-          AND (:q IS NULL OR LOWER(a.titulo) LIKE LOWER(CONCAT('%', :q, '%'))
-                        OR LOWER(a.tema) LIKE LOWER(CONCAT('%', :q, '%'))
-                        OR LOWER(a.descricao) LIKE LOWER(CONCAT('%', :q, '%')))
-        ORDER BY a.id DESC
-    """)
+    @Query(
+        value = """
+            SELECT
+                a.id as id,
+                a.descricao as descricao,
+                a.tema as tema,
+                a.titulo as titulo,
+                a.endereco as endereco,
+                a.tipoEvento as tipoEvento,
+                a.duracao as duracao,
+                a.publicoAlvo as publicoAlvo,
+                a.organizador as organizador,
+                a.dataEvento as dataEvento,
+                a.dataPublicacao as dataPublicacao,
+                a.contactos as contactos,
+                a.img as img,
+                a.capacidade as capacidade,
+                (SELECT COUNT(i) FROM InscritosModel i WHERE i.actividade = a) as inscritos
+            FROM ActividadeModel a
+            WHERE (:tipoEvento IS NULL OR a.tipoEvento = :tipoEvento)
+              AND (:publicoAlvo IS NULL OR a.publicoAlvo = :publicoAlvo)
+              AND (:duracao IS NULL OR a.duracao = :duracao)
+              AND (:q IS NULL OR LOWER(a.titulo) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(a.tema) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(a.descricao) LIKE LOWER(CONCAT('%', :q, '%')))
+            ORDER BY a.id DESC
+        """,
+        countQuery = """
+            SELECT COUNT(a)
+            FROM ActividadeModel a
+            WHERE (:tipoEvento IS NULL OR a.tipoEvento = :tipoEvento)
+              AND (:publicoAlvo IS NULL OR a.publicoAlvo = :publicoAlvo)
+              AND (:duracao IS NULL OR a.duracao = :duracao)
+              AND (:q IS NULL OR LOWER(a.titulo) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(a.tema) LIKE LOWER(CONCAT('%', :q, '%'))
+                            OR LOWER(a.descricao) LIKE LOWER(CONCAT('%', :q, '%')))
+        """
+    )
     Page<ActividadeProjection> search(
             @Param("tipoEvento") ActividadeType tipoEvento,
             @Param("publicoAlvo") PublicoAlvoType publicoAlvo,

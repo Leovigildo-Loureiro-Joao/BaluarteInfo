@@ -200,6 +200,107 @@
   .spinner {
     @apply animate-spin rounded-full border-4 border-secondary border-t-primary;
   }
+
+  /* Conteúdo HTML de artigos (gerado do PDF) */
+  .article-html {
+    color: #111827;
+    font-size: 1.05rem;
+    line-height: 1.85;
+    word-wrap: break-word;
+  }
+
+  .article-html > *:first-child {
+    margin-top: 0;
+  }
+
+  .article-html p {
+    margin: 1rem 0;
+    color: #1f2937;
+  }
+
+  .article-html h2 {
+    margin: 2.25rem 0 0.75rem;
+    font-size: 1.6rem;
+    line-height: 2.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  .article-html h3 {
+    margin: 1.75rem 0 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1.8rem;
+    font-weight: 800;
+    color: #111827;
+  }
+
+  .article-html a {
+    color: #CB2020;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .article-html ul,
+  .article-html ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .article-html ul {
+    list-style: disc;
+  }
+
+  .article-html ol {
+    list-style: decimal;
+  }
+
+  .article-html li {
+    margin: 0.35rem 0;
+  }
+
+  .article-html blockquote {
+    margin: 1.25rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 4px solid #CB2020;
+    background: #f9fafb;
+    color: #374151;
+    border-radius: 0.75rem;
+  }
+
+  .article-html code {
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.4rem;
+    background: #f3f4f6;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.95em;
+  }
+
+  .article-html pre {
+    margin: 1.25rem 0;
+    padding: 1rem;
+    border-radius: 0.9rem;
+    background: #0b1020;
+    color: #e5e7eb;
+    overflow: auto;
+  }
+
+  .article-html pre code {
+    padding: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  .article-html hr {
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    margin: 2rem 0;
+  }
+
+  .article-html hr.pdf-page-break {
+    border-top-style: dashed;
+    opacity: 0.9;
+  }
 }
 
 @layer utilities {

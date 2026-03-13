@@ -5,9 +5,21 @@
 package com.igreja.api.dto.inscrito;
 
 
-import com.igreja.api.enums.StatusIncritos;
 import java.time.LocalDateTime;
 
-public record InscritosData(long idUser,String titulo,String tema,LocalDateTime dataMarcada,StatusIncritos status) {
+import com.igreja.api.enums.StatusIncritos;
+
+public record InscritosData(
+        long id,
+        int actividadeId,
+        String actividadeTitulo,
+        String actividadeTema,
+        LocalDateTime actividadeData,
+        String usuarioNome,
+        String usuarioEmail,
+        String usuarioTelefone,
+        LocalDateTime dataInscricao,
+        LocalDateTime dataCheckin,
+        StatusIncritos status) {
     
 }

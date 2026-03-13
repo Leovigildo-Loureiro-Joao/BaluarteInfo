@@ -27,6 +27,9 @@ import { ComentariosPage } from './pages/Comentarios/Comentarios.js'
 import { InscricoesPage } from './pages/Inscricao/Inscricao.js'
 import { ConfiguracoesPage } from './pages/Configuracoes/Configuracoes.js'
 import { AjudaPage } from './pages/Admin/Ajuda.js'
+import RequireAdmin from './components/auth/RequireAdmin.jsx'
+import { SobrePage } from './pages/Sobre/Sobre.js'
+import { ConteudoSobrePage } from './pages/Sobre/SobreEditAdmin.js'
 
 function App() {
   return (
@@ -37,6 +40,7 @@ function App() {
           <Route path="home" element={<Home />} />
           <Route path="perfil/:userID" element={<PerfilPage />} />
           <Route path="actividades" element={<ActividadesPage />} />
+          <Route path="sobre" element={<SobrePage />} />
           <Route path="actividades/:id" element={<ActividadeDetalhe />} />
           <Route path="midia" element={<MidiaPage />} />
           <Route path="midia/:id" element={<MidiaDetalhe />} />
@@ -50,12 +54,20 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
         </Route>
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route
+          path="/admin"
+          element={
+            <RequireAdmin>
+              <AdminLayout />
+            </RequireAdmin>
+          }
+        >
           <Route index element={<DashboardPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="artigos" element={<ArtigosPageAdmin />} />
           <Route path="videos" element={<VideosPage />} />
           <Route path="audios" element={<AudiosPage />} />
+          <Route path="sobre" element={<ConteudoSobrePage />} />
           <Route path="galeria" element={<GaleriaPage />} />
           <Route path="mensagens" element={<MensagensPage />} />
           <Route path="actividades" element={<ActividadesPageAdmin />} />

@@ -21,8 +21,13 @@ import com.igreja.api.enums.ActividadeType;
 import com.igreja.api.enums.DuracaoActividade;
 import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.services.ActividadeService;
+import com.igreja.api.services.AdminAuditLogService;
+import com.igreja.api.enums.AdminAuditType;
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class ActividadeController {
@@ -30,21 +35,49 @@ public class ActividadeController {
     @Autowired
     private ActividadeService actividadeService;
 
+    @Autowired
+    private AdminAuditLogService adminAuditLogService;
+
     @PostMapping(value = "/admin/actividade",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> Register(@ModelAttribute @Valid ActividadeDto actividadeDto) throws IOException, InterruptedException, ExecutionException, TimeoutException {
-        return ResponseEntity.ok(actividadeService.save(actividadeDto));
+    public ResponseEntity<?> Register(
+            @ModelAttribute @Valid ActividadeDto actividadeDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+        var result = actividadeService.save(actividadeDto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Atividade criada",
+                    "Nova atividade criada", resolveIp(request), AdminAuditType.SUCESSO);
+        }
+        return ResponseEntity.ok(result);
     }
 
    
 
     @DeleteMapping(value = "/admin/actividade/{id}")
-    public ResponseEntity<?> Delete(@PathVariable(name = "id") int id) throws IOException {
-        return ResponseEntity.ok(actividadeService.delete(id));
+    public ResponseEntity<?> Delete(
+            @PathVariable(name = "id") int id,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws IOException {
+        var result = actividadeService.delete(id);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Atividade removida",
+                    "Atividade ID " + id + " removida", resolveIp(request), AdminAuditType.ALERTA);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping(value = "/admin/actividade/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> Editar(@PathVariable(name = "id") int id,@ModelAttribute @Valid ActividadeDto actividadeDto) throws IOException, InterruptedException, ExecutionException, TimeoutException {
-        return ResponseEntity.ok(actividadeService.edit(id,actividadeDto));
+    public ResponseEntity<?> Editar(
+            @PathVariable(name = "id") int id,
+            @ModelAttribute @Valid ActividadeDto actividadeDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws IOException, InterruptedException, ExecutionException, TimeoutException {
+        var result = actividadeService.edit(id,actividadeDto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Atividade editada",
+                    "Atividade ID " + id + " atualizada", resolveIp(request), AdminAuditType.INFO);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/user/actividade")
@@ -94,6 +127,18 @@ public class ActividadeController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) throws IOException {
         return ResponseEntity.ok(actividadeService.InscritosAll(id, page, size));
+    }
+
+    private String resolveIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp;
+        }
+        return request.getRemoteAddr();
     }
 
 

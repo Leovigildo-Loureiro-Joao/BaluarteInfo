@@ -1,5 +1,5 @@
 // src/pages/Artigos/ArtigoDetalhe.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link, useParams } from "react-router-dom";
 import { 
@@ -21,45 +21,78 @@ import {
   GiOpenBook 
 } from "react-icons/gi";
 import { LiaCrossSolid } from "react-icons/lia";
+import { apiFetch } from "../../utils/api.js";
+import { getStoredUser } from "../../utils/auth.js";
+import rectangleImage from "../../assets/rectangle.jpg";
+
+const PREVIEW_PAGES = 3;
 
 // Componente de comentários
-const CommentSection = () => {
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      autor: "João Pedro",
-      avatar: "https://i.pravatar.cc/150?img=1",
-      data: "2024-01-15T10:30:00",
-      conteudo: "Excelente artigo! Muito edificante e esclarecedor. Me ajudou muito em minhas reflexões matinais.",
-      likes: 12
-    },
-    {
-      id: 2,
-      autor: "Maria Silva",
-      avatar: "https://i.pravatar.cc/150?img=2",
-      data: "2024-01-14T22:15:00",
-      conteudo: "Que palavra poderosa! Compartilhei com meu grupo de estudos e todos foram abençoados.",
-      likes: 8
-    }
-  ]);
+const CommentSection = ({ artigoId }: { artigoId: number }) => {
+  const [comments, setComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [newComment, setNewComment] = useState("");
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  useEffect(() => {
+    let active = true;
+    const loadComments = async () => {
+      try {
+        const response = await apiFetch(`/user/artigo/${artigoId}/comentarioAll`);
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (active) {
+          setComments(payload || []);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (active) {
+          setError("Não foi possível carregar os comentários.");
+          setLoading(false);
+        }
+      }
+    };
+
+    loadComments();
+    return () => {
+      active = false;
+    };
+  }, [artigoId]);
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const comment = {
-      id: comments.length + 1,
-      autor: "Visitante",
-      avatar: "https://i.pravatar.cc/150?img=3",
-      data: new Date().toISOString(),
-      conteudo: newComment,
-      likes: 0
-    };
+    const user = getStoredUser();
+    if (!user?.id) {
+      setError("Faça login para comentar.");
+      return;
+    }
 
-    setComments([comment, ...comments]);
-    setNewComment("");
+    try {
+      const response = await apiFetch("/user/comentario", {
+        method: "POST",
+        body: {
+          idUser: user.id,
+          idSeccao: artigoId,
+          seccao: "Artigo",
+          descricao: newComment.trim(),
+        },
+      });
+
+      if (!response.ok) {
+        setError("Não foi possível enviar o comentário.");
+        return;
+      }
+
+      const payload = await response.json();
+      setComments([payload, ...comments]);
+      setNewComment("");
+      setError("");
+    } catch (error) {
+      setError("Não foi possível enviar o comentário.");
+    }
   };
 
   return (
@@ -89,40 +122,48 @@ const CommentSection = () => {
       </form>
 
       {/* Lista de comentários */}
-      <div className="space-y-6">
-        {comments.map((comment) => (
-          <motion.div
-            key={comment.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex gap-4 p-4 bg-gray-50 rounded-lg"
-          >
-            <img
-              src={comment.avatar}
-              alt={comment.autor}
-              className="w-10 h-10 rounded-full"
-            />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold">{comment.autor}</h4>
-                <span className="text-xs text-gray-500">
-                  {new Date(comment.data).toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </span>
+      {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+
+      {loading ? (
+        <p className="text-gray-500">Carregando comentários...</p>
+      ) : comments.length === 0 ? (
+        <p className="text-gray-500">Nenhum comentário por aqui ainda.</p>
+      ) : (
+        <div className="space-y-6">
+          {comments.map((comment) => (
+            <motion.div
+              key={comment.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex gap-4 p-4 bg-gray-50 rounded-lg"
+            >
+              <img
+                src={comment.imagem}
+                alt={comment.name}
+                className="w-10 h-10 rounded-full"
+              />
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold">{comment.name}</h4>
+                  <span className="text-xs text-gray-500">
+                    {new Date(comment.dataPublicacao).toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <p className="text-gray-700 mb-2">{comment.descricao}</p>
+                <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary transition-colors">
+                  <FiHeart size={14} />
+                  {comment.likes}
+                </button>
               </div>
-              <p className="text-gray-700 mb-2">{comment.conteudo}</p>
-              <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary transition-colors">
-                <FiHeart size={14} />
-                {comment.likes}
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -131,61 +172,66 @@ export const ArtigoDetalhe = () => {
   const { id } = useParams();
   const [artigo, setArtigo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    // Simular busca de dados
-    setTimeout(() => {
-      setArtigo({
-        id: 1,
-        titulo: "A Soberania de Deus em Tempos de Crise",
-        descricao: "Uma reflexão profunda sobre como a soberania divina se manifesta mesmo nos momentos mais difíceis de nossas vidas, trazendo conforto e esperança.",
-        conteudo: `
-          <p class="mb-4">Em meio às tempestades da vida, é natural questionarmos: "Onde está Deus?" ou "Por que isso está acontecendo comigo?". A Bíblia nos ensina que Deus é soberano sobre todas as coisas, inclusive sobre as crises que enfrentamos.</p>
-          
-          <p class="mb-4">A soberania de Deus significa que Ele tem controle absoluto sobre toda a criação. Nada acontece sem a Sua permissão ou fora do Seu plano perfeito. Isso não significa que Deus é o autor do mal, mas que Ele permite circunstâncias difíceis para cumprir propósitos maiores que nem sempre compreendemos.</p>
-          
-          <h2 class="text-2xl font-bold mb-4">Deus no Controle da História</h2>
-          
-          <p class="mb-4">Ao longo da Bíblia, vemos exemplos de como Deus usou crises para abençoar Seu povo. José foi vendido como escravo, mas declarou: "Vocês planejaram o mal contra mim, mas Deus o planejou para o bem" (Gênesis 50:20).</p>
-          
-          <p class="mb-4">Jó perdeu tudo, mas no final declarou: "Eu sei que o meu Redentor vive" (Jó 19:25). Paulo e Silas louvaram na prisão e viram Deus agir poderosamente.</p>
-          
-          <h2 class="text-2xl font-bold mb-4">Lições para Nossas Crises</h2>
-          
-          <ul class="list-disc pl-6 mb-4 space-y-2">
-            <li><strong>Deus está presente:</strong> "Não temas, porque eu sou contigo" (Isaías 41:10).</li>
-            <li><strong>Deus tem um propósito:</strong> "Sabemos que todas as coisas cooperam para o bem daqueles que amam a Deus" (Romanos 8:28).</li>
-            <li><strong>Deus nos fortalece:</strong> "Quando sou fraco, então sou forte" (2 Coríntios 12:10).</li>
-            <li><strong>Deus nos dá paz:</strong> "Deixo-vos a paz, a minha paz vos dou" (João 14:27).</li>
-          </ul>
-          
-          <h2 class="text-2xl font-bold mb-4">Confiança em Meio à Tempestade</h2>
-          
-          <p class="mb-4">A confiança em Deus não elimina as crises, mas nos dá segurança para enfrentá-las. É como a âncora que mantém o navio firme mesmo na tempestade mais violenta.</p>
-          
-          <p class="mb-4">O salmista declarou: "Deus é o nosso refúgio e fortaleza, socorro bem presente na angústia" (Salmos 46:1). Quando confiamos na soberania divina, podemos descansar sabendo que Aquele que controla o universo também controla nossa história.</p>
-          
-          <p class="mb-4">Que possamos, como Jesus no barco, acalmar as tempestades da alma com a certeza de que o Mestre está conosco. Ele não dorme nem descansa enquanto cuida de nós.</p>
-          
-          <p class="italic mt-8">"Lançando sobre ele toda a vossa ansiedade, porque ele tem cuidado de vós." (1 Pedro 5:7)</p>
-        `,
-        imagem: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1200&q=80",
-        tipo: "DOCTRINAL",
-        autor: "Pr. Antônio Silva",
-        data: "2024-01-15",
-        paginas: 12,
-        visualizacoes: 1234,
-        tempoLeitura: "8 min",
-        autorBio: "Pastor há 20 anos, formado em Teologia pelo Seminário Teológico Batista do Sul, autor de 5 livros e conferencista internacional.",
-        autorFoto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80"
-      });
-      setLoading(false);
-    }, 1000);
+    let active = true;
+    const loadArtigo = async () => {
+      if (!id) return;
+      try {
+        const response = await apiFetch(`/user/artigo/${id}`);
+        if (!response.ok) {
+          setError("Não foi possível carregar o artigo.");
+          setLoading(false);
+          return;
+        }
+
+        const payload = await response.json();
+        if (!active) return;
+
+        const conteudo = payload.conteudo || "";
+        const plainText = conteudo.replace(/<[^>]*>/g, " ");
+        const words = plainText.trim().split(/\s+/).filter(Boolean).length;
+        const tempoLeitura = words > 0 ? `${Math.max(1, Math.ceil(words / 200))} min` : "--";
+
+        setArtigo({
+          id: payload.id,
+          titulo: payload.titulo,
+          descricao: payload.descricao,
+          conteudo,
+          imagem: payload.img,
+          tipo: payload.tipo,
+          autor: payload.escritor,
+          data: payload.dataPublicacao,
+          paginas: payload.nPagina,
+          pdf: payload.pdf,
+          visualizacoes: payload.visualizacoes ?? payload.vistos?.length ?? 0,
+          tempoLeitura,
+          autorBio: payload.autorBio,
+          autorFoto: payload.autorFoto,
+          tags: payload.tags || [],
+        });
+        setLoading(false);
+      } catch (error) {
+        if (!active) return;
+        setError("Não foi possível carregar o artigo.");
+        setLoading(false);
+      }
+    };
+
+    loadArtigo();
+    return () => {
+      active = false;
+    };
   }, [id]);
 
-  const tipoInfo = artigo && {
-    DOCTRINAL: { label: "Doutrinário", icon: LiaCrossSolid, color: "bg-purple-500" }
-  }[artigo.tipo];
+  const tipoInfo = useMemo(() => {
+    if (!artigo?.tipo) return null;
+    const map: Record<string, { label: string; icon: any; color: string }> = {
+      DOCTRINAL: { label: "Doutrinário", icon: LiaCrossSolid, color: "bg-purple-500" }
+    };
+    return map[artigo.tipo] || { label: artigo.tipo, icon: LiaCrossSolid, color: "bg-gray-600" };
+  }, [artigo]);
 
   if (loading) {
     return (
@@ -195,14 +241,25 @@ export const ArtigoDetalhe = () => {
     );
   }
 
+  if (error || !artigo) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">{error || "Artigo não encontrado."}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero do artigo */}
       <section className="relative h-[500px] overflow-hidden">
         <img
-          src={artigo.imagem}
+          src={artigo.imagem || rectangleImage}
           alt={artigo.titulo}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = rectangleImage;
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
         
@@ -223,10 +280,12 @@ export const ArtigoDetalhe = () => {
             </div>
 
             {/* Badge */}
-            <span className={`inline-flex items-center gap-1 ${tipoInfo?.color} text-white px-3 py-1 rounded-full text-sm mb-4`}>
-              {tipoInfo?.icon && <tipoInfo.icon size={14} />}
-              {tipoInfo?.label}
-            </span>
+            {tipoInfo && (
+              <span className={`inline-flex items-center gap-1 ${tipoInfo.color} text-white px-3 py-1 rounded-full text-sm mb-4`}>
+                {tipoInfo.icon && <tipoInfo.icon size={14} />}
+                {tipoInfo.label}
+              </span>
+            )}
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
               {artigo.titulo}
@@ -283,36 +342,65 @@ export const ArtigoDetalhe = () => {
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                     <FiShare2 size={20} />
                   </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <button
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    onClick={() => {
+                      if (artigo.pdf) window.open(artigo.pdf, "_blank", "noreferrer");
+                    }}
+                    aria-label="Baixar PDF"
+                    title="Baixar PDF"
+                  >
                     <FiDownload size={20} />
                   </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <button
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    onClick={() => window.print()}
+                    aria-label="Imprimir"
+                    title="Imprimir"
+                  >
                     <FiPrinter size={20} />
                   </button>
                 </div>
               </div>
 
+              {artigo.pdf && artigo.paginas > PREVIEW_PAGES && (
+                <div className="mb-6 p-4 rounded-xl bg-gray-50 border text-sm text-gray-700">
+                  Mostrando prévia das primeiras {PREVIEW_PAGES} páginas. Para ler o conteúdo completo, baixe o PDF{" "}
+                  <a
+                    href={artigo.pdf}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary underline underline-offset-4 font-semibold"
+                  >
+                    aqui
+                  </a>
+                  .
+                </div>
+              )}
+
               {/* Conteúdo HTML */}
               <div 
-                className="prose prose-lg max-w-none"
+                className="article-html"
                 dangerouslySetInnerHTML={{ __html: artigo.conteudo }}
               />
 
               {/* Tags/Assuntos */}
-              <div className="mt-8 pt-8 border-t">
-                <h4 className="font-semibold mb-3">Assuntos relacionados:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {["Soberania de Deus", "Crise", "Fé", "Esperança", "Confiança"].map((tag) => (
-                    <Link
-                      key={tag}
-                      to={`/artigos?tag=${tag}`}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-primary hover:text-white transition-colors"
-                    >
-                      {tag}
-                    </Link>
-                  ))}
+              {Array.isArray(artigo.tags) && artigo.tags.length > 0 && (
+                <div className="mt-8 pt-8 border-t">
+                  <h4 className="font-semibold mb-3">Assuntos relacionados:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {artigo.tags.map((tag: string) => (
+                      <Link
+                        key={tag}
+                        to={`/artigos?tag=${tag}`}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-primary hover:text-white transition-colors"
+                      >
+                        {tag}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.article>
 
             {/* Seção de comentários */}
@@ -322,8 +410,8 @@ export const ArtigoDetalhe = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <CommentSection />
-            </motion.div>
+            <CommentSection artigoId={artigo.id} />
+          </motion.div>
           </div>
 
           {/* Sidebar */}
@@ -334,26 +422,32 @@ export const ArtigoDetalhe = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             {/* Card do autor */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <FiUser className="text-primary" />
-                Sobre o autor
-              </h3>
-              <div className="flex items-center gap-4 mb-4">
-                <img
-                  src={artigo.autorFoto}
-                  alt={artigo.autor}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div>
-                  <h4 className="font-semibold">{artigo.autor}</h4>
-                  <p className="text-sm text-gray-500">Pastor</p>
+            {(artigo.autorBio || artigo.autorFoto) && (
+              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <FiUser className="text-primary" />
+                  Sobre o autor
+                </h3>
+                <div className="flex items-center gap-4 mb-4">
+                  {artigo.autorFoto && (
+                    <img
+                      src={artigo.autorFoto}
+                      alt={artigo.autor}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
+                  )}
+                  <div>
+                    <h4 className="font-semibold">{artigo.autor}</h4>
+                    <p className="text-sm text-gray-500">Pastor</p>
+                  </div>
                 </div>
+                {artigo.autorBio && (
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {artigo.autorBio}
+                  </p>
+                )}
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {artigo.autorBio}
-              </p>
-            </div>
+            )}
 
             {/* Card do PDF */}
             <div className="bg-gradient-to-br from-primary to-primary-dark text-white rounded-2xl shadow-lg p-6 mb-6">
@@ -362,39 +456,50 @@ export const ArtigoDetalhe = () => {
               <p className="text-white/80 text-sm mb-4">
                 Baixe este artigo para ler offline ou compartilhar
               </p>
-              <button className="w-full bg-white text-primary py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
-                <FiDownload />
-                Baixar PDF ({artigo.paginas} páginas)
-              </button>
+              {artigo.pdf ? (
+                <a
+                  href={artigo.pdf}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full bg-white text-primary py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <FiDownload />
+                  Baixar PDF ({artigo.paginas} páginas)
+                </a>
+              ) : (
+                <p className="text-white/80 text-sm">PDF indisponível.</p>
+              )}
             </div>
 
             {/* Artigos relacionados */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="font-bold text-lg mb-4">Artigos relacionados</h3>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Link
-                    key={i}
-                    to={`/artigos/${i}`}
-                    className="flex gap-3 group"
-                  >
-                    <img
-                      src={`https://images.unsplash.com/photo-1503593245033-a040be3f3c82?auto=format&fit=crop&w=100&q=80`}
-                      alt=""
-                      className="w-16 h-16 rounded-lg object-cover"
-                    />
-                    <div>
-                      <h4 className="font-semibold group-hover:text-primary transition-colors line-clamp-2">
-                        Título do artigo relacionado
-                      </h4>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {artigo.autor} • {artigo.tempoLeitura}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+            {Array.isArray(artigo.related) && artigo.related.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="font-bold text-lg mb-4">Artigos relacionados</h3>
+                <div className="space-y-4">
+                  {artigo.related.map((item: any) => (
+                    <Link
+                      key={item.id}
+                      to={`/artigos/${item.id}`}
+                      className="flex gap-3 group"
+                    >
+                      <img
+                        src={item.imagem}
+                        alt={item.titulo}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                      <div>
+                        <h4 className="font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                          {item.titulo}
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {item.autor} • {item.tempoLeitura}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </motion.aside>
         </div>
       </section>

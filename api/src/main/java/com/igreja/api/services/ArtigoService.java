@@ -1,8 +1,9 @@
-package com.igreja.api.services;
+   package com.igreja.api.services;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,9 +20,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Url;
@@ -36,8 +37,10 @@ import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.InfoIgrejaModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.models.VistosModel;
+import com.igreja.api.projection.ArtigoDetailProjection;
 import com.igreja.api.projection.ArtigoProjection;
 import com.igreja.api.repositories.ArtigosRepository;
+import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.VistosRepository;
 import com.igreja.api.utils.PdfUtils;
 import com.mchange.v2.beans.BeansUtils;
@@ -55,15 +58,54 @@ public class ArtigoService{
    private VistosRepository vistosRepository;
 
    @Autowired
+   private ComentarioLikeRepository comentarioLikeRepository;
+
+   @Autowired
    private CloudDinaryService cloudinaryService;
 
+   @Value("${app.artigo.preview-pages:3}")
+   private int artigoPreviewPages;
+
+   @Value("${app.artigo.cover-placeholder-url:https://placehold.co/1000x600/{bg}/{fg}?text={text}}")
+   private String artigoCoverPlaceholderUrl;
+
+   private String buildCoverPlaceholderUrl(String titulo) {
+      String safeTitle = (titulo == null || titulo.isBlank()) ? "Artigo" : titulo.trim();
+      // Evita textos enormes na capa
+      if (safeTitle.length() > 60) {
+         safeTitle = safeTitle.substring(0, 57).trim() + "...";
+      }
+
+      // Fundo "aleatório" mas estável por artigo (baseado no título)
+      String[] palette = new String[] { "5b1b1b", "540000", "781414", "a01a1a", "2f0b0b", "111827", "0f172a" };
+      int idx = Math.floorMod(safeTitle.hashCode(), palette.length);
+      String bg = palette[idx];
+      String fg = "ffffff";
+      String text = URLEncoder.encode(safeTitle, StandardCharsets.UTF_8);
+
+      String template = artigoCoverPlaceholderUrl == null ? "" : artigoCoverPlaceholderUrl.trim();
+      if (template.contains("{text}") || template.contains("{bg}") || template.contains("{fg}")) {
+         return template
+               .replace("{bg}", bg)
+               .replace("{fg}", fg)
+               .replace("{text}", text);
+      }
+
+      // Compat: se for uma URL fixa (sem placeholders), usa como fallback.
+      return template.isBlank() ? ("https://placehold.co/1000x600/" + bg + "/" + fg + "?text=" + text) : template;
+   }
 
    public ArtigoModel save(ArtigoDtoRegister artigo) throws IOException, InterruptedException, ExecutionException, TimeoutException {
       cloudinaryService.generateUniqueName(artigo.pdf().getOriginalFilename());
   
       ArtigoModel artigosM = new ArtigoModel();
       artigosM.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
-      artigosM.setImg(cloudinaryService.uploadImageAsync(PdfUtils.extractCoverImageAsync(artigo.pdf().getInputStream()), "image"));
+      if (artigo.img() != null && !artigo.img().isEmpty()) {
+         artigosM.setImg(cloudinaryService.uploadImageFileAsync(artigo.img(), "image"));
+      } else {
+         artigosM.setImg(buildCoverPlaceholderUrl(artigo.titulo()));
+      }
+      artigosM.setConteudo(PdfUtils.extractHtml(artigo.pdf().getInputStream(), artigoPreviewPages));
       BeanUtils.copyProperties(artigo, artigosM);
       artigosM.setDataPublicacao(LocalDateTime.now());
       
@@ -97,8 +139,10 @@ public class ArtigoService{
    }
 
    public PageResponse<ArtigoProjection> page(int page, int size, ArtigoType tipo, String q) {
-      String search = (q == null || q.isBlank()) ? null : q;
-      var pageable = PageRequest.of(page, size, Sort.by("id").descending());
+      int safePage = Math.max(0, page);
+      int safeSize = size <= 0 ? 10 : Math.min(size, 100);
+      String search = (q == null || q.isBlank()) ? null : q.trim();
+      var pageable = PageRequest.of(safePage, safeSize);
       var result = artigoRepository.search(tipo, search, pageable);
       return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
               result.getTotalElements(), result.getTotalPages());
@@ -107,6 +151,11 @@ public class ArtigoService{
    public ArtigoModel Select(int id)  {
       ArtigoModel artigoModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
       return artigoModel;
+   }
+
+   public ArtigoDetailProjection detail(int id) {
+      return artigoRepository.findDetailById(id)
+            .orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
    }
 
    public ArtigoModel Visto(int id)  {
@@ -122,13 +171,15 @@ public class ArtigoService{
       ArtigoModel artigo=Select(id);
       for (ComentarioModel comentario : artigo.getComentarios()) {
          UserModel user=comentario.getUser();
+         int likes = (int) comentarioLikeRepository.countByComentario(comentario);
          comentarios.add(new ComentarioResult(
             comentario.getId(),
             user.getImg(),
             user.getUsername(),
             comentario.getDescricao(),
             comentario.isAnalise(),
-            comentario.getDataPublicacao()));
+            comentario.getDataPublicacao(),
+            likes));
       }
       return comentarios;
    }
@@ -145,22 +196,62 @@ public class ArtigoService{
    public ArtigoModel edit(int id,ArtigoDtoRegister artigo) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
       ArtigoModel artigoActual=Select(id);
       BeanUtils.copyProperties(artigo, artigoActual);
-      if (!artigo.pdf().isEmpty()) {
-         if (DeleteFiles(artigoActual.getPdf(),artigoActual.getImg())) {
-            artigoActual.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
-            BufferedImage coverImagePath = PdfUtils.extractCoverImage(artigo.pdf().getInputStream());
-            artigoActual.setImg(cloudinaryService.uploadImageAsync(coverImagePath, "image"));
-         }
+      boolean hasPdf = artigo.pdf() != null && !artigo.pdf().isEmpty();
+      boolean hasImg = artigo.img() != null && !artigo.img().isEmpty();
+
+      if (hasPdf) {
+         cloudinaryService.generateUniqueName(artigo.pdf().getOriginalFilename());
+      } else if (hasImg) {
+         cloudinaryService.generateUniqueName(artigo.img().getOriginalFilename());
       }
+
+      if (hasPdf) {
+         // Troca o PDF e recalcula a prévia do HTML
+         cloudinaryService.deleteFileIfCloudinaryAsync(artigoActual.getPdf()).join();
+         artigoActual.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
+         artigoActual.setConteudo(PdfUtils.extractHtml(artigo.pdf().getInputStream(), artigoPreviewPages));
+      }
+
+      // Troca a capa apenas se o admin enviar uma imagem
+      if (hasImg) {
+         cloudinaryService.deleteFileIfCloudinaryAsync(artigoActual.getImg()).join();
+         artigoActual.setImg(cloudinaryService.uploadImageFileAsync(artigo.img(), "image"));
+      } else if (artigoActual.getImg() == null || artigoActual.getImg().isBlank() || artigoActual.getImg().contains("placehold.co")) {
+         artigoActual.setImg(buildCoverPlaceholderUrl(artigoActual.getTitulo()));
+      }
+
       return artigoRepository.save(artigoActual); 
    }
 
    public boolean DeleteFiles(String pdfUrl, String imgUrl) throws IOException, InterruptedException, ExecutionException {
 
       // Excluir os arquivos da nuvem
-      CompletableFuture<Boolean> pdfDeleted = cloudinaryService.deleteFileAsync(pdfUrl);
-      CompletableFuture<Boolean> imgDeleted = cloudinaryService.deleteFileAsync(imgUrl);
+      CompletableFuture<Boolean> pdfDeleted = cloudinaryService.deleteFileIfCloudinaryAsync(pdfUrl);
+      CompletableFuture<Boolean> imgDeleted = cloudinaryService.deleteFileIfCloudinaryAsync(imgUrl);
       CompletableFuture.allOf(pdfDeleted,imgDeleted).join();
       return pdfDeleted.get() && imgDeleted.get();
   }
+
+   public ArtigoModel regenerateHtml(int id) throws IOException {
+      ArtigoModel artigo = Select(id);
+      artigo.setConteudo(PdfUtils.extractHtmlFromUrl(artigo.getPdf(), artigoPreviewPages));
+      return artigoRepository.save(artigo);
+   }
+
+   public int regenerateHtmlAll() {
+      List<ArtigoModel> artigos = artigoRepository.findAll();
+      int updated = 0;
+
+      for (ArtigoModel artigo : artigos) {
+         try {
+            artigo.setConteudo(PdfUtils.extractHtmlFromUrl(artigo.getPdf(), artigoPreviewPages));
+            updated++;
+         } catch (IOException e) {
+            // Ignora falhas pontuais para não abortar o processamento inteiro
+         }
+      }
+
+      artigoRepository.saveAll(artigos);
+      return updated;
+   }
 }

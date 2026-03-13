@@ -13,16 +13,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.Analise;
+import com.igreja.api.dto.comentario.ComentarioAdminData;
 import com.igreja.api.dto.comentario.ComentarioDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.dto.comentario.ComentarioStatusDto;
+import com.igreja.api.dto.user.UserComentarioData;
+import com.igreja.api.enums.ComentarioStatus;
 import com.igreja.api.enums.ComentarioType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
+import com.igreja.api.models.ComentarioLikeModel;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.ArtigosRepository;
+import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.UserRepository;
@@ -33,6 +39,9 @@ import jakarta.validation.Valid;
 public class ComentarioService {
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private ComentarioLikeRepository comentarioLikeRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -54,11 +63,13 @@ public class ComentarioService {
         BeanUtils.copyProperties(dto, comentario);
         comentario.setUser(user);
         comentario.setDataPublicacao(LocalDate.now());
+        comentario.setStatus(ComentarioStatus.ATIVO);
+        comentario.setDenuncias(0);
         comentario=swSeccao(comentario,seccao);
          ////System.out.println("Terminei aqui"+comentario);
          //Object[] c=comentarioRepository.Result(comentarioRepository.save(comentario).getId());
 
-        return comentarioRepository.result(comentarioRepository.save(comentario).getId());
+        return toResult(comentarioRepository.save(comentario));
     }
 
     private ComentarioModel swSeccao(ComentarioModel comentario,Object seccao){
@@ -122,6 +133,22 @@ public class ComentarioService {
                 .map(this::toResult);
     }
 
+    public Page<ComentarioAdminData> pageAdmin(int page, int size, ComentarioStatus status) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dataPublicacao").descending());
+        Page<ComentarioModel> result = status == null
+                ? comentarioRepository.findAllByOrderByDataPublicacaoDesc(pageable)
+                : comentarioRepository.findAllByStatusOrderByDataPublicacaoDesc(status, pageable);
+        return result.map(this::toAdminData);
+    }
+
+    public Page<UserComentarioData> pageForUser(String email, int page, int size) {
+        UserModel user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new NoSuchElementException("Este user mão existe verifique se o email esta correto"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dataPublicacao").descending());
+        return comentarioRepository.findByUserOrderByDataPublicacaoDesc(user, pageable)
+                .map(this::toUserData);
+    }
+
     private ComentarioResult toResult(ComentarioModel model) {
         return new ComentarioResult(
                 model.getId(),
@@ -129,7 +156,103 @@ public class ComentarioService {
                 model.getUser() == null ? "" : model.getUser().getNome(),
                 model.getDescricao(),
                 model.isAnalise(),
-                model.getDataPublicacao());
+                model.getDataPublicacao(),
+                (int) comentarioLikeRepository.countByComentario(model));
+    }
+
+    private ComentarioAdminData toAdminData(ComentarioModel model) {
+        ComentarioType seccao = null;
+        int seccaoId = 0;
+        String seccaoTitulo = "";
+        if (model.getArtigo() != null) {
+            seccao = ComentarioType.Artigo;
+            seccaoId = model.getArtigo().getId();
+            seccaoTitulo = model.getArtigo().getTitulo();
+        } else if (model.getMidia() != null) {
+            seccao = ComentarioType.Midia;
+            seccaoId = model.getMidia().getId();
+            seccaoTitulo = model.getMidia().getTitulo();
+        } else if (model.getActividade() != null) {
+            seccao = ComentarioType.Actividade;
+            seccaoId = model.getActividade().getId();
+            seccaoTitulo = model.getActividade().getTitulo();
+        }
+
+        UserModel user = model.getUser();
+        return new ComentarioAdminData(
+                model.getId(),
+                seccao,
+                seccaoId,
+                seccaoTitulo,
+                user == null ? 0 : user.getId(),
+                user == null ? "" : user.getNome(),
+                user == null ? "" : user.getEmail(),
+                user == null ? "" : user.getImg(),
+                model.getDescricao(),
+                model.getDataPublicacao(),
+                (int) comentarioLikeRepository.countByComentario(model),
+                model.getStatus(),
+                model.getDenuncias());
+    }
+
+    private UserComentarioData toUserData(ComentarioModel model) {
+        ComentarioType seccao = null;
+        int seccaoId = 0;
+        String seccaoTitulo = "";
+        if (model.getArtigo() != null) {
+            seccao = ComentarioType.Artigo;
+            seccaoId = model.getArtigo().getId();
+            seccaoTitulo = model.getArtigo().getTitulo();
+        } else if (model.getMidia() != null) {
+            seccao = ComentarioType.Midia;
+            seccaoId = model.getMidia().getId();
+            seccaoTitulo = model.getMidia().getTitulo();
+        } else if (model.getActividade() != null) {
+            seccao = ComentarioType.Actividade;
+            seccaoId = model.getActividade().getId();
+            seccaoTitulo = model.getActividade().getTitulo();
+        }
+        return new UserComentarioData(
+                model.getId(),
+                seccao,
+                seccaoId,
+                seccaoTitulo,
+                model.getDescricao(),
+                model.getDataPublicacao(),
+                (int) comentarioLikeRepository.countByComentario(model),
+                model.getStatus());
+    }
+
+    public ComentarioAdminData updateStatus(int comentarioId, ComentarioStatusDto dto) {
+        ComentarioModel comentario = findByid(comentarioId);
+        comentario.setStatus(dto.status());
+        if (dto.notaInterna() != null) {
+            comentario.setNotaInterna(dto.notaInterna());
+        }
+        comentarioRepository.save(comentario);
+        return toAdminData(comentario);
+    }
+
+    public int like(int comentarioId, String userEmail) {
+        ComentarioModel comentario = findByid(comentarioId);
+        UserModel user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NoSuchElementException("Este user mão existe verifique se o email esta correto"));
+        comentarioLikeRepository.findByComentarioAndUser(comentario, user)
+                .orElseGet(() -> {
+                    ComentarioLikeModel like = new ComentarioLikeModel();
+                    like.setComentario(comentario);
+                    like.setUser(user);
+                    return comentarioLikeRepository.save(like);
+                });
+        return (int) comentarioLikeRepository.countByComentario(comentario);
+    }
+
+    public int unlike(int comentarioId, String userEmail) {
+        ComentarioModel comentario = findByid(comentarioId);
+        UserModel user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NoSuchElementException("Este user mão existe verifique se o email esta correto"));
+        comentarioLikeRepository.deleteByComentarioAndUser(comentario, user);
+        return (int) comentarioLikeRepository.countByComentario(comentario);
     }
     
 }

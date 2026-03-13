@@ -11,5 +11,6 @@ public record ComentarioResult(
         String name,
         @NotBlank String descricao,
         boolean analise,
-        LocalDate dataPublicacao) {
+        LocalDate dataPublicacao,
+        long likes) {
 }

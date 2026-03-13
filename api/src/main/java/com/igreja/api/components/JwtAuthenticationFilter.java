@@ -9,11 +9,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.igreja.api.dto.error.ApiErrorResponse;
+import com.igreja.api.enums.UserStatus;
+import com.igreja.api.models.UserModel;
 import com.igreja.api.services.UserService;
 
 import jakarta.servlet.FilterChain;
@@ -38,10 +41,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String[] PUBLIC_URLS = {
         "/auth/login",
         "/auth/register",
+        "/auth/google",
+        "/public/inscritos",
+        "/public/mensagem",
         "/health",
         "/swagger-ui/",
         "/v3/api-docs/",
         "/test/"
+    };
+    private static final String[] PUBLIC_GET_PREFIXES = {
+        "/user/home",
+        "/user/actividade",
+        "/user/artigo",
+        "/user/midia",
+        "/user/vistos",
+        "/user/comentario"
     };
 
     @Override
@@ -51,11 +65,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // Ignorar autenticação JWT para rotas públicas
-        for (String publicPath : PUBLIC_URLS) {
-            if (path.startsWith(publicPath)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+        if (isPublicPath(request, path)) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
         final String authHeader = request.getHeader("Authorization");
@@ -79,9 +91,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            UserModel userModel;
+            try {
+                userModel = userDetailsService.loadUserByEmail(username);
+            } catch (UsernameNotFoundException ex) {
+                writeErrorResponse(
+                        response,
+                        request,
+                        HttpStatus.UNAUTHORIZED,
+                        "Não autenticado",
+                        "Utilizador não encontrado.");
+                return;
+            }
+            UserDetails userDetails = userDetailsService.buildUserDetails(userModel);
 
             if (jwtUtil.validateToken(token, userDetails)) {
+                if (!userDetailsService.isActiveForAccess(userModel)) {
+                    writeErrorResponse(
+                            response,
+                            request,
+                            HttpStatus.FORBIDDEN,
+                            "Acesso bloqueado",
+                            statusMessage(userModel.getStatus()));
+                    return;
+                }
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -97,6 +130,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String statusMessage(UserStatus status) {
+        if (status == null) {
+            return "Conta indisponível. Contacte o administrador.";
+        }
+        return switch (status) {
+            case PENDENTE -> "Conta pendente de aprovação do administrador.";
+            case BLOQUEADO -> "Conta bloqueada pelo administrador.";
+            case INATIVO -> "Conta inativa. Faça login novamente.";
+            case ATIVO -> "Conta ativa.";
+        };
     }
 
     private void writeErrorResponse(
@@ -118,5 +163,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 List.of());
 
         objectMapper.writeValue(response.getWriter(), body);
+    }
+
+    private boolean isPublicPath(HttpServletRequest request, String path) {
+        for (String publicPath : PUBLIC_URLS) {
+            if (path.startsWith(publicPath)) {
+                return true;
+            }
+        }
+
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            for (String prefix : PUBLIC_GET_PREFIXES) {
+                if (path.startsWith(prefix)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

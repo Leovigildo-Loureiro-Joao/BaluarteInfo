@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.dto.midia.ConnectMidiaDto;
+import com.igreja.api.dto.midia.GaleriaAdminItem;
 import com.igreja.api.dto.midia.MidiaActividade;
 import com.igreja.api.dto.midia.MidiaActividadeV;
 import com.igreja.api.dto.midia.MidiaDto;
@@ -43,6 +44,7 @@ import com.igreja.api.models.VistosModel;
 import com.igreja.api.projection.midia.AudioProjection;
 import com.igreja.api.projection.midia.VideoProjection;
 import com.igreja.api.repositories.ActividadeRepository;
+import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.VistosRepository;
 
@@ -58,6 +60,9 @@ public class MidiaService {
     @Autowired
    private VistosRepository vistosRepository;
 
+    @Autowired
+    private ComentarioLikeRepository comentarioLikeRepository;
+
    @Autowired
    private CloudDinaryService upload;
     
@@ -65,8 +70,15 @@ public class MidiaService {
         MidiaModel midia= new MidiaModel();
         midia.setDataPublicacao(LocalDate.now());
         BeanUtils.copyProperties(midiaDto, midia);
-        String videoId = extractYoutubeId(midiaDto.url());
-        midia.setUrl(videoId); //
+        if (midiaDto.type() != null
+                && midiaDto.type().equals(MidiaType.VIDEO)
+                && midiaDto.url() != null
+                && (midiaDto.url().contains("youtube.com") || midiaDto.url().contains("youtu.be"))) {
+            String videoId = extractYoutubeId(midiaDto.url());
+            midia.setUrl(videoId);
+        } else {
+            midia.setUrl(midiaDto.url());
+        }
         return midiaRepository.save(midia);
     }
 
@@ -109,32 +121,44 @@ public class MidiaService {
     public MidiaModel save(MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException { 
         MidiaModel midia = new MidiaModel();
         midia.setDataPublicacao(LocalDate.now());
-        upload.generateUniqueName(midiaDto.imagem().getOriginalFilename());
-        midia.setImagem(upload.uploadFileAsync(midiaDto.imagem(), "image"));
-        
-        if(midiaDto.type().equals(MidiaType.AUDIO)){
+        BeanUtils.copyProperties(midiaDto, midia);
+
+        if (midiaDto.type() == null) {
+            throw new IllegalArgumentException("O tipo de mídia é obrigatório.");
+        }
+
+        if (hasUpload(midiaDto.imagem())) {
+            upload.generateUniqueName(midiaDto.imagem().getOriginalFilename());
+            midia.setImagem(upload.uploadFileAsync(midiaDto.imagem(), "image"));
+        } else if (midiaDto.type().equals(MidiaType.AUDIO) || midiaDto.type().equals(MidiaType.VIDEO)) {
+            throw new IllegalArgumentException("A imagem de capa é obrigatória.");
+        }
+
+        if (midiaDto.type().equals(MidiaType.IMAGE)) {
+            if (midia.getImagem() == null || midia.getImagem().isBlank()) {
+                throw new IllegalArgumentException("A imagem é obrigatória.");
+            }
+            midia.setUrl(midia.getImagem());
+            return midiaRepository.save(midia);
+        }
+
+        if (!hasUpload(midiaDto.url())) {
+            throw new IllegalArgumentException("O ficheiro é obrigatório.");
+        }
+
+        if (midiaDto.type().equals(MidiaType.AUDIO)) {
             upload.generateUniqueName(midiaDto.url().getOriginalFilename());
             midia.setUrl(upload.uploadFileAsync(midiaDto.url(), "raw"));
-             try {
-                AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(midiaDto.url().getInputStream());
-                Map<String, Object> props = baseFileFormat.properties();
-                Object durationObj = props.get("duration");
-                if (durationObj != null) {
-                    long microsegundos = (long) durationObj;
-                    double segundos = microsegundos / 1_000_000.0;
-                    midia.setTempo(formatarDuracao((int) segundos));
-                } else {
-                    midia.setTempo("00:00"); // ou outro valor padrão
-                }
-            } catch (Exception e) {
-                midia.setTempo("00:00"); // ou trate/log o erro conforme necessário
+            midia.setTempo(extractAudioDurationOrDefault(midiaDto.url()));
+        } else if (midiaDto.type().equals(MidiaType.VIDEO)) {
+            upload.generateUniqueName(midiaDto.url().getOriginalFilename());
+            CloudinaryUploadResult result = upload.uploadFileWithInfoAsync(midiaDto.url(), "video");
+            midia.setUrl(result.url());
+            if (result.durationSeconds() != null) {
+                midia.setTempo(formatarDuracao(result.durationSeconds().intValue()));
             }
-        }else 
-            midia.setUrl(midia.getImagem());
-        // Extração da duração do áudio
-       
-    
-        BeanUtils.copyProperties(midiaDto, midia);
+        }
+
         return midiaRepository.save(midia);
     }
     
@@ -142,6 +166,28 @@ public class MidiaService {
         int minutos = totalSegundos / 60;
         int segundos = totalSegundos % 60;
         return String.format("%02d:%02d", minutos, segundos);
+    }
+
+    private boolean hasUpload(org.springframework.web.multipart.MultipartFile file) {
+        return file != null && !file.isEmpty();
+    }
+
+    private boolean isCloudinaryUrl(String value) {
+        return value != null && value.contains("upload/");
+    }
+
+    private String extractAudioDurationOrDefault(org.springframework.web.multipart.MultipartFile audioFile) {
+        try {
+            AudioFileFormat baseFileFormat = AudioSystem.getAudioFileFormat(audioFile.getInputStream());
+            Map<String, Object> props = baseFileFormat.properties();
+            Object durationObj = props.get("duration");
+            if (durationObj instanceof Long microsegundos) {
+                double segundos = microsegundos / 1_000_000.0;
+                return formatarDuracao((int) segundos);
+            }
+        } catch (Exception ignored) {
+        }
+        return "00:00";
     }
     
     public MidiaModel Select(int id)  {
@@ -164,19 +210,49 @@ public class MidiaService {
         return midiaRepository.save(midia);
     }
 
-    public MidiaModel edit(MidiaFile dto,int id) throws InterruptedException, ExecutionException, TimeoutException{
+    public MidiaModel edit(MidiaFile dto,int id) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException{
         MidiaModel midia=Select(id);
-        if (midia.getType().equals(MidiaType.IMAGE) && dto.url() != null) {
-            if (upload.deleteFileAsync(midia.getUrl()).join()) {
-                ////System.out.println("Deletado com sucesso");
-                midia.setUrl(upload.uploadFileAsync(dto.url(),"image"));
-            } else {
-                ////System.out.println("Falha ao deletar o arquivo");
+
+        if (hasUpload(dto.imagem())) {
+            if (isCloudinaryUrl(midia.getImagem())) {
+                upload.deleteFileAsync(midia.getImagem()).join();
             }
-        }else  if (dto.type().equals(MidiaType.IMAGE)) {
-            upload.generateUniqueName(dto.url().getOriginalFilename());
-            midia.setUrl(upload.uploadFileAsync(dto.url(),"image"));
+            upload.generateUniqueName(dto.imagem().getOriginalFilename());
+            midia.setImagem(upload.uploadFileAsync(dto.imagem(), "image"));
+
+            if (midia.getType().equals(MidiaType.IMAGE)) {
+                midia.setUrl(midia.getImagem());
+            }
         }
+
+        if (hasUpload(dto.url())) {
+            if (midia.getType().equals(MidiaType.IMAGE)) {
+                if (isCloudinaryUrl(midia.getUrl())) {
+                    upload.deleteFileAsync(midia.getUrl()).join();
+                }
+                upload.generateUniqueName(dto.url().getOriginalFilename());
+                midia.setUrl(upload.uploadFileAsync(dto.url(), "image"));
+                midia.setImagem(midia.getUrl());
+            } else if (midia.getType().equals(MidiaType.AUDIO)) {
+                if (isCloudinaryUrl(midia.getUrl())) {
+                    upload.deleteFileAsync(midia.getUrl()).join();
+                }
+                upload.generateUniqueName(dto.url().getOriginalFilename());
+                midia.setUrl(upload.uploadFileAsync(dto.url(), "raw"));
+                midia.setTempo(extractAudioDurationOrDefault(dto.url()));
+            } else if (midia.getType().equals(MidiaType.VIDEO)) {
+                if (isCloudinaryUrl(midia.getUrl())) {
+                    upload.deleteFileAsync(midia.getUrl()).join();
+                }
+                upload.generateUniqueName(dto.url().getOriginalFilename());
+                CloudinaryUploadResult result = upload.uploadFileWithInfoAsync(dto.url(), "video");
+                midia.setUrl(result.url());
+                if (result.durationSeconds() != null) {
+                    midia.setTempo(formatarDuracao(result.durationSeconds().intValue()));
+                }
+            }
+        }
+
         BeanUtils.copyProperties(dto, midia);
         midia.setDataPublicacao(LocalDate.now());
         return midiaRepository.save(midia);
@@ -185,15 +261,23 @@ public class MidiaService {
     public void delete(int id){
         MidiaModel midia=Select(id);
         if (midia.getType().equals(MidiaType.IMAGE)) {
-            if (upload.deleteFileAsync(midia.getUrl()).join()) {
-                ////System.out.println("Deletado com sucesso");
-                midiaRepository.delete(midia);
-            } else {
-                ////System.out.println("Falha ao deletar o arquivo");
+            if (isCloudinaryUrl(midia.getUrl())) {
+                upload.deleteFileAsync(midia.getUrl()).join();
             }
-            
-        }else
             midiaRepository.delete(midia);
+            return;
+        }
+
+        if (midia.getType().equals(MidiaType.AUDIO) || midia.getType().equals(MidiaType.VIDEO)) {
+            if (isCloudinaryUrl(midia.getUrl())) {
+                upload.deleteFileAsync(midia.getUrl()).join();
+            }
+            if (isCloudinaryUrl(midia.getImagem())) {
+                upload.deleteFileAsync(midia.getImagem()).join();
+            }
+        }
+
+        midiaRepository.delete(midia);
     }
 
     public void deleteFile(int id){
@@ -236,13 +320,15 @@ public class MidiaService {
         MidiaModel artigo=Select(id);
         for (ComentarioModel comentario : artigo.getComentarios()) {
             UserModel user=comentario.getUser();
+            int likes = (int) comentarioLikeRepository.countByComentario(comentario);
             comentarios.add(new ComentarioResult(
                 comentario.getId(),
                 user.getImg(),
                 user.getUsername(),
                 comentario.getDescricao(),
                 comentario.isAnalise(),
-                comentario.getDataPublicacao()));
+                comentario.getDataPublicacao(),
+                likes));
         }
         return comentarios;
     }
@@ -265,6 +351,14 @@ public class MidiaService {
 
         return new PageResponse<>(midia.getContent(), midia.getNumber(), midia.getSize(),
                 midia.getTotalElements(), midia.getTotalPages());
+    }
+
+    public PageResponse<GaleriaAdminItem> galeriaAdmin(int page, int size, String q) {
+        Pageable pageable = PageRequest.of(page, size);
+        String search = (q == null || q.isBlank()) ? null : q;
+        var result = midiaRepository.findGaleriaAdmin(MidiaType.IMAGE, search, pageable);
+        return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
     }
 
 }

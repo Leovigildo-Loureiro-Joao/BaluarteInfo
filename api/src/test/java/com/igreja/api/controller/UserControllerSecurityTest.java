@@ -36,6 +36,7 @@ import com.igreja.api.components.RestAccessDeniedHandler;
 import com.igreja.api.components.RestAuthenticationEntryPoint;
 import com.igreja.api.controllers.UserController;
 import com.igreja.api.dto.user.UserDtoData;
+import com.igreja.api.enums.UserStatus;
 import com.igreja.api.exceptions.GlobalExceptionHandler;
 import com.igreja.api.services.UserService;
 
@@ -76,6 +77,9 @@ class UserControllerSecurityTest {
                 .password("encoded")
                 .roles("ADMIN")
                 .build();
+        com.igreja.api.models.UserModel userModel = new com.igreja.api.models.UserModel();
+        userModel.setEmail("admin@igreja.com");
+        userModel.setStatus(UserStatus.ATIVO);
 
         when(authenticationManager.authenticate(any()))
                 .thenReturn(new UsernamePasswordAuthenticationToken(
@@ -83,8 +87,9 @@ class UserControllerSecurityTest {
                         null,
                         principal.getAuthorities()));
         when(jwtUtil.generateToken(principal)).thenReturn("jwt-token");
-        when(userService.findByIdData("admin@igreja.com"))
-                .thenReturn(new UserDtoData(1L, "Admin", "admin@igreja.com", "https://img", "ADMIN"));
+        when(userService.loadUserByEmail("admin@igreja.com")).thenReturn(userModel);
+        when(userService.markLogin(userModel))
+                .thenReturn(buildUser(1L, "Admin", "admin@igreja.com", "ADMIN"));
 
         mockMvc.perform(post("/auth/login")
                         .with(csrf())
@@ -134,12 +139,17 @@ class UserControllerSecurityTest {
                 .password("encoded")
                 .roles("USER")
                 .build();
+        com.igreja.api.models.UserModel userModel = new com.igreja.api.models.UserModel();
+        userModel.setEmail("membro@igreja.com");
+        userModel.setStatus(UserStatus.ATIVO);
 
         when(jwtUtil.extractUsername("valid-user-token")).thenReturn("membro@igreja.com");
-        when(userService.loadUserByUsername("membro@igreja.com")).thenReturn(principal);
+        when(userService.loadUserByEmail("membro@igreja.com")).thenReturn(userModel);
+        when(userService.buildUserDetails(userModel)).thenReturn(principal);
+        when(userService.isActiveForAccess(userModel)).thenReturn(true);
         when(jwtUtil.validateToken("valid-user-token", principal)).thenReturn(true);
         when(userService.findByIdData("membro@igreja.com"))
-                .thenReturn(new UserDtoData(2L, "Membro", "membro@igreja.com", "https://img", "USER"));
+                .thenReturn(buildUser(2L, "Membro", "membro@igreja.com", "USER"));
 
         mockMvc.perform(get("/user/me")
                         .header("Authorization", "Bearer valid-user-token"))
@@ -154,9 +164,14 @@ class UserControllerSecurityTest {
                 .password("encoded")
                 .roles("USER")
                 .build();
+        com.igreja.api.models.UserModel userModel = new com.igreja.api.models.UserModel();
+        userModel.setEmail("membro@igreja.com");
+        userModel.setStatus(UserStatus.ATIVO);
 
         when(jwtUtil.extractUsername("valid-user-token")).thenReturn("membro@igreja.com");
-        when(userService.loadUserByUsername("membro@igreja.com")).thenReturn(principal);
+        when(userService.loadUserByEmail("membro@igreja.com")).thenReturn(userModel);
+        when(userService.buildUserDetails(userModel)).thenReturn(principal);
+        when(userService.isActiveForAccess(userModel)).thenReturn(true);
         when(jwtUtil.validateToken("valid-user-token", principal)).thenReturn(true);
 
         mockMvc.perform(get("/admin/user")
@@ -196,5 +211,29 @@ class UserControllerSecurityTest {
         PasswordEncoder passwordEncoder() {
             return new BCryptPasswordEncoder();
         }
+    }
+
+    private UserDtoData buildUser(long id, String nome, String email, String roles) {
+        return new UserDtoData(
+                id,
+                nome,
+                email,
+                "https://img",
+                roles,
+                UserStatus.ATIVO,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
     }
 }

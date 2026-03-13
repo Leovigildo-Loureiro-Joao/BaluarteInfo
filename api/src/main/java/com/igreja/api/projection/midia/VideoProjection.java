@@ -1,7 +1,5 @@
 package com.igreja.api.projection.midia;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import com.igreja.api.enums.VideoType;
 
 public interface VideoProjection {
@@ -12,6 +10,5 @@ public interface VideoProjection {
     VideoType getVideoType();
 
     /** Visualizações deste vídeo */
-    @Value("#{target.vistos.size()}")
-    Integer getVisualizacoes();
+    Long getVisualizacoes();
 }

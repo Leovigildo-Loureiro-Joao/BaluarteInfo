@@ -6,6 +6,12 @@ import com.igreja.api.enums.ArtigoType;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record ArtigoDtoRegister( @NotBlank String descricao,@NotBlank String titulo,@NotBlank String escritor,MultipartFile pdf,ArtigoType tipo) {
+public record ArtigoDtoRegister(
+        @NotBlank String descricao,
+        @NotBlank String titulo,
+        @NotBlank String escritor,
+        MultipartFile pdf,
+        MultipartFile img,
+        ArtigoType tipo) {
 
 }

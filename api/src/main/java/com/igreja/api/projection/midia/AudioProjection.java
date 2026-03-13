@@ -1,7 +1,5 @@
 package com.igreja.api.projection.midia;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import com.igreja.api.enums.AudioType;
 
 public interface AudioProjection {
@@ -14,6 +12,5 @@ public interface AudioProjection {
     String getUrl();
 
     /** Visualizações deste áudio */
-    @Value("#{target.vistos.size()}")
-    Integer getVisualizacoes();
+    Long getVisualizacoes();
 }

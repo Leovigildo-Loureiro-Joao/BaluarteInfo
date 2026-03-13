@@ -1,9 +1,96 @@
 // Login.jsx
-import { Link } from 'react-router-dom';
-import { FcGoogle } from 'react-icons/fc';
+import { Link, useNavigate } from 'react-router-dom';
 import { icone } from '../../assets/Assets';
+import { useCallback, useState } from 'react';
+import { apiFetch } from '../../utils/api.js';
+import { setAuthSession } from '../../utils/auth.js';
+import GoogleAuthButton from '../../components/auth/GoogleAuthButton.jsx';
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [status, setStatus] = useState({ loading: false, error: '' });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setStatus({ loading: true, error: '' });
+
+    try {
+      const response = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: {
+          email: form.email.trim(),
+          password: form.password,
+        },
+      });
+
+      if (!response.ok) {
+        let message = 'Erro ao entrar. Verifica os dados e tenta novamente.';
+        try {
+          const errorPayload = await response.json();
+          if (errorPayload?.message) message = errorPayload.message;
+        } catch (error) {
+          // ignore JSON parse errors
+        }
+        setStatus({ loading: false, error: message });
+        return;
+      }
+
+      const payload = await response.json();
+      setAuthSession(payload);
+      const roles = String(payload?.user?.roles || '');
+      if (roles.toUpperCase().includes('ADMIN')) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    } catch (error) {
+      setStatus({ loading: false, error: 'Falha na ligação com o servidor.' });
+      return;
+    }
+  };
+
+  const handleGoogleCredential = useCallback(
+    async (credential) => {
+      setStatus({ loading: true, error: '' });
+      try {
+        const response = await apiFetch('/auth/google', {
+          method: 'POST',
+          body: { credential },
+        });
+
+        if (!response.ok) {
+          let message = 'Não foi possível entrar com Google.';
+          try {
+            const errorPayload = await response.json();
+            if (errorPayload?.message) message = errorPayload.message;
+          } catch (error) {
+            // ignore JSON parse errors
+          }
+          setStatus({ loading: false, error: message });
+          return;
+        }
+
+        const payload = await response.json();
+        setAuthSession(payload);
+        const roles = String(payload?.user?.roles || '');
+        if (roles.toUpperCase().includes('ADMIN')) {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
+      } catch (error) {
+        setStatus({ loading: false, error: 'Falha na ligação com o servidor.' });
+      }
+    },
+    [navigate]
+  );
+
   return (
     <section className="min-h-screen w-full flex items-center justify-center bg-fundo-baluarte bg-cover px-4 text-base">
       <div className="w-full max-w-md  bg-white p-8 rounded-2xl shadow-2xl border-t-8 border-red-600 space-y-4 text-text-primary">
@@ -13,16 +100,26 @@ export default function Login() {
         <h2 className="text-2xl font-bold text-gray-800 text-center">Bem-vindo de volta</h2>
         <p className="text-center text-gray-500 text-sm">Entre com sua conta da Igreja Baluarte</p>
 
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" placeholder="teuemail@dominio.com"
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="teuemail@dominio.com"
               className="w-full px-4 py-2 mt-2 border rounded-md focus:ring-2 focus:ring-red-400 outline-none" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Senha</label>
-            <input type="password" placeholder="********"
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              placeholder="********"
               className="w-full px-4 py-2 mt-2 border rounded-md focus:ring-2 focus:ring-red-400 outline-none" />
           </div>
 
@@ -33,7 +130,19 @@ export default function Login() {
             <Link to="#" className="text-red-600 hover:underline text-xs">Esqueceu a senha?</Link>
           </div>
 
-          <button type="submit" className="w-full text-sm bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition">Entrar</button>
+          {status.error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              {status.error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={status.loading}
+            className="w-full text-sm bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition disabled:opacity-60"
+          >
+            {status.loading ? 'Entrando...' : 'Entrar'}
+          </button>
         </form>
 
         <div className="my-6 text-center text-gray-500 relative">
@@ -41,9 +150,7 @@ export default function Login() {
           <div className="absolute left-0 right-0 top-3 h-px bg-gray-200"></div>
         </div>
 
-        <button className="w-full flex items-center text-sm justify-center gap-3 border py-2 rounded-md hover:bg-gray-50 transition">
-          <FcGoogle className="text-xl" /> Entrar com Google
-        </button>
+        <GoogleAuthButton onCredential={handleGoogleCredential} text="signin_with" />
 
         <p className="text-center text-gray-600 mt-6 text-sm">
           Ainda não tens conta? <Link to="/auth/register" className="text-red-600 hover:underline">Regista-te</Link>

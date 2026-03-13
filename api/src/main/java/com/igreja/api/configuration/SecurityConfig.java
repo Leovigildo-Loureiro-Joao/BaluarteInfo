@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -60,7 +61,23 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/health","/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/auth/login", "/auth/register").permitAll()
+                .requestMatchers("/auth/login", "/auth/register", "/auth/google").permitAll()
+                .requestMatchers("/public/inscritos/**").permitAll()
+                .requestMatchers("/public/mensagem/**").permitAll()
+                .requestMatchers("/public/sobre").permitAll()
+                .requestMatchers(HttpMethod.GET,
+                        "/user/home/**",
+                        "/user/actividade",
+                        "/user/actividade/*",
+                        "/user/actividade/*/comentarios",
+                        "/user/actividade/*/inscritos",
+                        "/user/actividade/galeria/*",
+                        "/user/actividade/trailler/*",
+                        "/user/artigo/**",
+                        "/user/midia/**",
+                        "/user/vistos/**",
+                        "/user/comentario/**")
+                .permitAll()
                 .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/test/**").permitAll()
                 .anyRequest().authenticated())

@@ -1,19 +1,26 @@
 import  {motion}  from "framer-motion";
 import { ArtigoDetail } from "../../types/api";
-import { FiBookOpen, FiCalendar, FiClock, FiEdit2, FiEye, FiTrash2, FiUser } from "react-icons/fi";
-import { tiposArtigo } from "../../pages/Artigos/ArtigosAdmin";
+import { FiBookOpen, FiCalendar, FiClock, FiEdit2, FiEye, FiRefreshCw, FiTrash2, FiUser } from "react-icons/fi";
+import { tiposArtigo, ArtigoAdminView } from "../../pages/Artigos/ArtigosAdmin";
+import rectangleImage from "../../assets/rectangle.jpg";
 
 export const ArtigoCard = ({ 
   artigo, 
   onEdit, 
-  onDelete 
+  onDelete,
+  onRegenerateHtml,
 }: { 
-  artigo: ArtigoDetail; 
+  artigo: ArtigoAdminView; 
   onEdit: (artigo: ArtigoDetail) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
+  onRegenerateHtml?: (id: number) => void;
 }) => {
   const tipoInfo = tiposArtigo.find(t => t.value === artigo.tipo);
   const Icon = tipoInfo?.icon || FiBookOpen;
+  const tempoLeitura = artigo.tempoLeitura ?? `${Math.max(1, Math.ceil((artigo.nPagina || 1) / 2))} min`;
+  const visualizacoes = artigo.visualizacoes ?? 0;
+  const tags = artigo.tags ?? [];
+  const paginas = artigo.nPagina ?? 0;
 
   return (
     <motion.div
@@ -25,9 +32,12 @@ export const ArtigoCard = ({
     >
       <div className="relative h-48 overflow-hidden">
         <img
-          src={artigo.img}
+          src={artigo.img || rectangleImage}
           alt={artigo.titulo}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.src = rectangleImage;
+          }}
         />
         
         {/* Badge de categoria */}
@@ -39,11 +49,20 @@ export const ArtigoCard = ({
         {/* Badge de tempo de leitura */}
         <div className="absolute bottom-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
           <FiClock size={12} />
-          {artigo.tempoLeitura}
+          {tempoLeitura}
         </div>
 
         {/* Ações */}
         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onRegenerateHtml && (
+            <button
+              onClick={() => onRegenerateHtml(Number(artigo.id))}
+              title="Regerar HTML do artigo"
+              className="p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-white transition-colors text-gray-600 hover:text-primary-500"
+            >
+              <FiRefreshCw size={14} />
+            </button>
+          )}
           <button
             onClick={() => onEdit(artigo)}
             className="p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-white transition-colors text-gray-600 hover:text-primary-500"
@@ -53,7 +72,7 @@ export const ArtigoCard = ({
           <button
             onClick={() => {
               if (window.confirm('Tem certeza que deseja excluir este artigo?')) {
-                onDelete(artigo.id+"");
+                onDelete(Number(artigo.id));
               }
             }}
             className="p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-white transition-colors text-gray-600 hover:text-red-500"
@@ -87,16 +106,16 @@ export const ArtigoCard = ({
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 text-xs text-gray-500">
               <FiEye size={12} />
-              {artigo.visualizacoes}
+              {visualizacoes}
             </span>
             <span className="flex items-center gap-1 text-xs text-gray-500">
               <FiBookOpen size={12} />
-              {artigo.paginas} pág
+              {paginas} pág
             </span>
           </div>
 
           <div className="flex gap-1">
-            {artigo.tags.slice(0, 2).map((tag, index) => (
+            {tags.slice(0, 2).map((tag, index) => (
               <span
                 key={index}
                 className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-[10px]"

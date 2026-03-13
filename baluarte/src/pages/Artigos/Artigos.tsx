@@ -1,5 +1,5 @@
 // src/pages/Artigos/ArtigosPage.tsx
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
@@ -22,6 +22,7 @@ import {
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
 import { fadeInUp, staggerContainer } from "../../utils/animation";
+import { apiFetch } from "../../utils/api.js";
 
 
 // Tipos baseados no seu Enum ArtigoType
@@ -36,106 +37,117 @@ const tiposArtigo = [
   { value: "THEOLOGICAL", label: "Teológico", icon: LiaBibleSolid, color: "bg-red-500" },
 ];
 
-// Dados mockados
-const artigosMock = [
-  {
-    id: 1,
-    titulo: "A Soberania de Deus em Tempos de Crise",
-    descricao: "Uma reflexão profunda sobre como a soberania divina se manifesta mesmo nos momentos mais difíceis de nossas vidas, trazendo conforto e esperança.",
-    imagem: "https://placehold.co/1000x600/1b1c1f/ffffff?text=Soberania+de+Deus",
-    tipo: "DOCTRINAL",
-    autor: "Pr. Antônio Silva",
-    data: "2024-01-15",
-    paginas: 12,
-    visualizacoes: 1234,
-    tempoLeitura: "8 min"
-  },
-  {
-    id: 2,
-    titulo: "O Poder da Oração Intercessória",
-    descricao: "Descubra o impacto transformador da oração intercessória e como ela pode mudar realidades, baseado em exemplos bíblicos e testemunhos contemporâneos.",
-    imagem: "https://placehold.co/1000x600/083c36/ffffff?text=Oração+Intercessória",
-    tipo: "DEVOTIONAL",
-    autor: "Pra. Maria Oliveira",
-    data: "2024-01-10",
-    paginas: 8,
-    visualizacoes: 856,
-    tempoLeitura: "5 min"
-  },
-  {
-    id: 3,
-    titulo: "Os 7 Selos do Apocalipse: Uma Análise Profética",
-    descricao: "Estudo detalhado sobre os sete selos mencionados no livro do Apocalipse, suas interpretações históricas e significado para os dias atuais.",
-    imagem: "https://placehold.co/1000x600/3c2f5f/ffffff?text=7+Selos+do+Apocalipse",
-    tipo: "PROPHETIC",
-    autor: "Pr. João Santos",
-    data: "2024-01-05",
-    paginas: 24,
-    visualizacoes: 2341,
-    tempoLeitura: "15 min"
-  },
-  {
-    id: 4,
-    titulo: "Defendendo a Fé: Guia de Apologética Básica",
-    descricao: "Aprenda a defender sua fé com razão e respeito, respondendo às principais objeções contemporâneas ao cristianismo.",
-    imagem: "https://placehold.co/1000x600/2a2f4a/ffffff?text=Apologética+Básica",
-    tipo: "APOLOGETICS",
-    autor: "Pb. Marcos Oliveira",
-    data: "2024-01-01",
-    paginas: 32,
-    visualizacoes: 567,
-    tempoLeitura: "20 min"
-  },
-  {
-    id: 5,
-    titulo: "Como Deus me Libertou das Drogas",
-    descricao: "Um testemunho poderoso de transformação e libertação através do poder de Deus, mostrando que para Ele não existe causa perdida.",
-    imagem: "https://placehold.co/1000x600/5b1b1b/ffffff?text=Libertação+das+Drogas",
-    tipo: "TESTIMONY",
-    autor: "Irmão Carlos Souza",
-    data: "2023-12-28",
-    paginas: 6,
-    visualizacoes: 3456,
-    tempoLeitura: "4 min"
-  },
-  {
-    id: 6,
-    titulo: "Estudo Exegético de Romanos 8",
-    descricao: "Uma análise verse-a-verso do capítulo 8 de Romanos, explorando o contexto histórico, linguístico e teológico desta passagem fundamental.",
-    imagem: "https://placehold.co/1000x600/1c3f2f/ffffff?text=Romanos+8",
-    tipo: "BIBLE_STUDY",
-    autor: "Pr. Antônio Silva",
-    data: "2023-12-20",
-    paginas: 28,
-    visualizacoes: 1876,
-    tempoLeitura: "18 min"
-  }
-];
+type ArtigoApi = {
+  id: number;
+  titulo: string;
+  descricao: string;
+  tipo: string;
+  escritor: string;
+  pdf: string;
+  nPagina: number;
+  dataPublicacao: string;
+  img: string;
+  visualizacoes?: number;
+};
+
+type PageResponse<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
+type ArtigoView = {
+  id: number;
+  titulo: string;
+  descricao: string;
+  imagem: string;
+  tipo: string;
+  autor: string;
+  data: string;
+  paginas: number;
+  visualizacoes: number;
+  tempoLeitura: string;
+};
 
 export const ArtigosPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTipo, setSelectedTipo] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [artigos, setArtigos] = useState(artigosMock);
+  const [artigos, setArtigos] = useState<ArtigoView[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Filtrar artigos
+  // Regras para consumir a API no front (somente Artigos):
+  // 1) Use o endpoint paginado: GET /user/artigo?page&size&tipo&q
+  // 2) Sempre envie filtros via query (não filtre localmente)
+  // 3) Mapeie o payload da API para o modelo de UI
+  // 4) Trate estados: loading, vazio e erro
   useEffect(() => {
-    let filtered = artigosMock;
+    let active = true;
+    setLoading(true);
 
-    if (searchTerm) {
-      filtered = filtered.filter(artigo => 
-        artigo.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        artigo.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        artigo.autor.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    const timeout = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("page", "0");
+        params.set("size", "12");
 
-    if (selectedTipo) {
-      filtered = filtered.filter(artigo => artigo.tipo === selectedTipo);
-    }
+        if (selectedTipo) params.set("tipo", selectedTipo);
+        if (searchTerm.trim()) params.set("q", searchTerm.trim());
 
-    setArtigos(filtered);
+        const response = await apiFetch(`/user/artigo?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error("Falha ao carregar artigos.");
+        }
+
+        const payload = (await response.json()) as PageResponse<ArtigoApi>;
+        if (!active) return;
+
+        const mapped = payload.content.map((artigo) => {
+          const tempoLeitura = Math.max(1, Math.ceil((artigo.nPagina || 1) / 2));
+          return {
+            id: artigo.id,
+            titulo: artigo.titulo,
+            descricao: artigo.descricao,
+            imagem: artigo.img,
+            tipo: artigo.tipo,
+            autor: artigo.escritor,
+            data: artigo.dataPublicacao,
+            paginas: artigo.nPagina,
+            visualizacoes: artigo.visualizacoes ?? 0,
+            tempoLeitura: `${tempoLeitura} min`,
+          };
+        });
+
+        setArtigos(mapped);
+        setTotal(payload.totalElements ?? mapped.length);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError("Não foi possível carregar os artigos.");
+        setArtigos([]);
+        setTotal(0);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }, 300); // Debounce leve para não bater na API a cada tecla.
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
   }, [searchTerm, selectedTipo]);
+
+  const artigosByTipo = useMemo(() => {
+    const count: Record<string, number> = {};
+    artigos.forEach((artigo) => {
+      count[artigo.tipo] = (count[artigo.tipo] || 0) + 1;
+    });
+    return count;
+  }, [artigos]);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -237,7 +249,7 @@ export const ArtigosPage = () => {
                           <Icon className={selectedTipo === tipo.value ? 'text-white' : tipo.color.replace('bg-', 'text-')} />
                           <span className="flex-1 text-left">{tipo.label}</span>
                           <span className="text-xs opacity-75">
-                            {artigosMock.filter(a => a.tipo === tipo.value).length}
+                            {artigosByTipo[tipo.value] || 0}
                           </span>
                         </button>
                       );
@@ -297,10 +309,37 @@ export const ArtigosPage = () => {
           >
             {/* Contador de resultados */}
             <div className="mb-4 text-gray-600">
-              {artigos.length} {artigos.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
+              {total} {total === 1 ? 'artigo encontrado' : 'artigos encontrados'}
             </div>
 
-            {artigos.length === 0 ? (
+            {loading ? (
+              <motion.div
+                className="text-center py-20 bg-white rounded-2xl shadow"
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">Carregando artigos...</p>
+              </motion.div>
+            ) : error ? (
+              <motion.div
+                className="text-center py-20 bg-white rounded-2xl shadow"
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
+                <p className="text-gray-500 mb-4">{error}</p>
+                <button
+                  onClick={clearFilters}
+                  className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark"
+                >
+                  Limpar filtros
+                </button>
+              </motion.div>
+            ) : artigos.length === 0 ? (
               <motion.div
                 className="text-center py-20 bg-white rounded-2xl shadow"
                 variants={fadeInUp}

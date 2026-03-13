@@ -1,20 +1,25 @@
 package com.igreja.api.models;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Arrays;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.igreja.api.enums.UserStatus;
 import com.igreja.api.utils.GravatarUtils;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,6 +52,24 @@ public class UserModel implements UserDetails{
     private String password;
     private String img;
     private String roles;
+    private String telefone;
+    private LocalDate dataNascimento;
+    private String cidade;
+    private String estado;
+    private String igreja;
+    private LocalDate dataBatismo;
+    private String ministerio;
+    private String cargo;
+    @Column(length = 1000)
+    private String observacoes;
+    @Column(length = 1000)
+    private String motivoBloqueio;
+    private LocalDateTime dataCadastro = LocalDateTime.now();
+    private LocalDateTime dataAprovacao;
+    private String aprovadoPor;
+    private LocalDateTime ultimoAcesso;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.PENDENTE;
 
    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ComentarioModel> comentarios = new ArrayList<>();

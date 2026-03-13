@@ -1,6 +1,7 @@
 // src/components/artigos/CardArtigo.tsx
 import { Link } from "react-router-dom";
 import { FiBookOpen, FiUser } from "react-icons/fi";
+import rectangleImage from "../../assets/rectangle.jpg";
 
 interface CardArtigoProps {
   artigo: {
@@ -30,9 +31,12 @@ export const CardArtigo = ({ artigo }: CardArtigoProps) => {
     >
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={artigo.imagem} 
+          src={artigo.imagem || rectangleImage} 
           alt={artigo.titulo}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.src = rectangleImage;
+          }}
         />
         <span className="absolute top-4 left-4 bg-primary text-white text-xs px-3 py-1 rounded-full">
           {artigo.tipo}

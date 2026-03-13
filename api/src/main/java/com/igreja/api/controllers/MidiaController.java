@@ -27,9 +27,14 @@ import com.igreja.api.services.MidiaService;
 import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
 import com.igreja.api.enums.VideoType;
+import com.igreja.api.services.AdminAuditLogService;
+import com.igreja.api.enums.AdminAuditType;
 
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 public class MidiaController {
@@ -37,15 +42,34 @@ public class MidiaController {
     @Autowired
     private MidiaService midiaService;
 
+    @Autowired
+    private AdminAuditLogService adminAuditLogService;
 
-    @PostMapping("/admin/midia/video")
-    public ResponseEntity<?> REgisterMidia(@RequestBody @Valid MidiaDto midiaDto) {    
-        return ResponseEntity.ok(midiaService.save(midiaDto));
+
+    @PostMapping(value = "/admin/midia/video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> REgisterMidiaVideoFile(
+            @ModelAttribute @Valid MidiaFile midiaDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        var result = midiaService.save(midiaDto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Mídia criada",
+                    "Novo vídeo (arquivo) publicado", resolveIp(request), AdminAuditType.SUCESSO);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping(value = "/admin/midia/audio",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> REgisterMidiaFile(@ModelAttribute @Valid MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {    
-        return ResponseEntity.ok(midiaService.save(midiaDto));
+    public ResponseEntity<?> REgisterMidiaFile(
+            @ModelAttribute @Valid MidiaFile midiaDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        var result = midiaService.save(midiaDto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Mídia criada",
+                    "Novo áudio publicado", resolveIp(request), AdminAuditType.SUCESSO);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/user/midia/video")
@@ -82,19 +106,52 @@ public class MidiaController {
         return ResponseEntity.ok(midiaService.page(page, size, type, audioType, videoType, q));
     }
 
-    @PutMapping("/admin/midia/video/{id}")
-    public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@RequestBody @Valid MidiaDto midiaDto) {    
-        return ResponseEntity.ok(midiaService.edit(midiaDto,id));
+    @GetMapping("/admin/galeria")
+    public ResponseEntity<?> galeriaAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(midiaService.galeriaAdmin(page, size, q));
+    }
+
+    @PutMapping(value = "/admin/midia/video/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> EditVideoFile(
+            @PathVariable("id") int id,
+            @ModelAttribute @Valid MidiaFile midiaDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        var result = midiaService.edit(midiaDto, id);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Mídia editada",
+                    "Vídeo (arquivo) ID " + id + " atualizado", resolveIp(request), AdminAuditType.INFO);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping(value="/admin/midia/audio/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> EditComentario(@PathVariable("id") int id,@ModelAttribute @Valid MidiaFile midiaDto) throws InterruptedException, ExecutionException, TimeoutException {    
-        return ResponseEntity.ok(midiaService.edit(midiaDto,id));
+    public ResponseEntity<?> EditComentario(
+            @PathVariable("id") int id,
+            @ModelAttribute @Valid MidiaFile midiaDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        var result = midiaService.edit(midiaDto,id);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Mídia editada",
+                    "Áudio/Imagem ID " + id + " atualizado", resolveIp(request), AdminAuditType.INFO);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/admin/midia/{id}")
-    public ResponseEntity<?> Delete(@PathVariable("id") int id) {    
+    public ResponseEntity<?> Delete(
+            @PathVariable("id") int id,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) {
         midiaService.delete(id);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Mídia removida",
+                    "Mídia ID " + id + " removida", resolveIp(request), AdminAuditType.ALERTA);
+        }
         return ResponseEntity.ok(true);
     }
 
@@ -110,13 +167,29 @@ public class MidiaController {
     }
 
     @PostMapping(value = "/admin/actividade/trailer")
-    public ResponseEntity<?> trailer(@RequestBody @Valid MidiaActividadeV actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
-        return ResponseEntity.ok(midiaService.addMidia(actividadeDto));
+    public ResponseEntity<?> trailer(
+            @RequestBody @Valid MidiaActividadeV actividadeDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        var result = midiaService.addMidia(actividadeDto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Upload de trailer",
+                    "Trailer adicionado à atividade ID " + actividadeDto.id(), resolveIp(request), AdminAuditType.SUCESSO);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping(value = "/admin/actividade/galeria",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> galeria(@ModelAttribute @Valid MidiaActividade actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
-        return ResponseEntity.ok(midiaService.addMidia(actividadeDto));
+    public ResponseEntity<?> galeria(
+            @ModelAttribute @Valid MidiaActividade actividadeDto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
+        var result = midiaService.addMidia(actividadeDto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Upload de galeria",
+                    "Imagem adicionada à atividade ID " + actividadeDto.id(), resolveIp(request), AdminAuditType.SUCESSO);
+        }
+        return ResponseEntity.ok(result);
     }
 
      @GetMapping(value = "/user/actividade/galeria/{id}")
@@ -131,5 +204,17 @@ public class MidiaController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) throws IOException {
         return ResponseEntity.ok(midiaService.Trailler(id,page,size));
+    }
+
+    private String resolveIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp;
+        }
+        return request.getRemoteAddr();
     }
 }

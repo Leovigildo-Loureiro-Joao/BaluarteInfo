@@ -12,10 +12,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import com.igreja.api.dto.config.AdminConfigDto;
 import com.igreja.api.dto.config.CarouselItemDto;
 import com.igreja.api.dto.config.ConfiguracaoDto;
 import com.igreja.api.services.CloudDinaryService;
 import com.igreja.api.services.ConfigService;
+import com.igreja.api.services.AdminAuditLogService;
+import com.igreja.api.enums.AdminAuditType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.validation.Valid;
 
@@ -24,10 +30,13 @@ public class ConfigController {
 
     private final ConfigService cpConfigService;
     private final CloudDinaryService cloudinaryService;
+    private final AdminAuditLogService adminAuditLogService;
 
-    public ConfigController(ConfigService cpConfigService, CloudDinaryService cloudinaryService) {
+    public ConfigController(ConfigService cpConfigService, CloudDinaryService cloudinaryService,
+            AdminAuditLogService adminAuditLogService) {
         this.cpConfigService = cpConfigService;
         this.cloudinaryService = cloudinaryService;
+        this.adminAuditLogService = adminAuditLogService;
     }
 
      @PutMapping("/admin/config/edit")
@@ -59,5 +68,35 @@ public class ConfigController {
         String url = cloudinaryService.uploadFileAsync(file, "image");
         var created = cpConfigService.createHomeCarouselItem(url, titulo, legenda);
         return ResponseEntity.ok(created);
+    }
+
+    @GetMapping("/admin/config/app")
+    public ResponseEntity<?> appConfig() {
+        return ResponseEntity.ok(cpConfigService.adminConfig());
+    }
+
+    @PutMapping("/admin/config/app")
+    public ResponseEntity<?> updateAppConfig(
+            @RequestBody AdminConfigDto dto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) {
+        var result = cpConfigService.updateAdminConfig(dto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Configurações alteradas",
+                    "Configurações administrativas atualizadas", resolveIp(request), AdminAuditType.ALERTA);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    private String resolveIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp;
+        }
+        return request.getRemoteAddr();
     }
 }

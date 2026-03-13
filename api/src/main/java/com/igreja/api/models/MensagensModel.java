@@ -1,6 +1,6 @@
 package com.igreja.api.models;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.igreja.api.enums.MensagemType;
 import com.igreja.api.enums.StatusMensage;
@@ -35,8 +35,12 @@ public class MensagensModel {
     @NotBlank
     private String assunto;
 
+    private String nome;
+
     @Email
     private String email;
+
+    private String telefone;
 
     @Email
     private String destino;
@@ -49,6 +53,6 @@ public class MensagensModel {
     @Enumerated(EnumType.STRING)
     private StatusMensage status=StatusMensage.PENDENTE;
     
-    private LocalDate dataPublicacao;
+    private LocalDateTime dataPublicacao;
     
 }

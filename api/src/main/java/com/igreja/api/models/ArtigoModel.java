@@ -9,6 +9,7 @@ import com.igreja.api.enums.ArtigoType;
 import com.igreja.api.enums.InfoType;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -46,6 +47,9 @@ public class ArtigoModel {
     private String escritor;
     @NotBlank
     private String img;
+
+    @Column(columnDefinition = "TEXT")
+    private String conteudo;
 
     @Enumerated(EnumType.STRING)
     private ArtigoType tipo;

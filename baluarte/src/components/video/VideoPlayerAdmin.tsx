@@ -7,6 +7,7 @@ import {
   FiVolumeX,
   FiMaximize,
   FiMinimize,
+  FiDownload,
   FiX
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +27,45 @@ export const VideoPreviewPlayer = ({
   autoPlay = false,
   onClose 
 }: VideoPreviewPlayerProps) => {
+  const resolveYoutubeId = (value: string) => {
+    if (!value) return null;
+    if (value.length === 11 && !value.includes("/")) return value;
+    const patterns = [
+      /youtu\.be\/([\w-]{11})/i,
+      /youtube\.com\/(?:watch\?v=|embed\/)([\w-]{11})/i
+    ];
+    for (const pattern of patterns) {
+      const match = value.match(pattern);
+      if (match?.[1]) return match[1];
+    }
+    return null;
+  };
+
+  const youtubeId = resolveYoutubeId(src);
+
+  if (youtubeId) {
+    const embedUrl = `https://www.youtube.com/embed/${youtubeId}`;
+    return (
+      <div className="relative bg-black rounded-xl overflow-hidden" style={{ aspectRatio: "16/9" }}>
+        <iframe
+          src={embedUrl}
+          title={titulo || "Vídeo"}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+          >
+            <FiX size={18} />
+          </button>
+        )}
+      </div>
+    );
+  }
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [currentTime, setCurrentTime] = useState(0);
@@ -237,6 +277,14 @@ export const VideoPreviewPlayer = ({
             </div>
 
             <div className="flex items-center gap-2">
+              <a
+                href={src}
+                download
+                className="text-white hover:text-primary-500 transition-colors"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <FiDownload size={18} />
+              </a>
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-white hover:text-primary-500 transition-colors"

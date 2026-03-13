@@ -1,5 +1,5 @@
 // src/pages/Artigos/ArtigosPage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiSearch, 
@@ -17,7 +17,8 @@ import {
   FiUpload,
   FiTag,
   FiFileText,
-  FiImage
+  FiImage,
+  FiRefreshCw
 } from "react-icons/fi";
 import { 
   GiPrayer, 
@@ -29,6 +30,7 @@ import { LiaBibleSolid, LiaCrossSolid } from "react-icons/lia";
 import  ModalArtigo  from "../../components/artigos/ModalArtigo";
 import { ArtigoCard } from "../../components/artigos/CardArtigoAdmin";
 import { ArtigoDetail } from "../../types/api";
+import { apiFetch } from "../../utils/api.js";
 
 // Tipos baseados no seu Enum ArtigoType
 type ArtigoType = 'BIBLE_STUDY' | 'DEVOTIONAL' | 'HISTORICAL' | 'DOCTRINAL' | 
@@ -45,103 +47,139 @@ export const tiposArtigo: { value: ArtigoType; label: string; icon: any; color: 
   { value: "THEOLOGICAL", label: "Teológico", icon: LiaBibleSolid, color: "bg-red-500" },
 ];
 
-interface Artigo {
-  id: string;
+type ArtigoApi = {
+  id: number;
   titulo: string;
   descricao: string;
-  conteudo: string;
   tipo: ArtigoType;
-  autor: string;
-  data: string;
-  imagem: string;
-  paginas: number;
-  visualizacoes: number;
-  tempoLeitura: string;
-  tags: string[];
-}
+  escritor: string;
+  pdf: string;
+  nPagina: number;
+  dataPublicacao: string;
+  img: string;
+  visualizacoes?: number;
+};
 
-// Dados mockados
-const artigosMock: Artigo[] = [
-  {
-    id: '1',
-    titulo: "A Soberania de Deus em Tempos de Crise",
-    descricao: "Uma reflexão profunda sobre como a soberania divina se manifesta mesmo nos momentos mais difíceis de nossas vidas, trazendo conforto e esperança.",
-    conteudo: "Conteúdo completo do artigo...",
-    tipo: "DOCTRINAL",
-    escritor: "Pr. Antônio Silva",
-    dataPublicacao: "2024-01-15",
-    img: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=800&q=80",
-    paginas: 12,
-    visualizacoes: 1234,
-    tempoLeitura: "8 min",
-    tags: ["soberania", "fé", "crise"]
-  },
-  {
-    id: '2',
-    titulo: "O Poder da Oração Intercessória",
-    descricao: "Descubra o impacto transformador da oração intercessória e como ela pode mudar realidades, baseado em exemplos bíblicos e testemunhos contemporâneos.",
-    conteudo: "Conteúdo completo do artigo...",
-    tipo: "DEVOTIONAL",
-    escritor: "Pra. Maria Oliveira",
-    dataPublicacao: "2024-01-10",
-    img: "https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=800&q=80",
-    paginas: 8,
-    visualizacoes: 856,
-    tempoLeitura: "5 min",
-    tags: ["oração", "intercessão", "fé"]
-  },
-  {
-    id: '3',
-    titulo: "Os 7 Selos do Apocalipse: Uma Análise Profética",
-    descricao: "Estudo detalhado sobre os sete selos mencionados no livro do Apocalipse, suas interpretações históricas e significado para os dias atuais.",
-    conteudo: "Conteúdo completo do artigo...",
-    tipo: "PROPHETIC",
-    escritor: "Pr. João Santos",
-    dataPublicacao: "2024-01-05",
-    img: "https://images.unsplash.com/photo-1462556791646-c201b8241a94?auto=format&fit=crop&w=800&q=80",
-    paginas: 24,
-    visualizacoes: 2341,
-    tempoLeitura: "15 min",
-    tags: ["apocalipse", "profecia", "escatologia"]
-  }
-];
+type PageResponse<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
+export type ArtigoAdminView = ArtigoDetail & {
+  tempoLeitura?: string;
+  visualizacoes?: number;
+  tags?: string[];
+};
 
 // Componente Principal
 export const ArtigosPageAdmin = () => {
-  const [artigos, setArtigos] = useState<Artigo[]>(artigosMock);
+  const [artigos, setArtigos] = useState<ArtigoAdminView[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTipo, setSelectedTipo] = useState<ArtigoType | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [editingArtigo, setEditingArtigo] = useState<Artigo | undefined>();
+  const [editingArtigo, setEditingArtigo] = useState<ArtigoAdminView | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  // Filtrar artigos
-  const filteredArtigos = artigos.filter(artigo => {
-    const matchesSearch = searchTerm === "" || 
-      artigo.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artigo.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artigo.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artigo.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Regras para consumir a API no admin (somente Artigos):
+  // 1) Lista: GET /admin/artigo?page&size&tipo&q
+  // 2) Criar: POST /admin/artigo (multipart/form-data com pdf)
+  // 3) Editar: PUT /admin/artigo/edit/{id} (multipart/form-data com pdf)
+  // 4) Excluir: DELETE /admin/artigo/delete/{id}
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
 
-    const matchesTipo = !selectedTipo || artigo.tipo === selectedTipo;
+    const timeout = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("page", "0");
+        params.set("size", "12");
+        if (selectedTipo) params.set("tipo", selectedTipo);
+        if (searchTerm.trim()) params.set("q", searchTerm.trim());
 
-    return matchesSearch && matchesTipo;
-  });
+        const response = await apiFetch(`/admin/artigo?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error("Falha ao carregar artigos.");
+        }
 
-  const handleSave = (novoArtigo: Omit<ArtigoDetail, 'id'>) => {
-    if (editingArtigo) {
-      // Editar
-      setArtigos(artigos.map(a => 
-        a.id === editingArtigo.id ? { ...novoArtigo, id: a.id } as Artigo : a
-      ));
-    } else {
-      // Criar
-      const artigo: Artigo = {
-        ...novoArtigo,
-        id: Math.random().toString(36).substr(2, 9),
-      } as Artigo;
-      setArtigos([artigo, ...artigos]);
+        const payload = (await response.json()) as PageResponse<ArtigoApi>;
+        if (!active) return;
+
+        const mapped = payload.content.map((artigo) => {
+          const tempoLeitura = Math.max(1, Math.ceil((artigo.nPagina || 1) / 2));
+          return {
+            ...artigo,
+            tempoLeitura: `${tempoLeitura} min`,
+            visualizacoes: artigo.visualizacoes ?? 0,
+            tags: [],
+          } as ArtigoAdminView;
+        });
+
+        setArtigos(mapped);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError("Não foi possível carregar os artigos.");
+        setArtigos([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [searchTerm, selectedTipo, reloadToken]);
+
+  const handleSave = async (novoArtigo: ArtigoUpsertPayload) => {
+    try {
+      // Enviar multipart para criar/editar (PDF obrigatório).
+      const formData = new FormData();
+      formData.append("titulo", novoArtigo.titulo);
+      formData.append("descricao", novoArtigo.descricao);
+      formData.append("escritor", novoArtigo.escritor);
+      formData.append("tipo", novoArtigo.tipo);
+      const isEditing = Boolean(editingArtigo);
+      if (!isEditing) {
+        if (!(novoArtigo.pdf instanceof File)) {
+          throw new Error("PDF obrigatório para criar artigo.");
+        }
+        formData.append("pdf", novoArtigo.pdf);
+      } else if (novoArtigo.pdf instanceof File) {
+        formData.append("pdf", novoArtigo.pdf);
+      }
+      if (novoArtigo.img instanceof File) {
+        formData.append("img", novoArtigo.img);
+      }
+
+      const endpoint = isEditing
+        ? `/admin/artigo/edit/${editingArtigo?.id}`
+        : "/admin/artigo";
+
+      const response = await apiFetch(endpoint, {
+        method: isEditing ? "PUT" : "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao salvar artigo.");
+      }
+
+      setShowModal(false);
+      setEditingArtigo(undefined);
+      setError("");
+
+      // Recarregar a lista após salvar (mesmo se os filtros não mudaram).
+      setReloadToken((current) => current + 1);
+    } catch (err) {
+      setError("Não foi possível salvar o artigo.");
     }
-    setEditingArtigo(undefined);
   };
 
   const handleEdit = (artigo: ArtigoDetail) => {
@@ -149,8 +187,44 @@ export const ArtigosPageAdmin = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id: string) => {
-    setArtigos(artigos.filter(a => a.id !== id));
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await apiFetch(`/admin/artigo/delete/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error("Falha ao excluir artigo.");
+      }
+      setArtigos(artigos.filter(a => a.id !== id));
+      setError("");
+    } catch (err) {
+      setError("Não foi possível excluir o artigo.");
+    }
+  };
+
+  const handleRegenerateHtml = async (id: number) => {
+    try {
+      const response = await apiFetch(`/admin/artigo/${id}/html`, { method: "PUT" });
+      if (!response.ok) {
+        throw new Error("Falha ao regerar HTML.");
+      }
+      setReloadToken((current) => current + 1);
+      setError("");
+    } catch (err) {
+      setError("Não foi possível regerar o HTML do artigo.");
+    }
+  };
+
+  const handleRegenerateHtmlAll = async () => {
+    if (!window.confirm("Regerar o HTML de TODOS os artigos? Isso pode demorar.")) return;
+    try {
+      const response = await apiFetch(`/admin/artigo/html`, { method: "PUT" });
+      if (!response.ok) {
+        throw new Error("Falha ao regerar HTML.");
+      }
+      setReloadToken((current) => current + 1);
+      setError("");
+    } catch (err) {
+      setError("Não foi possível regerar o HTML de todos os artigos.");
+    }
   };
 
  return (
@@ -186,6 +260,15 @@ export const ArtigosPageAdmin = () => {
                 className="w-full sm:w-80 pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
               />
             </div>
+
+            <button
+              onClick={handleRegenerateHtmlAll}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              title="Regerar HTML de todos os artigos"
+            >
+              <FiRefreshCw size={18} />
+              Regerar HTML
+            </button>
 
             <button
               onClick={() => {
@@ -231,12 +314,23 @@ export const ArtigosPageAdmin = () => {
           
           {/* Resultados */}
           <div className="mt-4 text-sm text-gray-500 border-t border-gray-100 pt-4">
-            {filteredArtigos.length} {filteredArtigos.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
+            {artigos.length} {artigos.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
           </div>
         </div>
 
         {/* Grid de Artigos */}
-        {filteredArtigos.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+            <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Carregando artigos...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+            <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
+            <p className="text-gray-500 mb-4">{error}</p>
+          </div>
+        ) : artigos.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
             <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-700 mb-2">Nenhum artigo encontrado</h3>
@@ -270,12 +364,13 @@ export const ArtigosPageAdmin = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
-              {filteredArtigos.map((artigo) => (
+              {artigos.map((artigo) => (
                 <ArtigoCard
                   key={artigo.id}
                   artigo={artigo}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onRegenerateHtml={handleRegenerateHtml}
                 />
               ))}
             </AnimatePresence>
@@ -298,4 +393,12 @@ export const ArtigosPageAdmin = () => {
       </AnimatePresence>
     </div>
   );
+};
+type ArtigoUpsertPayload = {
+  titulo: string;
+  descricao: string;
+  escritor: string;
+  tipo: string;
+  pdf?: File;
+  img?: File | null;
 };

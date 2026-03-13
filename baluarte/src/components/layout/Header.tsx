@@ -3,12 +3,18 @@ import { Link } from "react-router-dom";
 import { FiMail } from "react-icons/fi";
 import { icone, perfil } from "../../assets/Assets";
 import Navbar from "./NavBar";
+import { getAuthToken, getStoredUser } from "../../utils/auth.js";
 
 type HeaderProps = {
   onOpenMensagens?: () => void;
 };
 
 export const Header = ({ onOpenMensagens }: HeaderProps) => {
+  const storedUser = getStoredUser();
+  const isAuthenticated = Boolean(getAuthToken() || storedUser);
+  const profileImage = storedUser?.img || perfil;
+  const profileLink = storedUser?.id ? `/Perfil/${storedUser.id}` : "/Perfil/1";
+
   return (
     <header 
       className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-800 py-4 shadow-lg shadow-black/30"
@@ -46,26 +52,30 @@ export const Header = ({ onOpenMensagens }: HeaderProps) => {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onOpenMensagens?.()}
-              className="group rounded-full border border-white/20 p-2 text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              aria-label="Abrir minhas mensagens"
-            >
-              <FiMail className="w-5 h-5 transition-transform group-hover:scale-110" />
-            </button>
+            {isAuthenticated && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onOpenMensagens?.()}
+                  className="group rounded-full border border-white/20 p-2 text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  aria-label="Abrir minhas mensagens"
+                >
+                  <FiMail className="w-5 h-5 transition-transform group-hover:scale-110" />
+                </button>
 
-            {/* Perfil */}
-            <Link 
-              to="/Perfil/1" 
-              className="block transition-transform hover:scale-105 ring-2 ring-white/50 rounded-full"
-            >
-              <img 
-                src={perfil} 
-                className="w-10 h-10 rounded-full object-cover"
-                alt="Perfil" 
-              />
-            </Link>
+                {/* Perfil */}
+                <Link 
+                  to={profileLink} 
+                  className="block transition-transform hover:scale-105 ring-2 ring-white/50 rounded-full"
+                >
+                  <img 
+                    src={profileImage} 
+                    className="w-10 h-10 rounded-full object-cover"
+                    alt="Perfil" 
+                  />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

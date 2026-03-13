@@ -73,6 +73,45 @@ public class CloudDinaryService {
         }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
     }
 
+    public CloudinaryUploadResult uploadFileWithInfoAsync(MultipartFile file, String resourceType)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return uploadExecutor.submit(() -> {
+            try {
+                String encodedPublicId = URLEncoder.encode(this.uniqueName.trim(), StandardCharsets.UTF_8.toString())
+                        .replace("+", "_");
+
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                        ObjectUtils.asMap(
+                                "resource_type", resourceType,
+                                "folder", "upload",
+                                "timeout", 4000,
+                                "quality", "auto:fast",
+                                "public_id", encodedPublicId,
+                                "filename_override", encodedPublicId));
+
+                String url = uploadResult.containsKey("secure_url")
+                        ? uploadResult.get("secure_url").toString()
+                        : uploadResult.get("url").toString();
+
+                Double duration = null;
+                Object durationObj = uploadResult.get("duration");
+                if (durationObj instanceof Number number) {
+                    duration = number.doubleValue();
+                } else if (durationObj != null) {
+                    try {
+                        duration = Double.parseDouble(durationObj.toString());
+                    } catch (NumberFormatException ignored) {
+                        duration = null;
+                    }
+                }
+
+                return new CloudinaryUploadResult(url, duration);
+            } catch (IOException e) {
+                throw new RuntimeException("Falha no upload do arquivo", e);
+            }
+        }).get(30, TimeUnit.SECONDS);
+    }
+
 
     public String uploadFileAsync(byte[] file, String resourceType) throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
@@ -119,6 +158,30 @@ public class CloudDinaryService {
             }
         }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
     }
+
+    // Upload assíncrono para imagem enviada como MultipartFile (capa)
+    public String uploadImageFileAsync(MultipartFile imageFile, String resourceType)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        return uploadExecutor.submit(() -> {
+            try {
+                String publicId = this.uniqueName == null ? UUID.randomUUID().toString() : this.uniqueName;
+                publicId = publicId.replace(".pdf", "").trim();
+                Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(),
+                        ObjectUtils.asMap(
+                                "resource_type", resourceType,
+                                "folder", "upload",
+                                "timeout", 4000,
+                                "quality", "auto:fast",
+                                "public_id", publicId,
+                                "filename_override", publicId));
+                return uploadResult.containsKey("secure_url")
+                        ? uploadResult.get("secure_url").toString()
+                        : uploadResult.get("url").toString();
+            } catch (IOException e) {
+                throw new RuntimeException("Falha no upload da imagem", e);
+            }
+        }).get(30, TimeUnit.SECONDS);
+    }
    
     // Exclusão assíncrona
     public CompletableFuture<Boolean> deleteFileAsync(String url) {
@@ -131,6 +194,17 @@ public class CloudDinaryService {
                 throw new RuntimeException("Falha ao excluir arquivo", e);
             }
         }, uploadExecutor);
+    }
+
+    public CompletableFuture<Boolean> deleteFileIfCloudinaryAsync(String url) {
+        if (url == null || url.isBlank()) {
+            return CompletableFuture.completedFuture(true);
+        }
+        // Placeholders externos ou URLs que não são do Cloudinary
+        if (!url.contains("/upload/")) {
+            return CompletableFuture.completedFuture(true);
+        }
+        return deleteFileAsync(url);
     }
 
     // Extração segura do public_id

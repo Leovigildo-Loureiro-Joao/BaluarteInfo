@@ -33,6 +33,8 @@ import {
 } from 'react-icons/gi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { icone } from '../../assets/Assets';
+import { apiFetch } from '../../utils/api.js';
+import { clearAuthSession } from '../../utils/auth.js';
 
 interface NavigationItem {
   name: string;
@@ -79,6 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
 
   const managementNavigation: NavigationItem[] = [
     { name: 'Usuários', href: '/admin/usuarios', icon: FiUsers, roles: ['admin'] },
+    { name: 'Editar Sobre', href: '/admin/sobre', icon: FiUsers, roles: ['admin'] },
     { name: 'Comentários', href: '/admin/comentarios', icon: FiMessageCircle, badge: 12 },
     { name: 'Inscrições', href: '/admin/inscricoes', icon: GiArchiveRegister },
   ];
@@ -147,8 +150,15 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    } finally {
+      clearAuthSession();
+      navigate('/login');
+    }
   };
 
   const getUserInitial = () => {

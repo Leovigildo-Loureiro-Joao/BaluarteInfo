@@ -1,42 +1,33 @@
 // src/pages/Audios/AudiosPage.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FiSearch, 
-  FiHeadphones, 
-  FiUser, 
-  FiCalendar,
+import {
+  FiSearch,
+  FiHeadphones,
   FiClock,
   FiEye,
   FiPlus,
   FiEdit2,
   FiTrash2,
-  FiUpload,
-  FiX,
   FiPlay
 } from "react-icons/fi";
-import { 
-  GiMicrophone, 
-  GiPrayer, 
-  GiAngelWings, 
+import {
+  GiMicrophone,
+  GiPrayer,
+  GiAngelWings,
   GiMusicalNotes,
   GiSoundWaves,
   GiMegaphone
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
+import {
+  AudioType,
+  MidiaProjection,
+  MidiaType,
+  PageResponse
+} from "../../types/api";
+import { apiFetch } from "../../utils/api";
 import { ModalAudio } from "../../components/audio/AudioModal";
-
-// Tipos baseados no seu AudioType
-export enum AudioType {
-  Sermon = 'SERMON',
-  Devotional = 'DEVOTIONAL',
-  Testimony = 'TESTIMONY',
-  Music = 'MUSIC',
-  Prayer = 'PRAYER',
-  Study = 'STUDY',
-  Podcast = 'PODCAST',
-  Announcement = 'ANNOUNCEMENT'
-}
 
 export const tiposAudio: { value: AudioType; label: string; icon: any; color: string }[] = [
   { value: AudioType.Sermon, label: "Sermão", icon: GiMicrophone, color: "bg-purple-500" },
@@ -46,133 +37,42 @@ export const tiposAudio: { value: AudioType; label: string; icon: any; color: st
   { value: AudioType.Prayer, label: "Oração", icon: GiPrayer, color: "bg-blue-500" },
   { value: AudioType.Study, label: "Estudo", icon: LiaBibleSolid, color: "bg-amber-500" },
   { value: AudioType.Podcast, label: "Podcast", icon: GiSoundWaves, color: "bg-orange-500" },
-  { value: AudioType.Announcement, label: "Aviso", icon: GiMegaphone, color: "bg-red-500" },
+  { value: AudioType.Announcement, label: "Aviso", icon: GiMegaphone, color: "bg-red-500" }
 ];
 
 export interface Audio {
-  id: string;
+  id?: number;
   titulo: string;
   descricao: string;
   tipo: AudioType;
-  autor: string;
-  data: string;
-  capa: string; // imagem de capa do áudio
-  audioUrl: string;
-  duracao: string;
-  visualizacoes: number;
-  tags: string[];
+  capa?: string;
+  audioUrl?: string;
+  tempo?: string;
 }
 
-// Dados mockados
-const audiosMock: Audio[] = [
-  {
-    id: '1',
-    titulo: "O Poder da Oração - Sermão",
-    descricao: "Mensagem poderosa sobre o impacto da oração na vida do cristão.",
-    tipo: AudioType.Sermon,
-    autor: "Pr. Antônio Silva",
-    data: "2024-03-12",
-    capa: "https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=800&q=80",
-    audioUrl: "https://example.com/audio1.mp3",
-    duracao: "45:30",
-    visualizacoes: 1234,
-    tags: ["oração", "fé", "sermão"]
-  },
-  {
-    id: '2',
-    titulo: "Devocional Matinal - Salmos 23",
-    descricao: "Meditação no Salmo 23 para começar o dia com paz.",
-    tipo: AudioType.Devotional,
-    autor: "Pra. Maria Oliveira",
-    data: "2024-03-11",
-    capa: "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=800&q=80",
-    audioUrl: "https://example.com/audio2.mp3",
-    duracao: "15:20",
-    visualizacoes: 856,
-    tags: ["devocional", "salmos", "manhã"]
-  },
-  {
-    id: '3',
-    titulo: "Grandioso És Tu - Hino",
-    descricao: "Versão acústica do clássico hino da fé cristã.",
-    tipo: AudioType.Music,
-    autor: "Ministério Baluarte",
-    data: "2024-03-10",
-    capa: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=800&q=80",
-    audioUrl: "https://example.com/audio3.mp3",
-    duracao: "5:45",
-    visualizacoes: 2341,
-    tags: ["música", "louvor", "hino"]
-  },
-  {
-    id: '4',
-    titulo: "Oração pela Manhã",
-    descricao: "Momento de oração e intercessão para começar o dia.",
-    tipo: AudioType.Prayer,
-    autor: "Pra. Maria Oliveira",
-    data: "2024-03-09",
-    capa: "https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=800&q=80",
-    audioUrl: "https://example.com/audio4.mp3",
-    duracao: "20:15",
-    visualizacoes: 567,
-    tags: ["oração", "intercessão", "manhã"]
-  },
-  {
-    id: '5',
-    titulo: "Estudo de Romanos 8",
-    descricao: "Análise profunda do capítulo 8 de Romanos.",
-    tipo: AudioType.Study,
-    autor: "Pb. Marcos Oliveira",
-    data: "2024-03-08",
-    capa: "https://images.unsplash.com/photo-1503593245033-a040be3f3c82?auto=format&fit=crop&w=800&q=80",
-    audioUrl: "https://example.com/audio5.mp3",
-    duracao: "58:20",
-    visualizacoes: 432,
-    tags: ["estudo", "romanos", "bíblico"]
-  },
-  {
-    id: '6',
-    titulo: "Podcast Juventude e Fé",
-    descricao: "Conversa sobre os desafios da juventude cristã.",
-    tipo: AudioType.Podcast,
-    autor: "Pr. João Santos",
-    data: "2024-03-07",
-    capa: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=800&q=80",
-    audioUrl: "https://example.com/audio6.mp3",
-    duracao: "32:15",
-    visualizacoes: 789,
-    tags: ["podcast", "juventude", "fé"]
-  },
-  {
-    id: '7',
-    titulo: "Testemunho: Livre das Drogas",
-    descricao: "Testemunho poderoso de libertação do vício.",
-    tipo: AudioType.Testimony,
-    autor: "Irmão Carlos",
-    data: "2024-03-06",
-    capa: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
-    audioUrl: "https://example.com/audio7.mp3",
-    duracao: "28:45",
-    visualizacoes: 1123,
-    tags: ["testemunho", "libertação", "transformação"]
-  }
-];
-
-
+const mapToFormAudio = (audio: MidiaProjection): Audio => ({
+  id: audio.id,
+  titulo: audio.titulo,
+  descricao: audio.descricao,
+  tipo: audio.audioType || AudioType.Sermon,
+  capa: audio.imagem,
+  audioUrl: audio.url,
+  tempo: audio.tempo
+});
 
 // Card de Áudio
-const AudioCard = ({ 
-  audio, 
-  onEdit, 
+const AudioCard = ({
+  audio,
+  onEdit,
   onDelete,
   onPreview
-}: { 
-  audio: Audio; 
-  onEdit: (audio: Audio) => void;
-  onDelete: (id: string) => void;
-  onPreview: (audio: Audio) => void;
+}: {
+  audio: MidiaProjection;
+  onEdit: (audio: MidiaProjection) => void;
+  onDelete: (id: number) => void;
+  onPreview: (audio: MidiaProjection) => void;
 }) => {
-  const tipoInfo = tiposAudio.find(t => t.value === audio.tipo);
+  const tipoInfo = tiposAudio.find((t) => t.value === audio.audioType);
   const Icon = tipoInfo?.icon || FiHeadphones;
 
   return (
@@ -185,12 +85,18 @@ const AudioCard = ({
     >
       {/* Capa */}
       <div className="relative aspect-square overflow-hidden">
-        <img
-          src={audio.capa}
-          alt={audio.titulo}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        
+        {audio.imagem ? (
+          <img
+            src={audio.imagem}
+            alt={audio.titulo}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+            <FiHeadphones size={36} />
+          </div>
+        )}
+
         {/* Overlay com ondas sonoras (visual) */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
@@ -199,9 +105,9 @@ const AudioCard = ({
                 <div
                   key={i}
                   className="w-1 bg-white rounded-full animate-pulse"
-                  style={{ 
+                  style={{
                     height: `${Math.random() * 20 + 10}px`,
-                    animationDelay: `${i * 0.1}s` 
+                    animationDelay: `${i * 0.1}s`
                   }}
                 />
               ))}
@@ -218,17 +124,21 @@ const AudioCard = ({
             </button>
           </div>
         </div>
-        
+
         {/* Badge de categoria */}
-        <div className={`absolute top-4 left-4 ${tipoInfo?.color} text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-lg`}>
-          <Icon size={12} />
-          {tipoInfo?.label}
-        </div>
+        {tipoInfo && (
+          <div
+            className={`absolute top-4 left-4 ${tipoInfo.color} text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 shadow-lg`}
+          >
+            <Icon size={12} />
+            {tipoInfo.label}
+          </div>
+        )}
 
         {/* Badge de duração */}
         <div className="absolute top-4 right-4 bg-black/80 text-white px-2 py-1 rounded-lg text-xs flex items-center gap-1">
           <FiClock size={12} />
-          {audio.duracao}
+          {audio.tempo || "--:--"}
         </div>
 
         {/* Ações */}
@@ -241,7 +151,7 @@ const AudioCard = ({
           </button>
           <button
             onClick={() => {
-              if (window.confirm('Tem certeza que deseja excluir este áudio?')) {
+              if (window.confirm("Tem certeza que deseja excluir este áudio?")) {
                 onDelete(audio.id);
               }
             }}
@@ -257,52 +167,15 @@ const AudioCard = ({
         <h3 className="text-lg font-bold mb-2 group-hover:text-primary-500 transition-colors line-clamp-2">
           {audio.titulo}
         </h3>
-        
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-          {audio.descricao}
-        </p>
 
-        {/* Autor e data */}
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-primary-100 rounded-full flex items-center justify-center">
-              <FiUser size={10} className="text-primary-500" />
-            </div>
-            <span>{audio.autor}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <FiCalendar size={10} />
-            <span>{new Date(audio.data).toLocaleDateString('pt-BR')}</span>
-          </div>
-        </div>
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{audio.descricao}</p>
 
-        {/* Tags e estatísticas */}
+        {/* Estatísticas */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <span className="flex items-center gap-1 text-xs text-gray-500">
             <FiEye size={12} />
-            {audio.visualizacoes} plays
+            {audio.visualizacoes ?? 0} plays
           </span>
-
-          <div className="flex gap-1">
-            {audio.tags.slice(0, 2).map((tag, index) => (
-              <span
-                key={index}
-                className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-[10px]"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Mini player visual (estático) */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-1 bg-gray-200 rounded-full">
-              <div className="h-1 bg-primary-500 rounded-full w-0" />
-            </div>
-            <FiHeadphones className="text-gray-400 text-xs" />
-          </div>
         </div>
       </div>
     </motion.div>
@@ -311,77 +184,135 @@ const AudioCard = ({
 
 // Componente Principal
 export const AudiosPage = () => {
-  const [audios, setAudios] = useState<Audio[]>(audiosMock);
+  const [audios, setAudios] = useState<MidiaProjection[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTipo, setSelectedTipo] = useState<AudioType | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingAudio, setEditingAudio] = useState<Audio | undefined>();
   const [previewAudio, setPreviewAudio] = useState<Audio | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  // Filtrar áudios
-  const filteredAudios = audios.filter(audio => {
-    const matchesSearch = searchTerm === "" || 
-      audio.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      audio.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      audio.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      audio.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
 
-    const matchesTipo = !selectedTipo || audio.tipo === selectedTipo;
+    const timeout = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("page", "0");
+        params.set("size", "50");
+        params.set("type", MidiaType.Audio);
+        if (selectedTipo) params.set("audioType", selectedTipo);
+        if (searchTerm.trim()) params.set("q", searchTerm.trim());
 
-    return matchesSearch && matchesTipo;
-  });
+        const response = await apiFetch(`/admin/midia?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error("Falha ao carregar áudios.");
+        }
 
-  const handleSave = (novoAudio: Omit<Audio, 'id'>) => {
-    if (editingAudio) {
-      // Editar
-      setAudios(audios.map(a => 
-        a.id === editingAudio.id ? { ...novoAudio, id: a.id } as Audio : a
-      ));
+        const payload = (await response.json()) as PageResponse<MidiaProjection>;
+        if (!active) return;
+        setAudios(payload.content ?? []);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError("Não foi possível carregar os áudios.");
+        setAudios([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [searchTerm, selectedTipo, reloadToken]);
+
+  const handleSave = async (novoAudio: Omit<Audio, "id"> & { capaFile?: File; audioFile?: File }) => {
+    const formData = new FormData();
+    formData.append("titulo", novoAudio.titulo);
+    formData.append("descricao", novoAudio.descricao);
+    formData.append("type", MidiaType.Audio);
+    formData.append("audioType", novoAudio.tipo);
+
+    if (!editingAudio) {
+      if (!novoAudio.capaFile || !novoAudio.audioFile) {
+        throw new Error("Capa e áudio são obrigatórios.");
+      }
+      formData.append("imagem", novoAudio.capaFile);
+      formData.append("url", novoAudio.audioFile);
     } else {
-      // Criar
-      const audio: Audio = {
-        ...novoAudio,
-        id: Math.random().toString(36).substr(2, 9),
-      } as Audio;
-      setAudios([audio, ...audios]);
+      if (novoAudio.capaFile) formData.append("imagem", novoAudio.capaFile);
+      if (novoAudio.audioFile) formData.append("url", novoAudio.audioFile);
     }
+
+    const endpoint = editingAudio
+      ? `/admin/midia/audio/${editingAudio.id}`
+      : "/admin/midia/audio";
+    const method = editingAudio ? "PUT" : "POST";
+
+    const response = await apiFetch(endpoint, {
+      method,
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error("Falha ao salvar o áudio.");
+    }
+
+    setReloadToken((prev) => prev + 1);
     setEditingAudio(undefined);
   };
 
-  const handleEdit = (audio: Audio) => {
-    setEditingAudio(audio);
+  const handleEdit = (audio: MidiaProjection) => {
+    setEditingAudio(mapToFormAudio(audio));
     setShowModal(true);
   };
 
-  const handlePreview = (audio: Audio) => {
-    setPreviewAudio(audio);
+  const handlePreview = (audio: MidiaProjection) => {
+    setPreviewAudio(mapToFormAudio(audio));
   };
 
-  const handleDelete = (id: string) => {
-    setAudios(audios.filter(a => a.id !== id));
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await apiFetch(`/admin/midia/${id}`, {
+        method: "DELETE"
+      });
+      if (!response.ok) {
+        throw new Error("Falha ao remover o áudio.");
+      }
+      setReloadToken((prev) => prev + 1);
+    } catch (err) {
+      setError("Não foi possível remover o áudio.");
+    }
   };
+
+  const resultados = useMemo(() => audios.length, [audios]);
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
       {/* Grid decorativo */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 L30 60 M0 30 L60 30' stroke='%23CB2020' stroke-width='1'/%3E%3C/svg%3E")`,
-        }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M30 0 L30 60 M0 30 L60 30\' stroke=\'%23CB2020\' stroke-width=\'1\'/%3E%3C/svg%3E")'
+          }}
+        />
       </div>
 
       <div className="container-custom relative z-10 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              Áudios
-            </h1>
-            <p className="text-gray-500">
-              Gerencie todos os áudios, sermões e podcasts da igreja
-            </p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Áudios</h1>
+            <p className="text-gray-500">Gerencie todos os áudios, sermões e podcasts da igreja</p>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Busca */}
             <div className="relative">
@@ -415,8 +346,8 @@ export const AudiosPage = () => {
               onClick={() => setSelectedTipo(null)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 !selectedTipo
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? "bg-primary-500 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               Todos
@@ -427,8 +358,8 @@ export const AudiosPage = () => {
                 onClick={() => setSelectedTipo(tipo.value)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
                   selectedTipo === tipo.value
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? "bg-primary-500 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 <tipo.icon size={14} />
@@ -436,24 +367,27 @@ export const AudiosPage = () => {
               </button>
             ))}
           </div>
-          
+
           {/* Resultados */}
           <div className="mt-4 text-sm text-gray-500 border-t border-gray-100 pt-4">
-            {filteredAudios.length} {filteredAudios.length === 1 ? 'áudio encontrado' : 'áudios encontrados'}
+            {resultados} {resultados === 1 ? "áudio encontrado" : "áudios encontrados"}
           </div>
         </div>
 
-        {/* Grid de Áudios */}
-        {filteredAudios.length === 0 ? (
+        {error && <div className="mb-6 text-sm text-red-500">{error}</div>}
+
+        {loading ? (
+          <div className="text-center py-20 text-gray-500">A carregar áudios...</div>
+        ) : audios.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
             <FiHeadphones className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-700 mb-2">Nenhum áudio encontrado</h3>
             <p className="text-gray-500 mb-4">
-              {searchTerm || selectedTipo 
-                ? 'Tente buscar com outros termos ou limpar os filtros'
-                : 'Comece adicionando seu primeiro áudio!'}
+              {searchTerm || selectedTipo
+                ? "Tente buscar com outros termos ou limpar os filtros"
+                : "Comece adicionando seu primeiro áudio!"}
             </p>
-            {(searchTerm || selectedTipo) ? (
+            {searchTerm || selectedTipo ? (
               <button
                 onClick={() => {
                   setSearchTerm("");
@@ -478,7 +412,7 @@ export const AudiosPage = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <AnimatePresence>
-              {filteredAudios.map((audio) => (
+              {audios.map((audio) => (
                 <AudioCard
                   key={audio.id}
                   audio={audio}
@@ -501,7 +435,11 @@ export const AudiosPage = () => {
               setShowModal(false);
               setEditingAudio(undefined);
             }}
-            onSave={handleSave}
+            onSave={(payload) => {
+              handleSave(payload).catch(() => {
+                setError("Não foi possível salvar o áudio.");
+              });
+            }}
           />
         )}
       </AnimatePresence>

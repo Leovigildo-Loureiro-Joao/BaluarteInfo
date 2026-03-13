@@ -7,6 +7,7 @@ import {
   FiVolumeX,
   FiMaximize,
   FiMinimize,
+  FiDownload,
   FiSkipForward,
   FiSkipBack,
   FiSettings
@@ -180,6 +181,14 @@ export const VideoPlayer = ({ src, title, thumbnail }: VideoPlayerProps) => {
             </div>
 
             <div className="flex items-center gap-2">
+              <a
+                href={src}
+                download
+                className="text-white hover:text-primary transition-colors"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <FiDownload size={20} />
+              </a>
               <button className="text-white hover:text-primary transition-colors">
                 <FiSettings size={20} />
               </button>

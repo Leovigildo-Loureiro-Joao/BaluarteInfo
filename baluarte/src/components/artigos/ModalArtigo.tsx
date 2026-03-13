@@ -1,13 +1,18 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import { motion } from "framer-motion";
-import { FiBookOpen, FiUpload, FiX } from "react-icons/fi";
-import { ArtigoCreateDto, ArtigoType } from "../../types/api";
+import { FiBookOpen, FiImage, FiUpload, FiX } from "react-icons/fi";
+import { ArtigoCreateDto, ArtigoDetail, ArtigoType } from "../../types/api";
 
 type ModalFormData = {
   titulo: string;
   descricao: string;
   escritor: string;
   tipo: ArtigoType;
+};
+
+type ArtigoUpsertPayload = ModalFormData & {
+  pdf?: File;
+  img?: File | null;
 };
 
 const tipoLabels: Record<ArtigoType, string> = {
@@ -26,33 +31,39 @@ const ModalArtigo = ({
   onClose,
   onSave,
 }: {
-  artigo?: ArtigoCreateDto;
+  artigo?: ArtigoCreateDto | ArtigoDetail;
   onClose: () => void;
-  onSave: (artigo: Omit<ArtigoCreateDto, "id">) => void;
+  onSave: (artigo: ArtigoUpsertPayload) => void;
 }) => {
+  const isEditing = Boolean((artigo as any)?.id);
   const [formData, setFormData] = useState<ModalFormData>({
     titulo: artigo?.titulo || "",
     descricao: artigo?.descricao || "",
     escritor: artigo?.escritor || "",
     tipo: artigo?.tipo || ArtigoType.Doctrinal,
   });
-  const [pdfFile, setPdfFile] = useState<File | null>(artigo?.pdf ?? null);
+  // Se estiver editando, o backend não envia o File; evita pré-carregar string/URL.
+  const initialPdf =
+    artigo?.pdf instanceof File ? artigo.pdf : null;
+  const [pdfFile, setPdfFile] = useState<File | null>(initialPdf);
   const [fileError, setFileError] = useState<string | null>(null);
+
+  const initialCover = artigo?.img instanceof File ? artigo.img : null;
+  const [coverFile, setCoverFile] = useState<File | null>(initialCover);
 
   const tiposDisponiveis = Object.values(ArtigoType) as ArtigoType[];
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!pdfFile) {
+    if (!isEditing && !pdfFile) {
       setFileError("Selecione o PDF do artigo.");
       return;
     }
 
-    onSave({
-      ...formData,
-      pdf: pdfFile,
-    });
+    const payload: ArtigoUpsertPayload = { ...formData, img: coverFile };
+    if (pdfFile) payload.pdf = pdfFile;
+    onSave(payload);
 
     onClose();
   };
@@ -60,7 +71,16 @@ const ModalArtigo = ({
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     setPdfFile(file);
-    setFileError(file ? null : "Selecione o PDF do artigo.");
+    if (!isEditing) {
+      setFileError(file ? null : "Selecione o PDF do artigo.");
+    } else {
+      setFileError(null);
+    }
+  };
+
+  const handleCoverChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setCoverFile(file);
   };
 
   return (
@@ -179,12 +199,12 @@ const ModalArtigo = ({
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    PDF do Artigo *
+                    PDF do Artigo {isEditing ? "(opcional)" : "*"}
                   </label>
                   <label className="flex items-center justify-between gap-3 px-4 py-3 border border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-primary-500 transition-colors">
                     <span className="flex items-center gap-2 text-sm text-gray-600">
                       <FiUpload />
-                      {pdfFile ? pdfFile.name : "Selecionar PDF"}
+                      {pdfFile ? pdfFile.name : isEditing ? "Selecionar novo PDF" : "Selecionar PDF"}
                     </span>
                     <input
                       type="file"
@@ -196,6 +216,27 @@ const ModalArtigo = ({
                   {fileError && (
                     <p className="text-xs text-red-600 mt-2">{fileError}</p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Imagem da capa (opcional)
+                  </label>
+                  <label className="flex items-center justify-between gap-3 px-4 py-3 border border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-primary-500 transition-colors">
+                    <span className="flex items-center gap-2 text-sm text-gray-600">
+                      <FiImage />
+                      {coverFile ? coverFile.name : "Selecionar imagem"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleCoverChange}
+                    />
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Se não enviar uma imagem, será usada uma capa padrão.
+                  </p>
                 </div>
               </div>
             </div>

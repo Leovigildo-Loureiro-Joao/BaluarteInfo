@@ -101,13 +101,78 @@ Base local:
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
+## Como consumir as rotas
+
+### Base URL
+
+- `http://localhost:8080`
+
+### Autenticação (JWT)
+
+1. Faça login em `POST /auth/login`.
+2. A resposta traz `token` e `user`.
+3. Envie o token no header:
+
+```
+Authorization: Bearer SEU_TOKEN
+```
+
+### Headers padrão
+
+- `Content-Type: application/json` (para JSON)
+- `Authorization: Bearer <token>` (para rotas protegidas)
+
+### Exemplo de login
+
+```bash
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@igrejabaluarte.com",
+    "password": "sua_senha"
+  }'
+```
+
+### Exemplo de chamada autenticada
+
+```bash
+curl http://localhost:8080/admin/statics \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+### Logout
+
+```bash
+curl -X POST http://localhost:8080/auth/logout \
+  -H "Authorization: Bearer SEU_TOKEN"
+```
+
+### Paginação (quando aplicável)
+
+As rotas que retornam listas podem aceitar os parâmetros padrão do Spring Data:
+
+- `page` (página, base 0)
+- `size` (quantidade por página)
+- `sort` (ex.: `sort=dataPublicacao,desc`)
+
+### Upload de arquivos
+
+Rotas de mídia aceitam `multipart/form-data` quando necessário.  
+No Swagger é possível ver os campos obrigatórios de cada endpoint.
+
 ## Módulos principais e rotas
 
 ### Autenticação
 
 - `POST /auth/register`
 - `POST /auth/login`
+- `POST /auth/logout`
 - `GET /user/me`
+
+### Público
+
+- `POST /public/mensagem/**`
+- `POST /public/inscritos/**`
 
 ### Utilizador
 

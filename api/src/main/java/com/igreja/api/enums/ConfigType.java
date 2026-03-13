@@ -6,11 +6,16 @@ public enum ConfigType {
     IncritosLimiteActividade,
     VisitasLimite,
     MembrosLimite,
-    NewlesterLimite
-    ,
+    NewlesterLimite,
     HistoriaAnos,
     MembrosTotais,
     MinisteriosTotais,
     HomeStatsVisible,
-    HomeCarouselVisible
+    HomeCarouselVisible,
+    DashboardRefreshIntervalMs,
+    MensagemUnreadDays,
+    MensagemReenviarPendentes,
+    InscricaoQrEnabled,
+    InscricaoQrAutoDisable,
+    InscricaoQrExpiresHours
 }

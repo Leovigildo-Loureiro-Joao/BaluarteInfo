@@ -27,7 +27,6 @@ const AdminLayout = () => {
     setIsSidebarCollapsed((prev) => !prev);
   }, []);
 
-// src/components/layout/Layout.jsx - MANTENHA ESTE
 useEffect(() => {
   const root = document.documentElement;
     

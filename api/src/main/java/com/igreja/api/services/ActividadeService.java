@@ -31,6 +31,7 @@ import com.igreja.api.models.MidiaModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.projection.ActividadeProjection;
 import com.igreja.api.repositories.ActividadeRepository;
+import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.InscritosRepository;
 import com.igreja.api.repositories.MidiaRepository;
@@ -45,6 +46,9 @@ public class ActividadeService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private ComentarioLikeRepository comentarioLikeRepository;
 
      @Autowired
     private InscritosRepository inscritosRepository;
@@ -95,13 +99,15 @@ public class ActividadeService {
       for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
       
         UserModel user=comentario.getUser();
+        int likes = (int) comentarioLikeRepository.countByComentario(comentario);
         comentarios.add(new ComentarioResult(
                 comentario.getId(),
                 user.getImg(),
                 user.getNome(),
                 comentario.getDescricao(),
                 comentario.isAnalise(),
-                comentario.getDataPublicacao()));    
+                comentario.getDataPublicacao(),
+                likes));    
       
         
       }
@@ -114,13 +120,15 @@ public class ActividadeService {
       for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
         if (comentario.isAnalise()==analise) {
             UserModel user=comentario.getUser();
+            int likes = (int) comentarioLikeRepository.countByComentario(comentario);
             comentarios.add(new ComentarioResult(
                     comentario.getId(),
                     user.getImg(),
                     user.getNome(),
                     comentario.getDescricao(),
                     comentario.isAnalise(),
-                    comentario.getDataPublicacao()));    
+                    comentario.getDataPublicacao(),
+                    likes));    
         }
         
       }
@@ -132,9 +140,22 @@ public class ActividadeService {
       var pageable = PageRequest.of(page, size);
       var result = inscritosRepository.findByActividade(actividadeModel, pageable)
               .map(inscrito -> {
-                UserModel user=inscrito.getUser();
-                return new InscritosData(user.getId(), actividadeModel.getTitulo(), actividadeModel.getTema(),
-                        actividadeModel.getDataEvento(),inscrito.getStatus());
+                UserModel user = inscrito.getUser();
+                String nome = user != null ? user.getNome() : inscrito.getNome();
+                String email = user != null ? user.getEmail() : inscrito.getEmail();
+                String telefone = user != null ? user.getTelefone() : inscrito.getTelefone();
+                return new InscritosData(
+                        inscrito.getId(),
+                        actividadeModel.getId(),
+                        actividadeModel.getTitulo(),
+                        actividadeModel.getTema(),
+                        actividadeModel.getDataEvento(),
+                        nome,
+                        email,
+                        telefone,
+                        inscrito.getDataInscricao(),
+                        inscrito.getDataCheckin(),
+                        inscrito.getStatus());
               });
       return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
               result.getTotalElements(), result.getTotalPages());

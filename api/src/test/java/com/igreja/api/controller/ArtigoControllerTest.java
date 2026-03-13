@@ -91,7 +91,7 @@ class ArtigoControllerTest {
     @Test
     void shouldListArticleComments() throws Exception {
         when(artigoService.ComentariosAll(1)).thenReturn(List.of(
-                new ComentarioResult(1, "https://cdn/avatar.jpg", "João", "Muito bom", true,LocalDate.now())));
+                new ComentarioResult(1, "https://cdn/avatar.jpg", "João", "Muito bom", true,LocalDate.now(),0)));
 
         mockMvc.perform(get("/user/artigo/1/comentarioAll"))
                 .andExpect(status().isOk())

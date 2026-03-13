@@ -2,17 +2,9 @@ package com.igreja.api.projection;
 
 import java.time.LocalDateTime;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import com.igreja.api.enums.ActividadeType;
 import com.igreja.api.enums.DuracaoActividade;
 import com.igreja.api.enums.PublicoAlvoType;
-
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 
 public interface ActividadeProjection{
     int getId();
@@ -43,7 +35,6 @@ public interface ActividadeProjection{
 
     Integer getCapacidade();
 
-    /** Número total de inscritos vinculados (usa size da coleção) */
-    @Value("#{target.inscritos.size()}")
-    Integer getInscritos();
+    /** Número total de inscritos vinculados */
+    Long getInscritos();
 }

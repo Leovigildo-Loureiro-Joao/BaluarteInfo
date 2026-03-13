@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +26,8 @@ import com.igreja.api.enums.StatusMensage;
 import com.igreja.api.exceptions.GlobalExceptionHandler;
 import com.igreja.api.models.MensagensModel;
 import com.igreja.api.services.MensagemService;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @WebMvcTest(MensagemController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -46,7 +48,7 @@ class MensagemControllerTest {
         mensagem.setAssunto("Pedido");
         mensagem.setDescricao("Preciso de oração");
         mensagem.setStatus(StatusMensage.PENDENTE);
-        mensagem.setDataPublicacao(LocalDate.now());
+        mensagem.setDataPublicacao(LocalDateTime.now());
 
         when(mensagemService.save(any())).thenReturn(mensagem);
 
@@ -85,11 +87,12 @@ class MensagemControllerTest {
         mensagem.setAssunto("Pedido");
         mensagem.setDescricao("Preciso de oração");
 
-        when(mensagemService.AllData()).thenReturn(List.of(mensagem));
+        when(mensagemService.page(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(mensagem)));
 
         mockMvc.perform(get("/admin/mensagem/all"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].assunto").value("Pedido"));
+                .andExpect(jsonPath("$.content[0].assunto").value("Pedido"));
     }
 
     @Test

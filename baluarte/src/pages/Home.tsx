@@ -1,4 +1,5 @@
 // src/pages/Home.tsx
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import rectangleImage from "../assets/rectangle.jpg";
 import {
@@ -33,127 +34,163 @@ import bottomSvg from "../assets/bottom.svg";
 import { BsFillDiamondFill } from "react-icons/bs";
 import { ImageThumbnails } from "../components/actividades/ImageCarrousel";
 import { fadeInUp, staggerContainer } from "../utils/animation";
+import { apiFetch } from "../utils/api.js";
+
+type HomeCarouselItem = {
+  id?: number;
+  url: string;
+  titulo?: string;
+  legenda?: string;
+  ordem?: number;
+};
+
+type HomeArticle = {
+  id: number;
+  titulo: string;
+  descricao: string;
+  tipo: string;
+  escritor?: string;
+  dataPublicacao?: string;
+  img?: string;
+};
+
+type HomeMedia = {
+  id: number;
+  titulo: string;
+  descricao: string;
+  imagem?: string;
+  type: string;
+  tempo?: string;
+  visualizacoes?: number;
+};
+
+type HomeActivity = {
+  id: number;
+  titulo: string;
+  endereco: string;
+  tipoEvento: string;
+  dataEvento?: string;
+  dataPublicacao?: string;
+  img?: string;
+};
+
+type HomeStat = {
+  title?: string;
+  value?: string;
+  description?: string;
+  icon?: string;
+};
+
+type HomeResponse = {
+  carousel?: HomeCarouselItem[];
+  articles?: HomeArticle[];
+  media?: HomeMedia[];
+  activities?: HomeActivity[];
+  stats?: HomeStat[];
+  showStats?: boolean;
+  showCarousel?: boolean;
+};
 
 export const Home = () => {
-  // Dados mockados (depois virão da API)
+  // Dados da Home via API
 
-  const churchImages = [
-  {
-    src: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
-    alt: "Fachada da Igreja Baluarte",
-    caption: "Nossa sede - Um lugar de adoração"
-  },
-  {
-    src: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80",
-    alt: "Culto de celebração",
-    caption: "Momentos de louvor e adoração"
-  },
-  {
-    src: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80",
-    alt: "Comunidade reunida",
-    caption: "Família Baluarte em comunhão"
-  },
-  {
-    src: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1200&q=80",
-    alt: "Ministério infantil",
-    caption: "Nossas crianças - O futuro da igreja"
-  },
-  {
-    src: "https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?auto=format&fit=crop&w=1200&q=80",
-    alt: "Grupo de jovens",
-    caption: "Juventude que busca a Deus"
-  }
-];
+  const [homeData, setHomeData] = useState<HomeResponse | null>(null);
 
-  const destaquesArtigos = [
-    {
-      id: 1,
-      titulo: "A Fé que Move Montanhas",
-      descricao: "Uma reflexão profunda sobre o poder da fé genuína...",
-      imagem: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
-      tipo: "DEVOTIONAL",
-      data: "2024-01-15",
-      autor: "Pr. Antônio Silva"
-    },
-    {
-      id: 2,
-      titulo: "Os Tempos Proféticos",
-      descricao: "Entendendo os sinais dos tempos à luz da Bíblia...",
-      imagem: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80",
-      tipo: "PROPHETIC",
-      data: "2024-01-10",
-      autor: "Pr. João Santos"
-    },
-    {
-      id: 3,
-      titulo: "Vivendo em Santidade",
-      descricao: "Como manter uma vida santa no mundo atual...",
-      imagem: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
-      tipo: "DOCTRINAL",
-      data: "2024-01-05",
-      autor: "Pb. Marcos Oliveira"
+  useEffect(() => {
+    let active = true;
+    const loadHome = async () => {
+      try {
+        const response = await apiFetch("/user/home");
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (active) {
+          setHomeData(payload);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados da Home:", error);
+      }
+    };
+
+    loadHome();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const carouselImages = useMemo(() => {
+    if (!homeData?.showCarousel || !homeData.carousel?.length) return [];
+    return homeData.carousel
+      .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0))
+      .map((item) => ({
+        src: item.url,
+        alt: item.titulo || "Imagem da Igreja Baluarte",
+        caption: item.legenda,
+      }))
+      .filter((item) => item.src);
+  }, [homeData]);
+
+  const artigosHome = useMemo(() => {
+    if (!homeData?.articles?.length) return [];
+    return homeData.articles
+      .filter((artigo) => Boolean(artigo?.img))
+      .map((artigo) => ({
+        id: artigo.id,
+        titulo: artigo.titulo,
+        descricao: artigo.descricao,
+        imagem: artigo.img || "",
+        tipo: artigo.tipo,
+        data: artigo.dataPublicacao || new Date().toISOString(),
+        autor: artigo.escritor || "Igreja Baluarte",
+      }));
+  }, [homeData]);
+
+  const midiaHome = useMemo(() => {
+    if (!homeData?.media?.length) return [];
+    return homeData.media
+      .filter((midia) => Boolean(midia?.imagem))
+      .map((midia) => ({
+        id: midia.id,
+        titulo: midia.titulo,
+        descricao: midia.descricao,
+        imagem: midia.imagem || "",
+        tipo: midia.type,
+        duracao: midia.tempo || "--:--",
+        visualizacoes: midia.visualizacoes ?? 0,
+    }));
+  }, [homeData]);
+
+  const actividadesHome = useMemo(() => {
+    if (!homeData?.activities?.length) return [];
+    return homeData.activities
+      .filter((actividade) => Boolean(actividade?.img))
+      .map((actividade) => {
+      const rawDate = actividade.dataEvento || actividade.dataPublicacao;
+      const dateObj = rawDate ? new Date(rawDate) : null;
+      const hora = dateObj
+        ? dateObj.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+        : "--:--";
+
+      return {
+        id: actividade.id,
+        titulo: actividade.titulo,
+        data: rawDate || new Date().toISOString(),
+        hora,
+        local: actividade.endereco,
+        tipo: actividade.tipoEvento,
+        imagem: actividade.img || "",
+      };
+    });
+  }, [homeData]);
+
+  const statsHome = useMemo(() => {
+    if (homeData?.showStats && homeData.stats?.length) {
+      return homeData.stats.map((stat) => ({
+        value: stat.value || stat.title || "",
+        label: stat.description || stat.title || "",
+      }));
     }
-  ];
-
-  const destaquesMidia = [
-    {
-      id: 1,
-      titulo: "Culto de Domingo - A Vitória é Certa",
-      descricao: "Mensagem poderosa sobre perseverança",
-      imagem: "https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=900&q=80",
-      tipo: "VIDEO",
-      duracao: "45:30",
-      visualizacoes: 1234
-    },
-    {
-      id: 2,
-      titulo: "Podcast: Juventude e Fé",
-      descricao: "Conversa sobre desafios da juventude cristã",
-      imagem: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1600&q=80",
-      tipo: "AUDIO",
-      duracao: "32:15",
-      visualizacoes: 856
-    },
-    {
-      id: 3,
-      titulo: "Estudo Bíblico - Romanos 8",
-      descricao: "Estudo aprofundado do capítulo 8",
-      imagem: "https://images.unsplash.com/photo-1470229538611-16ba8c7ffbd7?auto=format&fit=crop&w=900&q=80",
-      tipo: "VIDEO",
-      duracao: "58:20",
-      visualizacoes: 2341
-    }
-  ];
-
-  const proximasActividades = [
-    {
-      id: 1,
-      titulo: "Conferência de Oração",
-      data: "2024-02-15",
-      hora: "19:30",
-      local: "Templo Central",
-      tipo: "EVENTO",
-      imagem: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80"
-    },
-    {
-      id: 2,
-      titulo: "Escola Bíblica",
-      data: "2024-02-10",
-      hora: "09:00",
-      local: "Sala 3",
-      tipo: "ESCOLA",
-      imagem: "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1600&q=80"
-    },
-    {
-      id: 3,
-      titulo: "Culto de Jovens",
-      data: "2024-02-08",
-      hora: "20:00",
-      local: "Auditório",
-      tipo: "JOVENS",
-      imagem: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80"
-    }
-  ];
+    return [];
+  }, [homeData]);
 
   return (
     <div className="min-h-screen">
@@ -244,20 +281,16 @@ export const Home = () => {
         </p>
         
         {/* Estatísticas */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="text-center p-4 bg-gray-50 rounded-xl">
-            <div className="text-3xl font-bold text-primary">15+</div>
-            <div className="text-sm text-gray-500">Anos de história</div>
+        {statsHome.length > 0 && (
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {statsHome.map((stat, index) => (
+              <div key={`${stat.label}-${index}`} className="text-center p-4 bg-gray-50 rounded-xl">
+                <div className="text-3xl font-bold text-primary">{stat.value}</div>
+                <div className="text-sm text-gray-500">{stat.label}</div>
+              </div>
+            ))}
           </div>
-          <div className="text-center p-4 bg-gray-50 rounded-xl">
-            <div className="text-3xl font-bold text-primary">500+</div>
-            <div className="text-sm text-gray-500">Membros</div>
-          </div>
-          <div className="text-center p-4 bg-gray-50 rounded-xl">
-            <div className="text-3xl font-bold text-primary">30+</div>
-            <div className="text-sm text-gray-500">Ministérios</div>
-          </div>
-        </div>
+        )}
 
         {/* Botão CTA */}
         <Link 
@@ -270,21 +303,23 @@ export const Home = () => {
       </div>
 
   
-       <ImageThumbnails images={churchImages} /> 
+       {carouselImages.length > 0 && <ImageThumbnails images={carouselImages} />} 
       
       {/* Versão mobile (grid simples) */}
-      <div className="grid grid-cols-2 gap-4 md:hidden">
-        <img 
-          src={churchImages[0].src}
-          alt={churchImages[0].alt}
-          className="rounded-lg h-48 object-cover"
-        />
-        <img 
-          src={churchImages[1].src}
-          alt={churchImages[1].alt}
-          className="rounded-lg h-48 object-cover mt-4"
-        />
-      </div>
+      {carouselImages.length >= 2 && (
+        <div className="grid grid-cols-2 gap-4 md:hidden">
+          <img 
+            src={carouselImages[0].src}
+            alt={carouselImages[0].alt}
+            className="rounded-lg h-48 object-cover"
+          />
+          <img 
+            src={carouselImages[1].src}
+            alt={carouselImages[1].alt}
+            className="rounded-lg h-48 object-cover mt-4"
+          />
+        </div>
+      )}
     </div>
   </div>
 </motion.section>
@@ -413,19 +448,23 @@ export const Home = () => {
             </p>
           </div>
 
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer(0.2)}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {destaquesMidia.map((midia) => (
-              <motion.div key={midia.id} variants={fadeInUp}>
-                <CardMidia midia={midia} />
-              </motion.div>
-            ))}
-          </motion.div>
+          {midiaHome.length > 0 ? (
+            <motion.div
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={staggerContainer(0.2)}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              {midiaHome.map((midia) => (
+                <motion.div key={midia.id} variants={fadeInUp}>
+                  <CardMidia midia={midia} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <p className="text-center text-gray-500">Sem mídias em destaque no momento.</p>
+          )}
 
           <div className="text-center mt-10">
             <Link 
@@ -456,19 +495,23 @@ export const Home = () => {
             </p>
           </div>
 
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer(0.2)}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {destaquesArtigos.map((artigo) => (
-              <motion.div key={artigo.id} variants={fadeInUp}>
-                <CardArtigo artigo={artigo} />
-              </motion.div>
-            ))}
-          </motion.div>
+          {artigosHome.length > 0 ? (
+            <motion.div
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={staggerContainer(0.2)}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              {artigosHome.map((artigo) => (
+                <motion.div key={artigo.id} variants={fadeInUp}>
+                  <CardArtigo artigo={artigo} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <p className="text-center text-gray-500">Sem artigos no momento.</p>
+          )}
 
           <div className="text-center mt-10">
             <Link 
@@ -499,19 +542,23 @@ export const Home = () => {
             </p>
           </div>
 
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer(0.2)}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {proximasActividades.map((actividade) => (
-              <motion.div key={actividade.id} variants={fadeInUp}>
-                <CardActividade actividade={actividade} />
-              </motion.div>
-            ))}
-          </motion.div>
+          {actividadesHome.length > 0 ? (
+            <motion.div
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={staggerContainer(0.2)}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+            >
+              {actividadesHome.map((actividade) => (
+                <motion.div key={actividade.id} variants={fadeInUp}>
+                  <CardActividade actividade={actividade} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <p className="text-center text-gray-500">Sem actividades no momento.</p>
+          )}
 
           <div className="text-center mt-10">
             <Link 
@@ -627,22 +674,7 @@ export const Home = () => {
       })}
     </div>
 
-    {/* Chamada para ação */}
-    <motion.div 
-      className="text-center mt-12"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: 0.4 }}
-    >
-      <Link 
-        to="/ministerios" 
-        className="inline-flex items-center gap-2 bg-white text-primary px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all hover:gap-3 group"
-      >
-        Conheça todos os ministérios
-        <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-      </Link>
-    </motion.div>
+
   </div>
 </motion.section>
      

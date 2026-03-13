@@ -1,6 +1,6 @@
 package com.igreja.api.services;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeoutException;
@@ -19,11 +19,10 @@ import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.mensage.MensagemData;
 import com.igreja.api.dto.mensage.MensagemDto;
-import com.igreja.api.dto.midia.MidiaDto;
+import com.igreja.api.dto.mensage.MensagemPublicDto;
 import com.igreja.api.enums.MensagemType;
 import com.igreja.api.enums.StatusMensage;
 import com.igreja.api.models.MensagensModel;
-import com.igreja.api.models.MidiaModel;
 import com.igreja.api.repositories.MensagemRepository;
 
 import jakarta.mail.MessagingException;
@@ -68,14 +67,34 @@ public class MensagemService {
 
     public MensagensModel save(MensagemDto mensagemDto) { 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean sendFromSystem = mensagemDto.destino() != null && !mensagemDto.destino().isBlank();
         MensagensModel mensagensModel= new MensagensModel();
-        mensagensModel.setDataPublicacao(LocalDate.now());
-        mensagensModel.setEmail(authentication.getName());
-        mensagensModel.setTipo(mensagensModel.getEmail().equals(user)?MensagemType.SEND:MensagemType.RECEIVED);
+        mensagensModel.setDataPublicacao(LocalDateTime.now());
+        mensagensModel.setEmail(sendFromSystem ? user : authentication.getName());
+        mensagensModel.setTipo(sendFromSystem ? MensagemType.SEND : MensagemType.RECEIVED);
         BeanUtils.copyProperties(mensagemDto, mensagensModel);
-        mensagensModel.setDestino(mensagensModel.getEmail().equals(user)?mensagemDto.destino():user);
+        mensagensModel.setDestino(sendFromSystem ? mensagemDto.destino() : user);
         try {
             EnviarMensagem(new MensagemDto(mensagemDto.descricao(), mensagemDto.assunto(),mensagensModel.getDestino()));    
+            mensagensModel.setStatus(StatusMensage.ENVIADO);
+        } catch (Exception e) {
+            ////System.out.println(e.getMessage());
+        }
+        return mensagemRepository.save(mensagensModel);
+    }
+
+    public MensagensModel savePublic(MensagemPublicDto mensagemDto) {
+        MensagensModel mensagensModel = new MensagensModel();
+        mensagensModel.setDataPublicacao(LocalDateTime.now());
+        mensagensModel.setNome(mensagemDto.nome());
+        mensagensModel.setEmail(mensagemDto.email());
+        mensagensModel.setTelefone(mensagemDto.telefone());
+        mensagensModel.setDescricao(mensagemDto.descricao());
+        mensagensModel.setAssunto(mensagemDto.assunto());
+        mensagensModel.setTipo(MensagemType.RECEIVED);
+        mensagensModel.setDestino(user);
+        try {
+            EnviarMensagem(new MensagemDto(mensagemDto.descricao(), mensagemDto.assunto(), mensagensModel.getDestino()));
             mensagensModel.setStatus(StatusMensage.ENVIADO);
         } catch (Exception e) {
             ////System.out.println(e.getMessage());
@@ -101,6 +120,17 @@ public class MensagemService {
         return mensagemRepository.save(mensagem);
     }
 
+    public MensagensModel marcarLido(int id, boolean lido) {
+        MensagensModel mensagem = Select(id);
+        mensagem.setLido(lido);
+        return mensagemRepository.save(mensagem);
+    }
+
+    public void delete(int id) {
+        MensagensModel mensagem = Select(id);
+        mensagemRepository.delete(mensagem);
+    }
+
     public List<MensagensModel> AllData() {
       return mensagemRepository.findByTipo(MensagemType.SEND,PageRequest.of(0,10)).getContent();
     }
@@ -111,6 +141,18 @@ public class MensagemService {
 
     public Page<MensagensModel> pageByTipo(MensagemType tipo, Pageable pageable) {
         return mensagemRepository.findByTipo(tipo, pageable);
+    }
+
+    public Page<MensagensModel> pageByLido(boolean lido, Pageable pageable) {
+        return mensagemRepository.findByLido(lido, pageable);
+    }
+
+    public Page<MensagensModel> pageByTipoAndLido(MensagemType tipo, boolean lido, Pageable pageable) {
+        return mensagemRepository.findByTipoAndLido(tipo, lido, pageable);
+    }
+
+    public Page<MensagensModel> pageForUser(String email, MensagemType tipo, Boolean lido, Pageable pageable) {
+        return mensagemRepository.findByUserEmail(email, tipo, lido, pageable);
     }
 
     public void EnviarAsPendentes() throws TimeoutException {

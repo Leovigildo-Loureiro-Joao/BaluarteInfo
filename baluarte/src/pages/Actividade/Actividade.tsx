@@ -1,5 +1,5 @@
 // src/pages/Actividades/ActividadesPage.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { 
@@ -25,6 +25,8 @@ import {
 import { LiaBibleSolid } from "react-icons/lia";
 import { fadeInUp } from "../../utils/animation";
 import { FaChair } from "react-icons/fa6";
+import { ActividadeSummary, PageResponse } from "../../types/api";
+import { apiFetch } from "../../utils/api";
 
 // Tipos baseados nos seus Enums
 const tipoEventoMap = {
@@ -35,6 +37,9 @@ const tipoEventoMap = {
   FAMILIA: { label: "Família", icon: GiFamilyHouse, color: "bg-amber-500" },
   LOUVOR: { label: "Louvor", icon: FaChair, color: "bg-indigo-500" },
   ORACAO: { label: "Oração", icon: GiPrayer, color: "bg-red-500" },
+  EVANGELISMO: { label: "Evangelismo", icon: GiPartyPopper, color: "bg-rose-500" },
+  ACAMPAMENTO: { label: "Acampamento", icon: GiCalendar, color: "bg-emerald-500" },
+  CONFERENCIA: { label: "Conferência", icon: GiPartyPopper, color: "bg-orange-500" }
 };
 
 const publicoMap = {
@@ -57,117 +62,27 @@ const duracaoMap = {
 };
 
 // Dados mockados
-const actividadesMock = [
-  {
-    id: 1,
-    titulo: "Culto de Celebração",
-    descricao: "Venha adorar a Deus conosco em um culto de celebração e gratidão por todas as bênçãos recebidas.",
-    tema: "Grandioso És Tu",
-    endereco: "Rua da Igreja, 123 - Centro",
-    organizador: "Pr. Antônio Silva",
-    contactos: "(11) 1234-5678",
-    tipo: "CULTO",
-    publico: "TODOS",
-    duracao: "CURTA",
-    dataPublicacao: "2024-01-01",
-    dataEvento: "2024-02-18",
-    horaEvento: "19:30",
-    imagem: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80",
-    inscritos: 45,
-    capacidade: 200
-  },
-  {
-    id: 2,
-    titulo: "Conferência de Jovens",
-    descricao: "Três dias de louvor, palavra e comunhão para a juventude que busca um encontro genuíno com Deus.",
-    tema: "Fogo e Unção",
-    endereco: "Igreja Baluarte - Auditório Principal",
-    organizador: "Pr. João Santos",
-    contactos: "(11) 98765-4321",
-    tipo: "JOVENS",
-    publico: "JOVENS",
-    duracao: "MULTIPLOS_DIAS",
-    dataPublicacao: "2024-01-05",
-    dataEvento: "2024-03-01",
-    dataFim: "2024-03-03",
-    horaEvento: "20:00",
-    imagem: "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=800&q=80",
-    inscritos: 89,
-    capacidade: 150
-  },
-  {
-    id: 3,
-    titulo: "Escola Bíblica - Módulo 1",
-    descricao: "Estudo sistemático da Bíblia, começando pelo Pentateuco. Excelente oportunidade para aprofundar o conhecimento da Palavra.",
-    tema: "Gênesis a Deuteronômio",
-    endereco: "Sala 3 - Templo Central",
-    organizador: "Pb. Marcos Oliveira",
-    contactos: "(11) 91234-5678",
-    tipo: "ESCOLA",
-    publico: "ADULTOS",
-    duracao: "LONGA",
-    dataPublicacao: "2024-01-10",
-    dataEvento: "2024-02-20",
-    horaEvento: "09:00",
-    imagem: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=800&q=80",
-    inscritos: 32,
-    capacidade: 50
-  },
-  {
-    id: 4,
-    titulo: "Culto de Oração e Jejum",
-    descricao: "Momento especial de consagração, oração e busca pela direção de Deus para nossas vidas.",
-    tema: "Intimidade com Deus",
-    endereco: "Igreja Baluarte",
-    organizador: "Pra. Maria Oliveira",
-    contactos: "(11) 99876-5432",
-    tipo: "ORACAO",
-    publico: "TODOS",
-    duracao: "MEDIA",
-    dataPublicacao: "2024-01-12",
-    dataEvento: "2024-02-15",
-    horaEvento: "07:00",
-    imagem: "https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=800&q=80",
-    inscritos: 67,
-    capacidade: 100
-  },
-  {
-    id: 5,
-    titulo: "Encontro de Casais",
-    descricao: "Um dia especial para casais fortalecerem seus relacionamentos à luz da Palavra de Deus.",
-    tema: "Amor e Aliança",
-    endereco: "Chácara Baluarte",
-    organizador: "Pr. Antônio e Pra. Maria",
-    contactos: "(11) 1234-5678",
-    tipo: "FAMILIA",
-    publico: "CASAIS",
-    duracao: "LONGA",
-    dataPublicacao: "2024-01-15",
-    dataEvento: "2024-03-10",
-    horaEvento: "08:00",
-    imagem: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80",
-    inscritos: 28,
-    capacidade: 40
-  },
-  {
-    id: 6,
-    titulo: "Louvorzão 2024",
-    descricao: "Noite de adoração com vários ministérios da cidade. Será uma noite inesquecível de louvor e gratidão.",
-    tema: "Exaltamos o Teu Nome",
-    endereco: "Ginásio Municipal",
-    organizador: "Ministério Baluarte",
-    contactos: "(11) 95678-1234",
-    tipo: "LOUVOR",
-    publico: "TODOS",
-    duracao: "MEDIA",
-    dataPublicacao: "2024-01-18",
-    dataEvento: "2024-03-25",
-    horaEvento: "19:00",
-    imagem: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=800&q=80",
-    inscritos: 234,
-    capacidade: 500
-  }
-];
+
+
+type ActividadeView = {
+  id: number;
+  titulo: string;
+  descricao: string;
+  tema: string;
+  endereco: string;
+  organizador: string;
+  contactos: string;
+  tipo: string;
+  publico: string;
+  duracao: string;
+  dataPublicacao: string;
+  dataEvento: string;
+  dataLabel: string;
+  horaLabel: string;
+  imagem: string;
+  inscritos?: number;
+  capacidade?: number;
+};
 
 export const ActividadesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -175,15 +90,95 @@ export const ActividadesPage = () => {
   const [selectedPublico, setSelectedPublico] = useState<string | null>(null);
   const [selectedMes, setSelectedMes] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [actividades, setActividades] = useState(actividadesMock);
+  const [actividades, setActividades] = useState<ActividadeView[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'lista'>('grid');
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   // Filtrar actividades
-  useEffect(() => {
-    let filtered = actividadesMock;
+
+    useEffect(() => {
+      let active = true;
+      setLoading(true);
+  
+      const timeout = setTimeout(async () => {
+        try {
+          const params = new URLSearchParams();
+          params.set("page", "0");
+          params.set("size", "12");
+  
+        if (selectedTipo) params.set("tipoEvento", selectedTipo);
+        if (searchTerm.trim()) params.set("q", searchTerm.trim());
+
+        const response = await apiFetch(`/user/actividade?${params.toString()}`);
+          if (!response.ok) {
+            throw new Error("Falha ao carregar actividades.");
+          }
+  
+          const payload = (await response.json()) as PageResponse<ActividadeSummary>;
+          if (!active) return;
+  
+          const mapped = payload.content.map((actividade) => {
+            const date = new Date(actividade.dataEvento);
+            const dataLabel = Number.isNaN(date.getTime())
+              ? ""
+              : new Intl.DateTimeFormat("pt-BR", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric"
+                }).format(date);
+            const horaLabel = Number.isNaN(date.getTime())
+              ? ""
+              : new Intl.DateTimeFormat("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit"
+                }).format(date);
+
+            return {
+              id: actividade.id,
+              titulo: actividade.titulo,
+              descricao: actividade.descricao,
+              tema: actividade.tema,
+              endereco: actividade.endereco,
+              organizador: actividade.organizador,
+              contactos: actividade.contactos,
+              tipo: actividade.tipoEvento,
+              publico: actividade.publicoAlvo,
+              duracao: actividade.duracao,
+              dataPublicacao: actividade.dataPublicacao,
+              dataEvento: actividade.dataEvento,
+              dataLabel,
+              horaLabel,
+              imagem: actividade.img,
+              inscritos: actividade.inscritos,
+              capacidade: actividade.capacidade
+            };
+          });
+  
+          setActividades(mapped);
+          setError("");
+        } catch (err) {
+          if (!active) return;
+          setError("Não foi possível carregar as actividades.");
+          setActividades([]);
+          setTotal(0);
+        } finally {
+          if (active) setLoading(false);
+        }
+      }, 300); // Debounce leve para não bater na API a cada tecla.
+  
+      return () => {
+        active = false;
+        clearTimeout(timeout);
+      };
+    }, [searchTerm, selectedTipo]);
+  
+
+  const filteredActividades = useMemo(() => {
+    let filtered = actividades;
 
     if (searchTerm) {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter((item) =>
         item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.organizador.toLowerCase().includes(searchTerm.toLowerCase())
@@ -191,22 +186,22 @@ export const ActividadesPage = () => {
     }
 
     if (selectedTipo) {
-      filtered = filtered.filter(item => item.tipo === selectedTipo);
+      filtered = filtered.filter((item) => item.tipo === selectedTipo);
     }
 
     if (selectedPublico) {
-      filtered = filtered.filter(item => item.publico === selectedPublico);
+      filtered = filtered.filter((item) => item.publico === selectedPublico);
     }
 
     if (selectedMes) {
-      filtered = filtered.filter(item => {
+      filtered = filtered.filter((item) => {
         const mes = new Date(item.dataEvento).getMonth().toString();
         return mes === selectedMes;
       });
     }
 
-    setActividades(filtered);
-  }, [searchTerm, selectedTipo, selectedPublico, selectedMes]);
+    return filtered;
+  }, [actividades, searchTerm, selectedTipo, selectedPublico, selectedMes]);
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -216,7 +211,7 @@ export const ActividadesPage = () => {
   };
 
   // Agrupar por mês
-  const groupedByMonth = actividades.reduce((acc: any, item) => {
+  const groupedByMonth = filteredActividades.reduce((acc: any, item) => {
     const data = new Date(item.dataEvento);
     const mesAno = data.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
     if (!acc[mesAno]) acc[mesAno] = [];
@@ -297,7 +292,7 @@ export const ActividadesPage = () => {
           </div>
 
           <p className="text-gray-600">
-            {actividades.length} {actividades.length === 1 ? 'atividade encontrada' : 'atividades encontradas'}
+            {filteredActividades.length} {filteredActividades.length === 1 ? 'atividade encontrada' : 'atividades encontradas'}
           </p>
         </div>
 
@@ -405,7 +400,7 @@ export const ActividadesPage = () => {
         </AnimatePresence>
 
         {/* Resultados */}
-        {actividades.length === 0 ? (
+        {filteredActividades.length === 0 ? (
           <motion.div
             className="text-center py-20 bg-white rounded-2xl shadow"
             variants={fadeInUp}
@@ -425,7 +420,7 @@ export const ActividadesPage = () => {
         ) : viewMode === 'grid' ? (
           // Visualização em grid
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {actividades.map((actividade, index) => {
+            {filteredActividades.map((actividade, index) => {
               const TipoIcon = tipoEventoMap[actividade.tipo as keyof typeof tipoEventoMap]?.icon || GiCalendar;
               const tipoColor = tipoEventoMap[actividade.tipo as keyof typeof tipoEventoMap]?.color || "bg-primary";
               
@@ -455,7 +450,7 @@ export const ActividadesPage = () => {
 
                         {/* Badge de capacidade */}
                         <div className="absolute top-4 right-4 bg-black/70 text-white px-2 py-1 rounded-lg text-xs">
-                          {actividade.inscritos}/{actividade.capacidade} inscritos
+                          {actividade.inscritos ?? 0}/{actividade.capacidade ?? 0} inscritos
                         </div>
                       </div>
 
@@ -473,12 +468,7 @@ export const ActividadesPage = () => {
                         <div className="space-y-2 text-sm text-gray-500">
                           <div className="flex items-center gap-2">
                             <FiCalendar className="text-primary" size={14} />
-                            <span>
-                              {new Date(actividade.dataEvento).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: 'long'
-                              })} • {actividade.horaEvento}
-                            </span>
+                            <span>{actividade.dataLabel} • {actividade.horaLabel}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <FiMapPin className="text-primary" size={14} />
@@ -546,7 +536,7 @@ export const ActividadesPage = () => {
                                     {actividade.titulo}
                                   </h4>
                                 </div>
-                                <span className="text-sm text-gray-500">{actividade.horaEvento}</span>
+                                <span className="text-sm text-gray-500">{actividade.horaLabel}</span>
                               </div>
 
                               <p className="text-gray-600 text-sm mb-2 line-clamp-2">

@@ -13,7 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.igreja.api.dto.PageResponse;
-import com.igreja.api.dto.inscrito.*;
+import com.igreja.api.dto.inscrito.InscritosDto;
+import com.igreja.api.dto.inscrito.InscritosPublicDto;
 import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.services.InscritosService;
 
@@ -39,6 +40,15 @@ public class InscritosController {
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .body(inscritosService.save(new InscritosDto(userRepository.findByEmail(authentication.getName()).get().getId(), id)));
+    }
+
+    @PostMapping("/public/inscritos/{idActividade}")
+    public ResponseEntity<?> RegisterPublic(
+            @PathVariable(name = "idActividade") @Valid int id,
+            @RequestBody @Valid InscritosPublicDto inscritosDto) throws Exception {
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(inscritosService.savePublic(id, inscritosDto));
     }
 
 
