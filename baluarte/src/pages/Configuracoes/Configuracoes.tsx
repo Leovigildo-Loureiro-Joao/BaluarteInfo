@@ -17,7 +17,12 @@ import {
   FiEye,
   FiEyeOff,
   FiToggleLeft,
-  FiToggleRight
+  FiToggleRight,
+  FiImage,
+  FiPlus,
+  FiTrash2,
+  FiArrowUp,
+  FiArrowDown
 } from "react-icons/fi";
 import { 
   GiPrayer, 
@@ -62,11 +67,20 @@ interface ConfiguracaoActivities {
   types: ConfiguracaoTipoAtividade[];
 }
 
+interface CarouselImage {
+  id: string;
+  url: string;
+  titulo: string;
+  legenda: string;
+  ordem: number;
+}
+
 interface Configuracoes {
   dashboard: ConfiguracaoDashboard;
   messages: ConfiguracaoMensagens;
   inscricoes: ConfiguracaoInscricoes;
   activities: ConfiguracaoActivities;
+  homeCarousel: CarouselImage[];
 }
 
 // Configuração mock (baseada no JSON)
@@ -101,7 +115,30 @@ const configuracoesMock: Configuracoes = {
       { id: "Louvor", label: "Louvor", color: "#8b5cf6", icon: "GiChoir" },
       { id: "Oracao", label: "Oração", color: "#ef4444", icon: "GiPrayer" }
     ]
-  }
+  },
+  homeCarousel: [
+    {
+      id: "c1",
+      url: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
+      titulo: "Culto de celebração",
+      legenda: "Louvor, ensino e comunhão com toda a família Baluarte.",
+      ordem: 1
+    },
+    {
+      id: "c2",
+      url: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80",
+      titulo: "Jovens on fire",
+      legenda: "Experiências profundas e momentos de oração impactantes.",
+      ordem: 2
+    },
+    {
+      id: "c3",
+      url: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80",
+      titulo: "Ministério infantil",
+      legenda: "Crianças aprendendo a Palavra com alegria e criatividade.",
+      ordem: 3
+    }
+  ]
 };
 
 // Mapeamento de ícones (para exibição)
@@ -380,6 +417,11 @@ export const ConfiguracoesPage = () => {
   const [editando, setEditando] = useState(false);
   const [modalTipoAberto, setModalTipoAberto] = useState(false);
   const [tipoEditando, setTipoEditando] = useState<ConfiguracaoTipoAtividade | undefined>();
+  const [carouselForm, setCarouselForm] = useState({
+    url: "",
+    titulo: "",
+    legenda: ""
+  });
 
   const handleSave = () => {
     // Aqui chamaria a API para salvar
@@ -391,6 +433,49 @@ export const ConfiguracoesPage = () => {
     if (window.confirm('Restaurar configurações padrão?')) {
       setConfiguracoes(configuracoesMock);
     }
+  };
+
+  const handleAddCarouselImage = () => {
+    const titulo = carouselForm.titulo.trim();
+    const url = carouselForm.url.trim();
+    if (!titulo || !url) return;
+
+    const novo: CarouselImage = {
+      id: `c-${Date.now()}`,
+      url,
+      titulo,
+      legenda: carouselForm.legenda.trim(),
+      ordem: configuracoes.homeCarousel.length + 1
+    };
+
+    setConfiguracoes({
+      ...configuracoes,
+      homeCarousel: [...configuracoes.homeCarousel, novo]
+    });
+
+    setCarouselForm({ url: "", titulo: "", legenda: "" });
+  };
+
+  const handleRemoveCarouselImage = (id: string) => {
+    setConfiguracoes({
+      ...configuracoes,
+      homeCarousel: configuracoes.homeCarousel
+        .filter((item) => item.id !== id)
+        .map((item, index) => ({ ...item, ordem: index + 1 }))
+    });
+  };
+
+  const handleMoveCarouselImage = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= configuracoes.homeCarousel.length) return;
+
+    const atualizado = [...configuracoes.homeCarousel];
+    [atualizado[index], atualizado[target]] = [atualizado[target], atualizado[index]];
+
+    setConfiguracoes({
+      ...configuracoes,
+      homeCarousel: atualizado.map((item, idx) => ({ ...item, ordem: idx + 1 }))
+    });
   };
 
   const handleSalvarTipo = (tipo: ConfiguracaoTipoAtividade) => {
@@ -500,6 +585,97 @@ export const ConfiguracoesPage = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
                 />
               </CampoConfiguracao>
+            </div>
+          </SecaoConfiguracao>
+
+          {/* Carrossel da Home */}
+          <SecaoConfiguracao titulo="Carrossel da Home" icone={FiImage}>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Defina aqui as imagens que vão aparecer no carrossel da página inicial. Reordene, edite ou remova banners para controlar a narrativa visual.
+              </p>
+
+              <div className="space-y-3">
+                {configuracoes.homeCarousel.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 border border-gray-100 rounded-xl p-3 shadow-sm bg-white"
+                  >
+                    <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                      <img src={item.url} alt={item.titulo} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-800">{item.titulo}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2">{item.legenda || "Legenda não definida"}</p>
+                      <p className="text-xs text-gray-400 mt-1">Ordem {item.ordem}</p>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => handleMoveCarouselImage(index, -1)}
+                        disabled={!editando || index === 0}
+                        className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center text-gray-500 disabled:opacity-40"
+                      >
+                        <FiArrowUp />
+                      </button>
+                      <button
+                        onClick={() => handleMoveCarouselImage(index, 1)}
+                        disabled={!editando || index === configuracoes.homeCarousel.length - 1}
+                        className="w-10 h-10 rounded-lg border border-gray-300 flex items-center justify-center text-gray-500 disabled:opacity-40"
+                      >
+                        <FiArrowDown />
+                      </button>
+                      <button
+                        onClick={() => handleRemoveCarouselImage(item.id)}
+                        disabled={!editando}
+                        className="w-10 h-10 rounded-lg border border-red-300 flex items-center justify-center text-red-500 disabled:opacity-40"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-dashed border-gray-200 pt-4">
+                <CampoConfiguracao label="Nova imagem">
+                  <input
+                    type="text"
+                    placeholder="URL da imagem"
+                    value={carouselForm.url}
+                    onChange={(e) => setCarouselForm({ ...carouselForm, url: e.target.value })}
+                    disabled={!editando}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                  />
+                </CampoConfiguracao>
+                <CampoConfiguracao label="Título">
+                  <input
+                    type="text"
+                    placeholder="Título do banner"
+                    value={carouselForm.titulo}
+                    onChange={(e) => setCarouselForm({ ...carouselForm, titulo: e.target.value })}
+                    disabled={!editando}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                  />
+                </CampoConfiguracao>
+                <CampoConfiguracao label="Legenda (opcional)">
+                  <input
+                    type="text"
+                    placeholder="Frase de apoio ou chamada"
+                    value={carouselForm.legenda}
+                    onChange={(e) => setCarouselForm({ ...carouselForm, legenda: e.target.value })}
+                    disabled={!editando}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                  />
+                </CampoConfiguracao>
+                <button
+                  onClick={handleAddCarouselImage}
+                  disabled={!editando || !carouselForm.url.trim() || !carouselForm.titulo.trim()}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:bg-gray-300 disabled:text-gray-500"
+                >
+                  <FiPlus />
+                  Adicionar imagem
+                </button>
+              </div>
             </div>
           </SecaoConfiguracao>
 

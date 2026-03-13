@@ -24,6 +24,9 @@ import com.igreja.api.dto.midia.MidiaActividadeV;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
 import com.igreja.api.services.MidiaService;
+import com.igreja.api.enums.AudioType;
+import com.igreja.api.enums.MidiaType;
+import com.igreja.api.enums.VideoType;
 
 
 import jakarta.validation.Valid;
@@ -55,6 +58,28 @@ public class MidiaController {
     public ResponseEntity<?> AllDataAudios(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {    
         return ResponseEntity.ok(midiaService.AllAudio(page, size));
+    }
+
+    @GetMapping("/user/midia")
+    public ResponseEntity<?> AllMidia(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) MidiaType type,
+            @RequestParam(required = false) AudioType audioType,
+            @RequestParam(required = false) VideoType videoType,
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(midiaService.page(page, size, type, audioType, videoType, q));
+    }
+
+    @GetMapping("/admin/midia")
+    public ResponseEntity<?> AllMidiaAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) MidiaType type,
+            @RequestParam(required = false) AudioType audioType,
+            @RequestParam(required = false) VideoType videoType,
+            @RequestParam(required = false) String q) {
+        return ResponseEntity.ok(midiaService.page(page, size, type, audioType, videoType, q));
     }
 
     @PutMapping("/admin/midia/video/{id}")
@@ -95,12 +120,16 @@ public class MidiaController {
     }
 
      @GetMapping(value = "/user/actividade/galeria/{id}")
-    public ResponseEntity<?> galeriaGet(@PathVariable int id) throws IOException {
-        return ResponseEntity.ok(midiaService.Galeria(id));
+    public ResponseEntity<?> galeriaGet(@PathVariable int id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws IOException {
+        return ResponseEntity.ok(midiaService.Galeria(id,page,size));
     }
 
     @GetMapping(value = "/user/actividade/trailler/{id}")
-    public ResponseEntity<?> traillerGet(@PathVariable int id) throws IOException {
-        return ResponseEntity.ok(midiaService.Trailler(id));
+    public ResponseEntity<?> traillerGet(@PathVariable int id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws IOException {
+        return ResponseEntity.ok(midiaService.Trailler(id,page,size));
     }
 }

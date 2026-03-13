@@ -1,5 +1,7 @@
 package com.igreja.api.repositories;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.igreja.api.models.MensagensModel;
@@ -11,7 +13,8 @@ import com.igreja.api.enums.StatusMensage;
 
 
 public interface MensagemRepository extends JpaRepository<MensagensModel,Integer>{
-    List<MensagensModel> findByTipo(MensagemType tipo);
+    Page<MensagensModel> findByAll(Pageable pageable);
+    Page<MensagensModel> findByTipo(MensagemType tipo, Pageable pageable);
 
-    List<MensagensModel> findByStatus(StatusMensage status);
+    Page<MensagensModel> findByStatus(StatusMensage status, Pageable pageable);
 }

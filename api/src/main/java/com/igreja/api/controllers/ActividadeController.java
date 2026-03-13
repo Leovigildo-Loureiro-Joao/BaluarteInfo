@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.actividade.ActividadeDto;
+import com.igreja.api.enums.ActividadeType;
+import com.igreja.api.enums.DuracaoActividade;
+import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.services.ActividadeService;
 
 import jakarta.validation.Valid;
@@ -45,9 +48,25 @@ public class ActividadeController {
     }
 
     @GetMapping(value = "/user/actividade")
-    public ResponseEntity<?> AllActividades( @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) throws IOException {
-        return ResponseEntity.ok(actividadeService.AllDataSimple(page, size));
+    public ResponseEntity<?> AllActividades(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) ActividadeType tipoEvento,
+            @RequestParam(required = false) PublicoAlvoType publicoAlvo,
+            @RequestParam(required = false) DuracaoActividade duracao,
+            @RequestParam(required = false) String q) throws IOException {
+        return ResponseEntity.ok(actividadeService.page(page, size, tipoEvento, publicoAlvo, duracao, q));
+    }
+
+    @GetMapping(value = "/admin/actividade")
+    public ResponseEntity<?> AllActividadesAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) ActividadeType tipoEvento,
+            @RequestParam(required = false) PublicoAlvoType publicoAlvo,
+            @RequestParam(required = false) DuracaoActividade duracao,
+            @RequestParam(required = false) String q) throws IOException {
+        return ResponseEntity.ok(actividadeService.page(page, size, tipoEvento, publicoAlvo, duracao, q));
     }
 
     @GetMapping(value = "/user/actividade/{id}")
@@ -71,8 +90,10 @@ public class ActividadeController {
     }
     
         @GetMapping(value = "/user/actividade/{id}/inscritos")
-    public ResponseEntity<?> AllInscritos(@PathVariable int id) throws IOException {
-        return ResponseEntity.ok(actividadeService.InscritosAll(id));
+    public ResponseEntity<?> AllInscritos(@PathVariable int id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws IOException {
+        return ResponseEntity.ok(actividadeService.InscritosAll(id, page, size));
     }
 
 

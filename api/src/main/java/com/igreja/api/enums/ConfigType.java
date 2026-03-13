@@ -7,4 +7,10 @@ public enum ConfigType {
     VisitasLimite,
     MembrosLimite,
     NewlesterLimite
+    ,
+    HistoriaAnos,
+    MembrosTotais,
+    MinisteriosTotais,
+    HomeStatsVisible,
+    HomeCarouselVisible
 }

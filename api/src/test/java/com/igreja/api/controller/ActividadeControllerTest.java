@@ -62,9 +62,9 @@ class ActividadeControllerTest {
                         .param("tema", "Esperança")
                         .param("titulo", "Culto da Juventude")
                         .param("endereco", "Rua Principal")
-                        .param("tipoEvento", ActividadeType.Culto.name())
-                        .param("publicoAlvo", PublicoAlvoType.Todos.name())
-                        .param("duracao", DuracaoActividade.Mensal.name())
+                        .param("tipoEvento", ActividadeType.CULTO.name())
+                        .param("publicoAlvo", PublicoAlvoType.TODOS.name())
+                        .param("duracao", DuracaoActividade.CURTA.name())
                         .param("organizador", "Depto Jovem")
                         .param("dataEvento", LocalDateTime.now().plusDays(5).withNano(0).toString())
                         .param("contactos", "923000111")
@@ -88,9 +88,9 @@ class ActividadeControllerTest {
                         .param("tema", "Esperança")
                         .param("titulo", "Culto da Juventude")
                         .param("endereco", "Rua Principal")
-                        .param("tipoEvento", ActividadeType.Culto.name())
-                        .param("publicoAlvo", PublicoAlvoType.Todos.name())
-                        .param("duracao", DuracaoActividade.Mensal.name())
+                        .param("tipoEvento", ActividadeType.CULTO.name())
+                        .param("publicoAlvo", PublicoAlvoType.TODOS.name())
+                        .param("duracao", DuracaoActividade.CURTA.name())
                         .param("organizador", "Depto Jovem")
                         .param("dataEvento", LocalDateTime.now().plusDays(5).withNano(0).toString())
                         .param("contactos", "923-abc")
@@ -107,7 +107,7 @@ class ActividadeControllerTest {
         actividade.setTitulo("Conferência");
         actividade.setTema("Fé");
 
-        when(actividadeService.AllDataSimple(0, 10)).thenReturn(List.of());
+        when(actividadeService.AllData()).thenReturn(List.of());
 
         mockMvc.perform(get("/user/actividade"))
                 .andExpect(status().isOk());

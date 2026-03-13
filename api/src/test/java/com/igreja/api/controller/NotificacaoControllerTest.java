@@ -42,7 +42,7 @@ class NotificacaoControllerTest {
     void shouldListUnreadNotifications() throws Exception {
         NotificacaoModel notificacao = buildNotification(1, "Lembrete da actividade", false, NotificacaoType.LEMBRETE);
 
-        when(notificacaoService.unread()).thenReturn(List.of(notificacao));
+        when(notificacaoService.unread(0,5)).thenReturn(List.of(notificacao));
 
         mockMvc.perform(get("/admin/notificacao"))
                 .andExpect(status().isOk())
@@ -66,7 +66,7 @@ class NotificacaoControllerTest {
 
     @Test
     void shouldDeleteReadNotificationsAndReturnSummary() throws Exception {
-        when(notificacaoService.deleteRead()).thenReturn(3);
+        when(notificacaoService.deleteRead(0,5)).thenReturn(3);
 
         mockMvc.perform(delete("/admin/notificacao").with(csrf()))
                 .andExpect(status().isOk())

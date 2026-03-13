@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.igreja.api.dto.PageResponse;
 import com.igreja.api.dto.comentario.Analise;
 import com.igreja.api.dto.comentario.ComentarioDto;
 import com.igreja.api.enums.ComentarioType;
@@ -49,6 +51,16 @@ public class ComentarioController {
     @PutMapping("/admin/comentario/analise")
     public ResponseEntity<?> Analisar(@RequestBody @Valid Analise analise) {    
         return ResponseEntity.ok(comentarioService.analise(analise));
+    }
+
+    @GetMapping("/admin/comentario")
+    public ResponseEntity<?> list(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        var result = comentarioService.page(page, size);
+        return ResponseEntity.ok(
+                new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(), result.getTotalElements(),
+                        result.getTotalPages()));
     }
     
 }

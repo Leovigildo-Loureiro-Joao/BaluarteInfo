@@ -14,8 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioDto;
+import com.igreja.api.dto.config.CarouselItemDto;
 import com.igreja.api.dto.config.ConfiguracaoDto;
 import com.igreja.api.dto.estaticas.Value;
+import com.igreja.api.dto.home.StatisticCardDto;
 import com.igreja.api.enums.ConfigType;
 import com.igreja.api.enums.NotificacaoType;
 import com.igreja.api.models.ActividadeModel;
@@ -29,6 +31,7 @@ import com.igreja.api.repositories.InscritosRepository;
 import com.igreja.api.repositories.NewlesterRepository;
 import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.repositories.VistosRepository;
+import com.igreja.api.services.CarouselItemService;
 
 @Service
 public class ConfigService {
@@ -53,6 +56,9 @@ public class ConfigService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private CarouselItemService carouselItemService;
 
     public List<ConfiguracaoDto> AllConfiguration() {
 
@@ -81,6 +87,11 @@ public class ConfigService {
         save(new ConfiguracaoDto(50, ConfigType.MembrosLimite));
         save(new ConfiguracaoDto(100, ConfigType.VisitasLimite));
         save(new ConfiguracaoDto(100, ConfigType.NewlesterLimite));
+        save(new ConfiguracaoDto(15, ConfigType.HistoriaAnos));
+        save(new ConfiguracaoDto(500, ConfigType.MembrosTotais));
+        save(new ConfiguracaoDto(30, ConfigType.MinisteriosTotais));
+        save(new ConfiguracaoDto(1, ConfigType.HomeStatsVisible));
+        save(new ConfiguracaoDto(1, ConfigType.HomeCarouselVisible));
     }
 
 
@@ -122,5 +133,41 @@ public class ConfigService {
             ////System.out.println(t.name()+" "+u.value()+" tot "+u.tot());
         });
         return lista;
+    }
+
+    public List<CarouselItemDto> homeCarousel() {
+        return carouselItemService.listOrdered();
+    }
+
+    public List<CarouselItemDto> updateHomeCarousel(List<CarouselItemDto> items) {
+        return carouselItemService.upsertAll(items);
+    }
+
+    public CarouselItemDto createHomeCarouselItem(String url, String titulo, String legenda) {
+        return carouselItemService.create(url, titulo, legenda);
+    }
+
+    public StatisticCardDto[] homeStats() {
+        var years = configValueOrDefault(ConfigType.HistoriaAnos, 15);
+        var members = configValueOrDefault(ConfigType.MembrosTotais, 500);
+        var ministries = configValueOrDefault(ConfigType.MinisteriosTotais, 30);
+        return new StatisticCardDto[] {
+                new StatisticCardDto("Anos de história", String.format("%.0f+", years),
+                        "Marca registrada da nossa trajetória", "history"),
+                new StatisticCardDto("Membros", String.format("%.0f+", members), "Família em crescimento", "users"),
+                new StatisticCardDto("Ministérios", String.format("%.0f+", ministries), "Serviços atuantes", "groups")
+        };
+    }
+
+    public boolean isHomeStatsVisible() {
+        return configValueOrDefault(ConfigType.HomeStatsVisible, 1) > 0;
+    }
+
+    public boolean isHomeCarouselVisible() {
+        return configValueOrDefault(ConfigType.HomeCarouselVisible, 1) > 0;
+    }
+
+    private double configValueOrDefault(ConfigType type, double fallback) {
+        return configurationRepository.findByType(type).map(ConfiguracaoModel::getValue).orElse(fallback);
     }
 }

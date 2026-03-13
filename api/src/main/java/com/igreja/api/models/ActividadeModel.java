@@ -66,6 +66,9 @@ public class ActividadeModel {
 
     private String img;
 
+    /** Capacidade máxima de inscritos para exibição na UI */
+    private Integer capacidade;
+
      @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,mappedBy = "actividade")
     private List<ComentarioModel> comentarios=new ArrayList<>();
 

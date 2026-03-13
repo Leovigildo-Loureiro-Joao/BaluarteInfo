@@ -2,7 +2,7 @@ package com.igreja.api.projection;
 
 import java.time.LocalDateTime;
 
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.igreja.api.enums.ActividadeType;
 import com.igreja.api.enums.DuracaoActividade;
@@ -40,4 +40,10 @@ public interface ActividadeProjection{
     String getContactos();
 
     String getImg();
+
+    Integer getCapacidade();
+
+    /** Número total de inscritos vinculados (usa size da coleção) */
+    @Value("#{target.inscritos.size()}")
+    Integer getInscritos();
 }

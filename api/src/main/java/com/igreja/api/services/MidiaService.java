@@ -1,6 +1,5 @@
 package com.igreja.api.services;
 
-import java.awt.print.Pageable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioResult;
@@ -31,8 +31,10 @@ import com.igreja.api.dto.midia.MidiaActividadeV;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
 import com.igreja.api.dto.midia.MidiaSimple;
+import com.igreja.api.dto.PageResponse;
 import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
+import com.igreja.api.projection.midia.MidiaProjection;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.MidiaModel;
@@ -80,7 +82,7 @@ public class MidiaService {
 
     public Object addMidia(MidiaActividade actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
         ActividadeModel actividadeModel= actividadeRepository.findById(actividadeDto.id()).orElseThrow();
-        MidiaModel midiaModel=save(new MidiaFile(actividadeDto.titulo(),"--/--/--",null,actividadeDto.img(),actividadeDto.type() ,null));    
+        MidiaModel midiaModel=save(new MidiaFile(actividadeDto.titulo(),"--/--/--",null,actividadeDto.img(),actividadeDto.type(),null ,null));    
         midiaModel.setActividade(actividadeModel);
         midiaRepository.save(midiaModel);
         actividadeRepository.save(actividadeModel);
@@ -207,6 +209,15 @@ public class MidiaService {
         return midiaRepository.findAllAudioByTypeOrderByIdDesc(MidiaType.AUDIO, PageRequest.of(page, size)).getContent();
     }
 
+    public PageResponse<MidiaProjection> page(int page, int size, MidiaType type,
+            AudioType audioType, com.igreja.api.enums.VideoType videoType, String q) {
+        String search = (q == null || q.isBlank()) ? null : q;
+        Pageable pageable = PageRequest.of(page, size);
+        var result = midiaRepository.search(type, audioType, videoType, search, pageable);
+        return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
+    }
+
     public String ConnectActividade(ConnectMidiaDto connect) {
         ActividadeModel actividadeModel= actividadeRepository.findById(connect.actividade()).orElseThrow();
         MidiaModel midiaModel= midiaRepository.findById(connect.midia()).orElseThrow();
@@ -225,31 +236,35 @@ public class MidiaService {
         MidiaModel artigo=Select(id);
         for (ComentarioModel comentario : artigo.getComentarios()) {
             UserModel user=comentario.getUser();
-            comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getUsername(), comentario.getDescricao(),comentario.isAnalise()));
+            comentarios.add(new ComentarioResult(
+                comentario.getId(),
+                user.getImg(),
+                user.getUsername(),
+                comentario.getDescricao(),
+                comentario.isAnalise(),
+                comentario.getDataPublicacao()));
         }
         return comentarios;
     }
 
-    public List<MidiaSimple> Galeria(int id) {
-        return GaleriaTrailler(id, MidiaType.IMAGE);
+    public PageResponse<MidiaSimple> Galeria(int id, int page, int size) {
+        return GaleriaTrailler(id, MidiaType.IMAGE, page, size);
     }
 
     
-    public List<MidiaSimple> Trailler(int id) {
-        return GaleriaTrailler(id, MidiaType.VIDEO);
+    public PageResponse<MidiaSimple> Trailler(int id, int page, int size) {
+        return GaleriaTrailler(id, MidiaType.VIDEO, page, size);
     }
 
 
-    public List<MidiaSimple> GaleriaTrailler(int id,MidiaType tyoe) {
+    public PageResponse<MidiaSimple> GaleriaTrailler(int id,MidiaType type, int page, int size) {
         Optional<ActividadeModel> act=actividadeRepository.findById(id);
-        List<MidiaModel> midia=midiaRepository.findByActividade(act.get());
-        List<MidiaSimple> midiaSimples=new ArrayList<>();
-        for (MidiaModel midiaModel : midia) {
-            if(tyoe==midiaModel.getType())
-                midiaSimples.add(new MidiaSimple( midiaModel.getId(), midiaModel.getTitulo(), midiaModel.getUrl()));          
-        }
-        
-        return midiaSimples;
+        Pageable pageable = PageRequest.of(page, size);
+        var midia = midiaRepository.findByActividadeAndType(act.get(), type, pageable)
+            .map(m -> new MidiaSimple(m.getId(), m.getTitulo(), m.getUrl()));
+
+        return new PageResponse<>(midia.getContent(), midia.getNumber(), midia.getSize(),
+                midia.getTotalElements(), midia.getTotalPages());
     }
 
 }

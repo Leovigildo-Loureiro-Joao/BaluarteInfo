@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.actividade.ActividadeDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.dto.PageResponse;
 import com.igreja.api.enums.ActividadeType;
-import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ArtigoModel;
@@ -95,7 +95,13 @@ public class ActividadeService {
       for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
       
         UserModel user=comentario.getUser();
-        comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getNome(), comentario.getDescricao(),comentario.isAnalise()));    
+        comentarios.add(new ComentarioResult(
+                comentario.getId(),
+                user.getImg(),
+                user.getNome(),
+                comentario.getDescricao(),
+                comentario.isAnalise(),
+                comentario.getDataPublicacao()));    
       
         
       }
@@ -108,22 +114,30 @@ public class ActividadeService {
       for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
         if (comentario.isAnalise()==analise) {
             UserModel user=comentario.getUser();
-            comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getNome(), comentario.getDescricao(),comentario.isAnalise()));    
+            comentarios.add(new ComentarioResult(
+                    comentario.getId(),
+                    user.getImg(),
+                    user.getNome(),
+                    comentario.getDescricao(),
+                    comentario.isAnalise(),
+                    comentario.getDataPublicacao()));    
         }
         
       }
       return comentarios;
    }
   
-    public List<InscritosData> InscritosAll(int id) {
-      List<InscritosData> inscritos=new ArrayList<>();
+    public PageResponse<InscritosData> InscritosAll(int id, int page, int size) {
       ActividadeModel actividadeModel=Select(id);
-      for (InscritosModel inscrito : inscritosRepository.findByActividade(actividadeModel)) {
-         UserModel user=inscrito.getUser();
-         inscritos.add(new InscritosData(user.getId(), actividadeModel.getTitulo(), actividadeModel.getTema(),actividadeModel.getDataEvento(),inscrito.getStatus()));
-      }
-      //System.out.println(inscritos);
-      return inscritos;
+      var pageable = PageRequest.of(page, size);
+      var result = inscritosRepository.findByActividade(actividadeModel, pageable)
+              .map(inscrito -> {
+                UserModel user=inscrito.getUser();
+                return new InscritosData(user.getId(), actividadeModel.getTitulo(), actividadeModel.getTema(),
+                        actividadeModel.getDataEvento(),inscrito.getStatus());
+              });
+      return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
+              result.getTotalElements(), result.getTotalPages());
    }
 
 
@@ -140,8 +154,16 @@ public class ActividadeService {
         return actividadeRepository.findAll();
     }
 
-    public List<ActividadeProjection> AllDataSimple(int page, int size) {
-        return actividadeRepository.findAllByOrderByIdDesc(PageRequest.of(page, size)).getContent();
+    public PageResponse<ActividadeProjection> page(int page, int size,
+            ActividadeType tipoEvento,
+            PublicoAlvoType publicoAlvo,
+            com.igreja.api.enums.DuracaoActividade duracao,
+            String q) {
+        String search = (q == null || q.isBlank()) ? null : q;
+        var pageable = PageRequest.of(page, size);
+        var result = actividadeRepository.search(tipoEvento, publicoAlvo, duracao, search, pageable);
+        return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
     }
 
     public List<LocalDateTime> AllDataActividade() {

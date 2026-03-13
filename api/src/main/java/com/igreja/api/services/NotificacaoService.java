@@ -19,6 +19,9 @@ import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.InscritosRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.NotificacaoRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class NotificacaoService {
@@ -56,13 +59,13 @@ public class NotificacaoService {
         this.midiaRepository = midiaRepository;
     }
 
-    public List<NotificacaoModel> unread() {
-        return notificacaoRepository.findByLido(false);
+    public List<NotificacaoModel> unread(int page, int size) {
+        return notificacaoRepository.findByLido(false,PageRequest.of(page, size)).getContent();
     }
 
-    public int deleteRead() {
+    public int deleteRead(int page, int size){
         int deletedCount = 0;
-        for (NotificacaoModel notificacaoModel : notificacaoRepository.findByLido(true)) {
+        for (NotificacaoModel notificacaoModel : notificacaoRepository.findByLido(true,PageRequest.of(page, size))) {
             notificacaoRepository.deleteById(notificacaoModel.getId());
             deletedCount++;
         }
@@ -71,6 +74,10 @@ public class NotificacaoService {
 
     public List<NotificacaoModel> all() {
         return notificacaoRepository.findAll();
+    }
+
+    public Page<NotificacaoModel> page(boolean unread, Pageable pageable) {
+        return unread ? notificacaoRepository.findByLido(false, pageable) : notificacaoRepository.findAll(pageable);
     }
 
 

@@ -6,6 +6,10 @@ import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.Analise;
@@ -110,6 +114,22 @@ public class ComentarioService {
         comentario.setDataPublicacao(LocalDate.now());
         comentarioRepository.save(comentario);
         return Select(analise.id(), ComentarioType.Actividade);
+    }
+
+    public Page<ComentarioResult> page(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("dataPublicacao").descending());
+        return comentarioRepository.findAllByOrderByDataPublicacaoDesc(pageable)
+                .map(this::toResult);
+    }
+
+    private ComentarioResult toResult(ComentarioModel model) {
+        return new ComentarioResult(
+                model.getId(),
+                model.getUser() == null ? "" : model.getUser().getImg(),
+                model.getUser() == null ? "" : model.getUser().getNome(),
+                model.getDescricao(),
+                model.isAnalise(),
+                model.getDataPublicacao());
     }
     
 }

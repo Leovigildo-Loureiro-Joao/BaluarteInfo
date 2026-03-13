@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -90,7 +91,7 @@ class ArtigoControllerTest {
     @Test
     void shouldListArticleComments() throws Exception {
         when(artigoService.ComentariosAll(1)).thenReturn(List.of(
-                new ComentarioResult(1, "https://cdn/avatar.jpg", "João", "Muito bom", true)));
+                new ComentarioResult(1, "https://cdn/avatar.jpg", "João", "Muito bom", true,LocalDate.now())));
 
         mockMvc.perform(get("/user/artigo/1/comentarioAll"))
                 .andExpect(status().isOk())

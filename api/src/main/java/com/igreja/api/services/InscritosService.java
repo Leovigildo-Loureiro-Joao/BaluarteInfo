@@ -7,6 +7,9 @@ import java.util.NoSuchElementException;
 
 import org.cloudinary.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,5 +78,22 @@ public class InscritosService {
             throw new DateTimeException("Lamentamos mas esta actividade ja passou");
         }
         inscritosRepository.delete(inscritosModel); 
+    }
+
+    public Page<InscritosData> list(Pageable pageable, int actividadeId) {
+        Page<InscritosModel> page;
+        if (actividadeId != 0) {
+            ActividadeModel actividade = actividadeService.Select(actividadeId);
+            page = inscritosRepository.findByActividade(actividade, pageable);
+        } else {
+            page = inscritosRepository.findAll(pageable);
+        }
+        return page.map(inscrito -> new InscritosData(
+                inscrito.getUser().getId(),
+                inscrito.getActividade().getTitulo(),
+                inscrito.getActividade().getTema(),
+                inscrito.getActividade().getDataEvento(),
+                inscrito.getStatus()
+        ));
     }
 }

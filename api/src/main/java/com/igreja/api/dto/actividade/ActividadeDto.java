@@ -29,6 +29,8 @@ public record ActividadeDto(
 
    @NotBlank String organizador,
 
+   @NotNull Integer capacidade,
+
    @NotNull LocalDateTime dataEvento,
 
    @Pattern(regexp = "\\d+", message = "O campo 'contactos' deve conter apenas números.")

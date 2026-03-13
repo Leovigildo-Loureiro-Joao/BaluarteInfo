@@ -19,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,8 @@ import com.cloudinary.Url;
 import com.igreja.api.dto.artigo.*;
 import com.igreja.api.dto.InfoDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.dto.PageResponse;
+import com.igreja.api.enums.ArtigoType;
 import com.igreja.api.models.ArtigoModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.InfoIgrejaModel;
@@ -93,6 +96,14 @@ public class ArtigoService{
       return  artigoRepository.findAllByOrderByIdDesc(PageRequest.of(page, size)).getContent();
    }
 
+   public PageResponse<ArtigoProjection> page(int page, int size, ArtigoType tipo, String q) {
+      String search = (q == null || q.isBlank()) ? null : q;
+      var pageable = PageRequest.of(page, size, Sort.by("id").descending());
+      var result = artigoRepository.search(tipo, search, pageable);
+      return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
+              result.getTotalElements(), result.getTotalPages());
+   }
+
    public ArtigoModel Select(int id)  {
       ArtigoModel artigoModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
       return artigoModel;
@@ -111,7 +122,13 @@ public class ArtigoService{
       ArtigoModel artigo=Select(id);
       for (ComentarioModel comentario : artigo.getComentarios()) {
          UserModel user=comentario.getUser();
-         comentarios.add(new ComentarioResult(comentario.getId(),user.getImg(), user.getUsername(), comentario.getDescricao(),comentario.isAnalise()));
+         comentarios.add(new ComentarioResult(
+            comentario.getId(),
+            user.getImg(),
+            user.getUsername(),
+            comentario.getDescricao(),
+            comentario.isAnalise(),
+            comentario.getDataPublicacao()));
       }
       return comentarios;
    }

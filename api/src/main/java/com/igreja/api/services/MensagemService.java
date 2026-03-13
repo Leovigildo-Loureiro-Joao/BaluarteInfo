@@ -8,6 +8,9 @@ import java.util.concurrent.TimeoutException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.Authentication;
@@ -99,12 +102,20 @@ public class MensagemService {
     }
 
     public List<MensagensModel> AllData() {
-      return mensagemRepository.findByTipo(MensagemType.SEND);
+      return mensagemRepository.findByTipo(MensagemType.SEND,PageRequest.of(0,10)).getContent();
+    }
+
+    public Page<MensagensModel> page(Pageable pageable) {
+        return mensagemRepository.findAll(pageable);
+    }
+
+    public Page<MensagensModel> pageByTipo(MensagemType tipo, Pageable pageable) {
+        return mensagemRepository.findByTipo(tipo, pageable);
     }
 
     public void EnviarAsPendentes() throws TimeoutException {
         try {
-            mensagemRepository.findByStatus(StatusMensage.PENDENTE).forEach(t -> {
+            mensagemRepository.findByStatus(StatusMensage.PENDENTE,PageRequest.of(0, 10)).getContent().forEach(t -> {
                 EnviarMensagem(new MensagemDto(t.getDescricao(), t.getAssunto(), t.getDestino()));
                 t.setStatus(StatusMensage.ENVIADO);
                 mensagemRepository.save(t);

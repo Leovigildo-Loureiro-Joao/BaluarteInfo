@@ -3,17 +3,21 @@ package com.igreja.api.controllers;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.igreja.api.dto.PageResponse;
 import com.igreja.api.dto.mensage.MensagemData;
 import com.igreja.api.dto.mensage.MensagemDto;
+import com.igreja.api.enums.MensagemType;
 import com.igreja.api.services.MensagemService;
 
 import jakarta.validation.Valid;
@@ -40,8 +44,14 @@ public class MensagemController {
     }
 
     @GetMapping(value = "/admin/mensagem/all")
-    public ResponseEntity<?> AllMessages() throws IOException {
-        return ResponseEntity.ok(mensagemService.AllData());
+    public ResponseEntity<?> AllMessages(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) MensagemType tipo) throws IOException {
+        var pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        var result = tipo != null ? mensagemService.pageByTipo(tipo, pageable) : mensagemService.page(pageable);
+        return ResponseEntity.ok(new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages()));
     }
 
     @GetMapping(value = "/admin/mensagem/{id}")

@@ -126,7 +126,7 @@ class MidiaControllerTest {
     @Test
     void shouldListMediaComments() throws Exception {
         when(midiaService.ComentariosAll(1)).thenReturn(List.of(
-                new ComentarioResult(1, "https://cdn/avatar.jpg", "Ana", "Gostei", true)));
+                new ComentarioResult(1, "https://cdn/avatar.jpg", "Ana", "Gostei", true,LocalDate.now())));
 
         mockMvc.perform(get("/user/midia/1/comentarioAll"))
                 .andExpect(status().isOk())

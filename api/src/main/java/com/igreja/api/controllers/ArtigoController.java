@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.igreja.api.dto.artigo.*;
+import com.igreja.api.enums.ArtigoType;
 import com.igreja.api.services.ArtigoService;
 
 import jakarta.validation.Valid;
@@ -47,8 +48,18 @@ public class ArtigoController {
 
     @GetMapping(value = "/user/artigo")
     public ResponseEntity<?> AllArtigos(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) throws IOException {
-        return ResponseEntity.ok(artigoService.AllData(size, page));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) ArtigoType tipo,
+            @RequestParam(required = false) String q) throws IOException {
+        return ResponseEntity.ok(artigoService.page(page, size, tipo, q));
+    }
+
+    @GetMapping(value = "/admin/artigo")
+    public ResponseEntity<?> AllArtigosAdmin(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) ArtigoType tipo,
+            @RequestParam(required = false) String q) throws IOException {
+        return ResponseEntity.ok(artigoService.page(page, size, tipo, q));
     }
 
     @GetMapping(value = "/user/artigo/{id}")
