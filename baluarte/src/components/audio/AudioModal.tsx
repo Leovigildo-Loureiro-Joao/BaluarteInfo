@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiHeadphones, FiX, FiCheck } from "react-icons/fi";
+import { FiHeadphones, FiX, FiCheck, FiUpload, FiImage, FiMusic, FiEye, FiUser } from "react-icons/fi";
 import { Audio, tiposAudio } from "../../pages/Audios/Audios";
 import { AudioType } from "../../types/api";
 import { AudioPreviewPlayer } from "./AudioPlayerAdmin";
@@ -15,6 +15,13 @@ type ModalAudioProps = {
 
 type Passo = 1 | 2 | 3 | 4;
 
+const passosMeta: ReadonlyArray<{ id: Passo; label: string }> = [
+  { id: 1, label: "Informações" },
+  { id: 2, label: "Mídia" },
+  { id: 3, label: "Categoria" },
+  { id: 4, label: "Revisão" }
+];
+
 const ModalAudio = ({
   audio,
   onClose,
@@ -23,7 +30,7 @@ const ModalAudio = ({
   autoPlayPreview = false
 }: ModalAudioProps) => {
   const [passo, setPasso] = useState<Passo>(1);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [formData, setFormData] = useState({
     titulo: audio?.titulo || "",
     descricao: audio?.descricao || "",
@@ -75,7 +82,7 @@ const ModalAudio = ({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (passo === 4) {
-      setShowPreview(true);
+      setShowPreviewModal(true);
     } else {
       avancarPasso();
     }
@@ -95,43 +102,6 @@ const ModalAudio = ({
     });
 
     onClose();
-  };
-
-  const previewSource = mode === "preview" ? audio?.audioUrl : formData.audioPreview;
-  const previewTitle = mode === "preview" ? audio?.titulo : formData.titulo;
-  const previewCapa = mode === "preview" ? audio?.capa : formData.capaPreview;
-  const previewTipo = mode === "preview" ? audio?.tipo : formData.tipo;
-
-  const renderPreviewSection = () => {
-    if (!previewSource) return null;
-
-    return (
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500">Pré-visualização</p>
-            <p className="text-sm text-gray-400">Reproduz o arquivo informado</p>
-          </div>
-          <span className="text-xs text-gray-400">
-            {mode === "preview" ? "Somente reprodução" : "Atualiza conforme a edição"}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-          {previewTipo && (
-            <span>{tiposAudio.find((tipo) => tipo.value === previewTipo)?.label}</span>
-          )}
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-          <AudioPreviewPlayer
-            src={previewSource}
-            capa={previewCapa}
-            titulo={previewTitle}
-            autoPlay={autoPlayPreview || mode === "preview"}
-            onClose={mode === "preview" ? onClose : undefined}
-          />
-        </div>
-      </section>
-    );
   };
 
   const renderPasso1 = () => (
@@ -180,53 +150,80 @@ const ModalAudio = ({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-4"
     >
+      {/* Capa do Áudio */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Capa do Áudio *
         </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setFormData({
-              ...formData,
-              capaFile: file,
-              capaPreview: URL.createObjectURL(file)
-            });
-          }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-          required={!audio?.capa}
-        />
-        {formData.capaPreview && (
-          <img
-            src={formData.capaPreview}
-            alt="Preview"
-            className="mt-2 w-full h-32 object-cover rounded-lg"
-          />
-        )}
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="relative flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary-500 hover:bg-primary-50/30 transition-all cursor-pointer group">
+              <FiImage className="text-gray-400 group-hover:text-primary-500 transition-colors" size={20} />
+              <span className="text-sm text-gray-600 group-hover:text-primary-600">
+                {formData.capaPreview ? "Trocar imagem" : "Selecionar imagem"}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setFormData({
+                    ...formData,
+                    capaFile: file,
+                    capaPreview: URL.createObjectURL(file)
+                  });
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </label>
+          </div>
+          {formData.capaPreview && (
+            <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+              <img
+                src={formData.capaPreview}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Arquivo de Áudio */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Arquivo de Áudio *
         </label>
-        <input
-          type="file"
-          accept="audio/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setFormData({
-              ...formData,
-              audioFile: file,
-              audioPreview: URL.createObjectURL(file)
-            });
-          }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-          required={!audio?.audioUrl}
-        />
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="relative flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary-500 hover:bg-primary-50/30 transition-all cursor-pointer group">
+              <FiMusic className="text-gray-400 group-hover:text-primary-500 transition-colors" size={20} />
+              <span className="text-sm text-gray-600 group-hover:text-primary-600">
+                {formData.audioPreview ? "Trocar áudio" : "Selecionar arquivo de áudio"}
+              </span>
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setFormData({
+                    ...formData,
+                    audioFile: file,
+                    audioPreview: URL.createObjectURL(file)
+                  });
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </label>
+          </div>
+          {formData.audioPreview && (
+            <div className="w-20 h-20 rounded-lg bg-primary-50 border border-primary-200 flex items-center justify-center">
+              <FiMusic className="text-primary-500" size={24} />
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -243,18 +240,28 @@ const ModalAudio = ({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Tipo de Áudio *
         </label>
-        <select
-          required
-          value={formData.tipo}
-          onChange={(e) => setFormData({ ...formData, tipo: e.target.value as AudioType })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-        >
-          {tiposAudio.map((tipo) => (
-            <option key={tipo.value} value={tipo.value}>
-              {tipo.label}
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-2 gap-3">
+          {tiposAudio.map((tipo) => {
+            const Icon = tipo.icon;
+            const isSelected = formData.tipo === tipo.value;
+            return (
+              <button
+                key={tipo.value}
+                type="button"
+                onClick={() => setFormData({ ...formData, tipo: tipo.value })}
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+                  isSelected
+                    ? `${tipo.color} border-primary-500 text-white`
+                    : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
+                }`}
+              >
+                <Icon size={18} />
+                <span className="text-sm font-medium">{tipo.label}</span>
+                {isSelected && <FiCheck className="ml-auto" size={16} />}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </motion.div>
   );
@@ -273,7 +280,7 @@ const ModalAudio = ({
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">Tudo pronto para publicar!</h3>
         <p className="text-gray-600 mb-4">
-          Revise as informações e confira o preview antes de finalizar.
+          Revise as informações e confira o preview completo antes de finalizar.
         </p>
       </div>
 
@@ -291,7 +298,7 @@ const ModalAudio = ({
 
       <button
         type="button"
-        onClick={() => setShowPreview(true)}
+        onClick={() => setShowPreviewModal(true)}
         className="w-full px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
       >
         Ver Preview Completo
@@ -299,19 +306,103 @@ const ModalAudio = ({
     </motion.div>
   );
 
-  if (showPreview) {
+  // Painel de Preview Lateral
+  const renderPreviewLateral = () => (
+    <div className="md:col-span-1 border-l border-gray-200 pl-6 ">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <FiEye className="text-primary-500" />
+        Preview do Áudio
+      </h3>
+
+      <div className="bg-gray-50 rounded-xl overflow-hidden sticky top-6">
+        {/* Capa Preview */}
+        <div className="relative  overflow-hidden h-[20vh] bg-gray-100">
+          {formData.capaPreview ? (
+            <img
+              src={formData.capaPreview}
+              alt={formData.titulo || "Preview"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <FiHeadphones size={40} />
+            </div>
+          )}
+
+          {/* Badge de categoria (se já selecionada) */}
+          {formData.tipo && (
+            <div className={`absolute top-3 left-3 ${tiposAudio.find(t => t.value === formData.tipo)?.color || 'bg-gray-500'} text-white px-2 py-1 rounded-full text-xs font-medium`}>
+              {tiposAudio.find(t => t.value === formData.tipo)?.label}
+            </div>
+          )}
+
+          {/* Ícone de play (decorativo) */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center">
+              <FiHeadphones className="text-white text-xl" />
+            </div>
+          </div>
+        </div>
+
+        {/* Informações do Preview */}
+        <div className="p-4">
+          <h4 className="font-bold mb-2 line-clamp-2">
+            {formData.titulo || "Título do Áudio"}
+          </h4>
+          
+          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+            {formData.descricao || "Descrição do áudio aparecerá aqui..."}
+          </p>
+
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center gap-2">
+              <FiUser size={12} />
+              <span>{audio?.autor || "Autor não definido"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiImage size={12} />
+              <span>{formData.capaPreview ? "Com capa" : "Sem capa"}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+            <span className="text-xs text-gray-500 flex items-center gap-1">
+              <FiHeadphones size={12} />
+              {formData.audioPreview ? "Áudio pronto" : "Sem áudio"}
+            </span>
+            {formData.tipo && (
+              <span className="text-[10px] px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                #{formData.tipo.toLowerCase()}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <p className="text-xs text-gray-400 mt-4 text-center">
+        Esta é uma prévia de como o áudio será exibido
+      </p>
+    </div>
+  );
+
+  // Modal de Preview Completo
+  if (showPreviewModal) {
     return (
       <ModalAudio
         audio={{
+          id: "preview",
           titulo: formData.titulo,
           descricao: formData.descricao,
           tipo: formData.tipo,
           capa: formData.capaPreview,
-          audioUrl: formData.audioPreview
+          audioUrl: formData.audioPreview,
+          autor: audio?.autor || "Autor",
+          data: audio?.data || new Date().toISOString().split('T')[0],
+          visualizacoes: 0
         }}
-        onClose={() => setShowPreview(false)}
+        onClose={() => setShowPreviewModal(false)}
         mode="preview"
-        autoPlayPreview
+        autoPlayPreview={true}
       />
     );
   }
@@ -368,6 +459,35 @@ const ModalAudio = ({
                 />
               </div>
             </div>
+
+            {/* Botões do Preview */}
+            <div className="flex gap-3 pt-4 border-t">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Voltar à Edição
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onSave) {
+                    onSave({
+                      titulo: audio.titulo,
+                      descricao: audio.descricao,
+                      tipo: audio.tipo,
+                      capa: audio.capa,
+                      audioUrl: audio.audioUrl
+                    });
+                  }
+                  onClose();
+                }}
+                className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
+              >
+                Confirmar e Publicar
+              </button>
+            </div>
           </div>
         </motion.div>
       </motion.div>
@@ -420,62 +540,100 @@ const ModalAudio = ({
             </div>
           </div>
 
-          {/* Steps */}
-          <div className="flex items-center justify-between mb-6">
-            {[1, 2, 3, 4].map((num) => (
-              <div key={num} className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    passo >= num ? "bg-primary-500 text-white" : "bg-gray-200 text-gray-500"
+          {/* Steps + labels alinhados */}
+          <div className="max-w-2xl mx-auto w-full">
+            <div className="relative pt-1">
+              {/* Linha base */}
+              <div className="absolute left-5 right-5 top-5 h-1 rounded-full bg-gray-200 z-0 pointer-events-none" />
+              {/* Progresso */}
+              <div
+                className="absolute left-5 top-5 h-1 rounded-full bg-primary-500 transition-[width] duration-300 z-0 pointer-events-none"
+                style={{
+                  width: `${((passo - 1) / (passosMeta.length - 1)) * 100}%`
+                }}
+              />
+
+              <div className="grid grid-cols-4 relative z-10">
+                {passosMeta.map(({ id }) => (
+                  <div key={id} className="flex justify-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                        passo > id
+                          ? "bg-primary-500 text-white"
+                          : passo === id
+                          ? "bg-primary-500 text-white ring-4 ring-primary-100"
+                          : "bg-gray-200 text-gray-500"
+                      }`}
+                    >
+                      {passo > id ? <FiCheck size={18} /> : id}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-2 grid grid-cols-4 px-1 text-xs text-gray-500">
+              {passosMeta.map(({ id, label }) => (
+                <span
+                  key={id}
+                  className={`text-center ${
+                    passo === id ? "text-primary-600 font-semibold" : ""
                   }`}
                 >
-                  {num < 4 ? num : <FiCheck size={16} />}
-                </div>
-                {num < 4 && (
-                  <div
-                    className={`w-12 h-1 ${
-                      passo > num ? "bg-primary-500" : "bg-gray-200"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <AnimatePresence mode="wait">
-              {passo === 1 && renderPasso1()}
-              {passo === 2 && renderPasso2()}
-              {passo === 3 && renderPasso3()}
-              {passo === 4 && renderPasso4()}
-            </AnimatePresence>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Formulário */}
+              <div className="md:col-span-1 h-[50vh] overflow-y-auto overflow-x-hidden">
+                <AnimatePresence mode="wait">
+                  {passo === 1 && renderPasso1()}
+                  {passo === 2 && renderPasso2()}
+                  {passo === 3 && renderPasso3()}
+                  {passo === 4 && renderPasso4()}
+                </AnimatePresence>
 
-            <div className="flex items-center gap-3 pt-4 border-t">
-              {passo > 1 && (
-                <button
-                  type="button"
-                  onClick={voltarPasso}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Voltar
-                </button>
-              )}
-              {passo < 4 ? (
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
-                >
-                  Avançar
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleConfirmSave}
-                  className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
-                >
-                  Publicar Áudio
-                </button>
-              )}
+                {/* Botões de navegação */}
+                <div className="flex gap-3 pt-4 border-t mt-6">
+                  {passo > 1 && (
+                    <button
+                      type="button"
+                      onClick={voltarPasso}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      Voltar
+                    </button>
+                  )}
+                  
+                  {passo < 4 ? (
+                    <button
+                      type="submit"
+                      disabled={!podeAvancar()}
+                      className={`flex-1 px-4 py-3 rounded-xl transition-colors ${
+                        podeAvancar()
+                          ? "bg-primary-500 text-white hover:bg-primary-600"
+                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      }`}
+                    >
+                      Avançar
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
+                    >
+                      Revisar e Publicar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Painel de Preview Lateral (sempre visível) */}
+              {renderPreviewLateral()}
             </div>
           </form>
         </div>

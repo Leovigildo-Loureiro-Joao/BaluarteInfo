@@ -40,6 +40,8 @@ interface ConfiguracaoTipoAtividade {
   icon: string;
 }
 
+
+
 interface ConfiguracaoDashboard {
   cards: any[];
   timeRanges: any[];
@@ -67,6 +69,12 @@ interface ConfiguracaoActivities {
   types: ConfiguracaoTipoAtividade[];
 }
 
+interface ConfiguracaoCarroselVisible {
+  visible: {
+    enabled: boolean;
+  };
+}
+
 interface CarouselImage {
   id: string;
   url: string;
@@ -81,6 +89,7 @@ interface Configuracoes {
   inscricoes: ConfiguracaoInscricoes;
   activities: ConfiguracaoActivities;
   homeCarousel: CarouselImage[];
+  homeCarouselVisible: ConfiguracaoCarroselVisible;
 }
 
 // Configuração mock (baseada no JSON)
@@ -103,6 +112,11 @@ const configuracoesMock: Configuracoes = {
       enabled: true,
       autoDisableAfterActivity: true,
       expiresAfterHours: 6
+    }
+  },
+  homeCarouselVisible:{
+    visible: {
+      enabled: true
     }
   },
   activities: {
@@ -590,7 +604,7 @@ export const ConfiguracoesPage = () => {
 
           {/* Carrossel da Home */}
           <SecaoConfiguracao titulo="Carrossel da Home" icone={FiImage}>
-            <div className="space-y-4">
+            <div className="space-y-4 mb-8">
               <p className="text-sm text-gray-500">
                 Defina aqui as imagens que vão aparecer no carrossel da página inicial. Reordene, edite ou remova banners para controlar a narrativa visual.
               </p>
@@ -677,6 +691,21 @@ export const ConfiguracoesPage = () => {
                 </button>
               </div>
             </div>
+              <CampoConfiguracao label="Permitir Carrosel no Home">
+                <ToggleSwitch
+                  value={configuracoes.homeCarouselVisible.visible.enabled}
+                  onChange={(value) => setConfiguracoes({
+                    ...configuracoes,
+                    homeCarouselVisible: {
+                      ...configuracoes.homeCarouselVisible,
+                      visible: {
+                         ...configuracoes.homeCarouselVisible.visible,
+                          enabled: value
+                      }
+                    }
+                  })}
+                />
+              </CampoConfiguracao>
           </SecaoConfiguracao>
 
           {/* Mensagens */}

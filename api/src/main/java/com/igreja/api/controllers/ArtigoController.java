@@ -111,6 +111,23 @@ public class ArtigoController {
         return ResponseEntity.ok(artigoService.regenerateHtml(id));
     }
 
+    @GetMapping("/admin/artigo/{id}/enhance/preview")
+    public ResponseEntity<?> EnhancePreviewWithGemini(
+            @PathVariable int id,
+            @RequestParam(defaultValue = "5") int pages,
+            @RequestParam(required = false) String instruction) throws Exception {
+        return ResponseEntity.ok(artigoService.enhancePreviewWithGemini(id, pages, instruction));
+    }
+
+    @PostMapping(value = "/admin/artigo/enhance/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> EnhancePreviewFromUpload(@ModelAttribute @Valid ArtigoEnhancePreviewUploadDto payload)
+            throws Exception {
+        int pages = payload.pages() == null ? 5 : payload.pages();
+        return ResponseEntity.ok(
+                artigoService.enhancePreviewWithGemini(payload.titulo(), payload.descricao(), payload.pdf(), pages,
+                        payload.instruction()));
+    }
+
     @PutMapping("/admin/artigo/html")
     public ResponseEntity<?> RegenerateHtmlAll() {
         int updated = artigoService.regenerateHtmlAll();

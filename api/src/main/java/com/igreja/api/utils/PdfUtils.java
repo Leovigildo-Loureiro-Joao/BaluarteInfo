@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.net.URL;
+import java.net.URLConnection;
 
 public class PdfUtils {
 
@@ -60,6 +61,36 @@ public class PdfUtils {
         try (PDDocument document = PDDocument.load(pdfStream)) {
             PDFRenderer renderer = new PDFRenderer(document);
             return renderer.renderImageWithDPI(0, dpi); // Melhor qualidade que renderImage()
+        }
+    }
+
+      public static String extractText(InputStream inputStream, int maxPages) throws IOException {
+        try (PDDocument document = PDDocument.load(inputStream)) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            stripper.setSortByPosition(true);
+            
+            int totalPages = document.getNumberOfPages();
+            int pagesToExtract = Math.min(maxPages, totalPages);
+            
+            stripper.setStartPage(1);
+            stripper.setEndPage(pagesToExtract);
+            stripper.setLineSeparator("\n");
+            stripper.setParagraphStart("\n\n");
+            
+            String text = stripper.getText(document);
+            
+            // Limpeza básica do texto (preservando quebras de linha)
+            String cleaned = text == null ? "" : text;
+            cleaned = cleaned.replace("\r\n", "\n").replace('\r', '\n');
+            cleaned = cleaned.replace('\u00A0', ' ');
+            // Normaliza espaços inline sem destruir \n
+            cleaned = cleaned.replaceAll("[ \\t\\f\\u000B]+", " ");
+            // Remove espaços no início/fim de cada linha
+            cleaned = cleaned.replaceAll("(?m)^[ \\t]+", "");
+            cleaned = cleaned.replaceAll("(?m)[ \\t]+$", "");
+            // Colapsa múltiplas linhas em branco
+            cleaned = cleaned.replaceAll("\\n{3,}", "\n\n");
+            return cleaned.trim();
         }
     }
 
@@ -108,7 +139,7 @@ public class PdfUtils {
      * Extrai HTML diretamente a partir de uma URL de PDF.
      */
     public static String extractHtmlFromUrl(String pdfUrl) throws IOException {
-        try (InputStream in = new URL(pdfUrl).openStream()) {
+        try (InputStream in = openUrlStream(pdfUrl)) {
             return extractHtml(in, 0);
         }
     }
@@ -117,9 +148,33 @@ public class PdfUtils {
      * Extrai HTML diretamente a partir de uma URL de PDF, limitando a quantidade de páginas.
      */
     public static String extractHtmlFromUrl(String pdfUrl, int maxPages) throws IOException {
-        try (InputStream in = new URL(pdfUrl).openStream()) {
+        try (InputStream in = openUrlStream(pdfUrl)) {
             return extractHtml(in, maxPages);
         }
+    }
+
+    /**
+     * Extrai texto diretamente a partir de uma URL de PDF, limitando a quantidade de páginas.
+     */
+    public static String extractTextFromUrl(String pdfUrl, int maxPages) throws IOException {
+        try (InputStream in = openUrlStream(pdfUrl)) {
+            return extractText(in, maxPages);
+        }
+    }
+
+    private static InputStream openUrlStream(String url) throws IOException {
+        if (url == null || url.isBlank()) {
+            throw new IOException("URL do PDF vazia.");
+        }
+        URLConnection conn = new URL(url).openConnection();
+        conn.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(10));
+        conn.setReadTimeout((int) TimeUnit.SECONDS.toMillis(60));
+        try {
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+        } catch (Exception ignored) {
+            // Alguns protocolos/impls podem não suportar headers.
+        }
+        return conn.getInputStream();
     }
 
     private static String pagesToHtml(List<String> pages) {

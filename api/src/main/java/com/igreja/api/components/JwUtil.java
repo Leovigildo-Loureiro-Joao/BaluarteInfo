@@ -52,6 +52,28 @@ public class JwUtil {
                 && !isTokenExpired(token);
     }
 
+    /**
+     * Parses claims from a token, even if it's expired (signature must still be valid).
+     * Returns null when the token is invalid or can't be parsed.
+     */
+    public Claims parseClaimsAllowExpired(String token) {
+        if (token == null || token.isBlank()) return null;
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException exception) {
+            return exception.getClaims();
+        } catch (UnsupportedJwtException
+                | MalformedJwtException
+                | SignatureException
+                | IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
     private boolean isTokenExpired(String token) {
         Date expiration = extractClaim(token, Claims::getExpiration);
         return expiration == null || expiration.before(new Date());

@@ -47,6 +47,7 @@ import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.VistosRepository;
+import com.igreja.api.utils.AvatarUtils;
 
 @Service
 public class MidiaService {
@@ -148,8 +149,13 @@ public class MidiaService {
 
         if (midiaDto.type().equals(MidiaType.AUDIO)) {
             upload.generateUniqueName(midiaDto.url().getOriginalFilename());
-            midia.setUrl(upload.uploadFileAsync(midiaDto.url(), "raw"));
-            midia.setTempo(extractAudioDurationOrDefault(midiaDto.url()));
+            CloudinaryUploadResult result = upload.uploadFileWithInfoAsync(midiaDto.url(), "video");
+            midia.setUrl(result.url());
+            if (result.durationSeconds() != null) {
+                midia.setTempo(formatarDuracao(result.durationSeconds().intValue()));
+            } else {
+                midia.setTempo(extractAudioDurationOrDefault(midiaDto.url()));
+            }
         } else if (midiaDto.type().equals(MidiaType.VIDEO)) {
             upload.generateUniqueName(midiaDto.url().getOriginalFilename());
             CloudinaryUploadResult result = upload.uploadFileWithInfoAsync(midiaDto.url(), "video");
@@ -238,8 +244,13 @@ public class MidiaService {
                     upload.deleteFileAsync(midia.getUrl()).join();
                 }
                 upload.generateUniqueName(dto.url().getOriginalFilename());
-                midia.setUrl(upload.uploadFileAsync(dto.url(), "raw"));
-                midia.setTempo(extractAudioDurationOrDefault(dto.url()));
+                CloudinaryUploadResult result = upload.uploadFileWithInfoAsync(dto.url(), "video");
+                midia.setUrl(result.url());
+                if (result.durationSeconds() != null) {
+                    midia.setTempo(formatarDuracao(result.durationSeconds().intValue()));
+                } else {
+                    midia.setTempo(extractAudioDurationOrDefault(dto.url()));
+                }
             } else if (midia.getType().equals(MidiaType.VIDEO)) {
                 if (isCloudinaryUrl(midia.getUrl())) {
                     upload.deleteFileAsync(midia.getUrl()).join();
@@ -295,7 +306,7 @@ public class MidiaService {
 
     public PageResponse<MidiaProjection> page(int page, int size, MidiaType type,
             AudioType audioType, com.igreja.api.enums.VideoType videoType, String q) {
-        String search = (q == null || q.isBlank()) ? null : q;
+        String search = (q == null || q.isBlank()) ? "" : q.trim();
         Pageable pageable = PageRequest.of(page, size);
         var result = midiaRepository.search(type, audioType, videoType, search, pageable);
         return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
@@ -323,7 +334,7 @@ public class MidiaService {
             int likes = (int) comentarioLikeRepository.countByComentario(comentario);
             comentarios.add(new ComentarioResult(
                 comentario.getId(),
-                user.getImg(),
+                AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome()),
                 user.getUsername(),
                 comentario.getDescricao(),
                 comentario.isAnalise(),
@@ -355,7 +366,7 @@ public class MidiaService {
 
     public PageResponse<GaleriaAdminItem> galeriaAdmin(int page, int size, String q) {
         Pageable pageable = PageRequest.of(page, size);
-        String search = (q == null || q.isBlank()) ? null : q;
+        String search = (q == null || q.isBlank()) ? "" : q.trim();
         var result = midiaRepository.findGaleriaAdmin(MidiaType.IMAGE, search, pageable);
         return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
                 result.getTotalElements(), result.getTotalPages());

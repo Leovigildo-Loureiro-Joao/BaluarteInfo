@@ -18,7 +18,7 @@ import com.igreja.api.dto.user.UserProfileDto;
 import com.igreja.api.enums.UserStatus;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.UserRepository;
-import com.igreja.api.utils.GravatarUtils;
+import com.igreja.api.utils.AvatarUtils;
 
 @Service
 public class UserService implements UserDetailsService{
@@ -26,9 +26,11 @@ public class UserService implements UserDetailsService{
     private static final String DEFAULT_ROLE = "USER";
 
     private final UserRepository userRepository;
+    private final CloudDinaryService cloudinaryService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, CloudDinaryService cloudinaryService) {
         this.userRepository = userRepository;
+        this.cloudinaryService = cloudinaryService;
     }
     
     
@@ -88,7 +90,6 @@ public class UserService implements UserDetailsService{
             user.setDataCadastro(LocalDateTime.now());
         }
         user.setRoles(normalizeRoles(user.getRoles()));
-        user.setImg( GravatarUtils.getGravatarUrl(user.getEmail()));
         return userRepository.save(user);
     }
 
@@ -105,7 +106,6 @@ public class UserService implements UserDetailsService{
                 throw new NoSuchElementException("Já existe um utilizador com este email.");
             }
             user.setEmail(profile.email());
-            user.setImg(GravatarUtils.getGravatarUrl(profile.email()));
         }
 
         if (profile.telefone() != null) {
@@ -163,7 +163,6 @@ public class UserService implements UserDetailsService{
                 throw new NoSuchElementException("Já existe um utilizador com este email.");
             }
             user.setEmail(dto.email());
-            user.setImg(GravatarUtils.getGravatarUrl(dto.email()));
         }
 
         if (dto.telefone() != null) {
@@ -206,6 +205,34 @@ public class UserService implements UserDetailsService{
             }
         }
 
+        return toDto(userRepository.save(user));
+    }
+
+    public UserDtoData updateAvatar(String username, org.springframework.web.multipart.MultipartFile img)
+            throws java.util.concurrent.ExecutionException, java.lang.InterruptedException, java.util.concurrent.TimeoutException {
+        if (img == null || img.isEmpty()) {
+            throw new NoSuchElementException("Imagem obrigatória.");
+        }
+
+        UserModel user = loadUserByEmail(username);
+
+        cloudinaryService.deleteFileIfCloudinaryAsync(user.getImg()).join();
+        String originalFilename = img.getOriginalFilename() == null ? "avatar" : img.getOriginalFilename();
+        cloudinaryService.generateUniqueName("user_" + user.getId() + "_avatar_" + originalFilename);
+        String url = cloudinaryService.uploadImageFileAsync(img, "image");
+        user.setImg(url);
+        return toDto(userRepository.save(user));
+    }
+
+    public UserDtoData maybeUpdateAvatarFromGoogle(String username, String fotoUrl) {
+        if (fotoUrl == null || fotoUrl.isBlank()) {
+            return null;
+        }
+        UserModel user = loadUserByEmail(username);
+        if (user.getImg() != null && !user.getImg().isBlank()) {
+            return null;
+        }
+        user.setImg(fotoUrl);
         return toDto(userRepository.save(user));
     }
 
@@ -272,11 +299,12 @@ public class UserService implements UserDetailsService{
     }
 
     private UserDtoData toDto(UserModel user) {
+        String avatar = AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome());
         return new UserDtoData(
                 user.getId(),
                 user.getNome(),
                 user.getEmail(),
-                user.getImg(),
+                avatar,
                 user.getRoles(),
                 user.getStatus(),
                 user.getTelefone(),
@@ -327,7 +355,7 @@ public class UserService implements UserDetailsService{
                 user.getEmail(),
                 user.getTelefone(),
                 cargo,
-                user.getImg(),
+                AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome()),
                 user.getDataCadastro(),
                 user.getUltimoAcesso(),
                 false,

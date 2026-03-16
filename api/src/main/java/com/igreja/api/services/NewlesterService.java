@@ -10,7 +10,6 @@ import com.igreja.api.dto.NewlesterDto;
 import com.igreja.api.models.NewlesterModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.NewlesterRepository;
-import com.igreja.api.utils.GravatarUtils;
 
 @Service
 public class NewlesterService {

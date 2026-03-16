@@ -125,6 +125,7 @@ const MensagemCard = ({
   onExcluir: (id: number) => void;
 }) => {
   const [showOptions, setShowOptions] = useState(false);
+  const isPending = mensagem.status === StatusMensage.PENDENTE;
 
   const getStatusColor = (status: StatusMensage) => {
     switch(status) {
@@ -176,7 +177,12 @@ const MensagemCard = ({
 
             {/* Status */}
             <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(mensagem.status)}`}>
-              {getStatusLabel(mensagem.status)}
+              <span className="inline-flex items-center gap-1">
+                {mensagem.status === StatusMensage.PENDENTE && (
+                  <FiRefreshCw size={12} className="animate-spin" />
+                )}
+                {getStatusLabel(mensagem.status)}
+              </span>
             </span>
 
             {/* Não lido badge */}
@@ -224,7 +230,10 @@ const MensagemCard = ({
         <div className="relative">
           <button
             onClick={() => setShowOptions(!showOptions)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            disabled={isPending}
+            className={`p-2 hover:bg-gray-100 rounded-lg transition-colors ${
+              isPending ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <FiMoreVertical size={18} className="text-gray-500" />
           </button>
@@ -271,6 +280,7 @@ const MensagemCard = ({
                     onExcluir(mensagem.id);
                     setShowOptions(false);
                   }}
+                  disabled={isPending}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                 >
                   <FiTrash2 size={14} />
@@ -317,6 +327,9 @@ export const MensagensPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMensagem, setSelectedMensagem] = useState<Mensagem | null>(null);
   const [showRespostaModal, setShowRespostaModal] = useState(false);
+  const [sendingMensagemIds, setSendingMensagemIds] = useState<number[]>([]);
+  const [resendingPendentes, setResendingPendentes] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   // Estatísticas
   const stats = {
@@ -358,44 +371,54 @@ export const MensagensPage = () => {
     setShowRespostaModal(true);
   };
 
-  const handleEnviarResposta = (resposta: { assunto: string; descricao: string }) => {
+  const handleEnviarResposta = async (resposta: { assunto: string; descricao: string }) => {
     if (!selectedMensagem) return;
 
+    const tempId = Date.now();
     const novaMensagem: Mensagem = {
-      id: Math.max(...mensagens.map(m => m.id)) + 1,
+      id: tempId,
       descricao: resposta.descricao,
       assunto: resposta.assunto,
       destino: selectedMensagem.email,
       email: 'admin@igrejabaluarte.com',
       tipo: MensagemType.SEND,
-      status: StatusMensage.ENVIADO,
+      status: StatusMensage.PENDENTE,
       lido: true,
       dataPublicacao: new Date().toISOString()
     };
 
-    setMensagens([novaMensagem, ...mensagens]);
-    
-    // Marcar original como lido (opcional)
-    setMensagens(mensagens.map(m => 
-      m.id === selectedMensagem.id ? { ...m, lido: true } : m
-    ));
+    setSendingMensagemIds((current) => [tempId, ...current]);
+    setActionError("");
+    setMensagens((current) => [
+      novaMensagem,
+      ...current.map((m) => (m.id === selectedMensagem.id ? { ...m, lido: true } : m))
+    ]);
+
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    setMensagens((current) =>
+      current.map((m) => (m.id === tempId ? { ...m, status: StatusMensage.ENVIADO } : m))
+    );
+    setSendingMensagemIds((current) => current.filter((id) => id !== tempId));
   };
 
   const handleExcluir = (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir esta mensagem?')) {
-      setMensagens(mensagens.filter(m => m.id !== id));
+      setMensagens((current) => current.filter((m) => m.id !== id));
     }
   };
 
-  const handleReenviarPendentes = () => {
-    // Simular reenvio
-    setMensagens(mensagens.map(m => 
-      m.status === StatusMensage.PENDENTE 
-        ? { ...m, status: StatusMensage.ENVIADO }
-        : m
-    ));
-    
-    alert('Mensagens pendentes reenviadas com sucesso!');
+  const handleReenviarPendentes = async () => {
+    if (resendingPendentes) return;
+    setResendingPendentes(true);
+    setActionError("");
+
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    setMensagens((current) =>
+      current.map((m) =>
+        m.status === StatusMensage.PENDENTE ? { ...m, status: StatusMensage.ENVIADO } : m
+      )
+    );
+    setResendingPendentes(false);
   };
 
   return (
@@ -518,14 +541,42 @@ export const MensagensPage = () => {
             {stats.pendentes > 0 && (
               <button
                 onClick={handleReenviarPendentes}
+                disabled={resendingPendentes}
                 className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-600 rounded-lg text-sm hover:bg-amber-100 transition-colors"
               >
-                <FiRefreshCw size={14} />
-                Reenviar pendentes ({stats.pendentes})
+                <FiRefreshCw size={14} className={resendingPendentes ? "animate-spin" : ""} />
+                {resendingPendentes ? "A reenviar…" : `Reenviar pendentes (${stats.pendentes})`}
               </button>
             )}
           </div>
         </div>
+
+        {actionError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start justify-between gap-4">
+            <p className="text-sm">{actionError}</p>
+            <button
+              type="button"
+              onClick={() => setActionError("")}
+              className="p-1 rounded-lg hover:bg-red-100 transition-colors"
+              title="Fechar"
+            >
+              <FiX />
+            </button>
+          </div>
+        )}
+
+        {(sendingMensagemIds.length > 0 || resendingPendentes) && (
+          <div className="mb-4 overflow-hidden rounded-xl bg-white border border-gray-100">
+            <div className="h-1 bg-gray-100">
+              <motion.div
+                className="h-1 w-1/3 bg-primary-500"
+                initial={{ x: "-100%" }}
+                animate={{ x: "300%" }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Lista de Mensagens */}
         {filteredMensagens.length === 0 ? (

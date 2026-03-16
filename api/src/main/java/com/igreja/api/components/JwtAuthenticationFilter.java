@@ -42,6 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         "/auth/login",
         "/auth/register",
         "/auth/google",
+        "/auth/refresh",
         "/public/inscritos",
         "/public/mensagem",
         "/health",

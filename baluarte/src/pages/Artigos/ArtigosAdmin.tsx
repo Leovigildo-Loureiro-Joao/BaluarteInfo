@@ -29,22 +29,20 @@ import {
 import { LiaBibleSolid, LiaCrossSolid } from "react-icons/lia";
 import  ModalArtigo  from "../../components/artigos/ModalArtigo";
 import { ArtigoCard } from "../../components/artigos/CardArtigoAdmin";
-import { ArtigoDetail } from "../../types/api";
+import { ArtigoDetail, ArtigoType as ApiArtigoType } from "../../types/api";
 import { apiFetch } from "../../utils/api.js";
 
-// Tipos baseados no seu Enum ArtigoType
-type ArtigoType = 'BIBLE_STUDY' | 'DEVOTIONAL' | 'HISTORICAL' | 'DOCTRINAL' | 
-                  'TESTIMONY' | 'APOLOGETICS' | 'PROPHETIC' | 'THEOLOGICAL';
+type ArtigoType = ApiArtigoType;
 
 export const tiposArtigo: { value: ArtigoType; label: string; icon: any; color: string }[] = [
-  { value: "BIBLE_STUDY", label: "Estudo Bíblico", icon: LiaBibleSolid, color: "bg-blue-500" },
-  { value: "DEVOTIONAL", label: "Devocional", icon: GiPrayer, color: "bg-green-500" },
-  { value: "HISTORICAL", label: "Histórico", icon: GiScrollQuill, color: "bg-amber-500" },
-  { value: "DOCTRINAL", label: "Doutrinário", icon: LiaCrossSolid, color: "bg-purple-500" },
-  { value: "TESTIMONY", label: "Testemunho", icon: GiAngelWings, color: "bg-pink-500" },
-  { value: "APOLOGETICS", label: "Apologética", icon: GiOpenBook, color: "bg-indigo-500" },
-  { value: "PROPHETIC", label: "Profético", icon: GiScrollQuill, color: "bg-orange-500" },
-  { value: "THEOLOGICAL", label: "Teológico", icon: LiaBibleSolid, color: "bg-red-500" },
+  { value: ApiArtigoType.BibleStudy, label: "Estudo Bíblico", icon: LiaBibleSolid, color: "bg-blue-500" },
+  { value: ApiArtigoType.Devotional, label: "Devocional", icon: GiPrayer, color: "bg-green-500" },
+  { value: ApiArtigoType.Historical, label: "Histórico", icon: GiScrollQuill, color: "bg-amber-500" },
+  { value: ApiArtigoType.Doctrinal, label: "Doutrinário", icon: LiaCrossSolid, color: "bg-purple-500" },
+  { value: ApiArtigoType.Testimony, label: "Testemunho", icon: GiAngelWings, color: "bg-pink-500" },
+  { value: ApiArtigoType.Apologetics, label: "Apologética", icon: GiOpenBook, color: "bg-indigo-500" },
+  { value: ApiArtigoType.Prophetic, label: "Profético", icon: GiScrollQuill, color: "bg-orange-500" },
+  { value: ApiArtigoType.Theological, label: "Teológico", icon: LiaBibleSolid, color: "bg-red-500" },
 ];
 
 type ArtigoApi = {
@@ -82,8 +80,20 @@ export const ArtigosPageAdmin = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingArtigo, setEditingArtigo] = useState<ArtigoAdminView | undefined>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
+  const [creatingArtigos, setCreatingArtigos] = useState<
+    {
+      tempId: string;
+      titulo: string;
+      descricao: string;
+      escritor: string;
+      tipo: ArtigoType;
+      startedAt: number;
+    }[]
+  >([]);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   // Regras para consumir a API no admin (somente Artigos):
   // 1) Lista: GET /admin/artigo?page&size&tipo&q
@@ -121,10 +131,11 @@ export const ArtigosPageAdmin = () => {
         });
 
         setArtigos(mapped);
-        setError("");
+        setLoadError("");
+        setHasLoadedOnce(true);
       } catch (err) {
         if (!active) return;
-        setError("Não foi possível carregar os artigos.");
+        setLoadError("Não foi possível carregar os artigos.");
         setArtigos([]);
       } finally {
         if (active) setLoading(false);
@@ -138,6 +149,22 @@ export const ArtigosPageAdmin = () => {
   }, [searchTerm, selectedTipo, reloadToken]);
 
   const handleSave = async (novoArtigo: ArtigoUpsertPayload) => {
+    const isEditing = Boolean(editingArtigo);
+    const tempId = `creating-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    if (!isEditing) {
+      setCreatingArtigos((current) => [
+        {
+          tempId,
+          titulo: novoArtigo.titulo,
+          descricao: novoArtigo.descricao,
+          escritor: novoArtigo.escritor,
+          tipo: novoArtigo.tipo,
+          startedAt: Date.now(),
+        },
+        ...current,
+      ]);
+      setActionError("");
+    }
     try {
       // Enviar multipart para criar/editar (PDF obrigatório).
       const formData = new FormData();
@@ -145,7 +172,9 @@ export const ArtigosPageAdmin = () => {
       formData.append("descricao", novoArtigo.descricao);
       formData.append("escritor", novoArtigo.escritor);
       formData.append("tipo", novoArtigo.tipo);
-      const isEditing = Boolean(editingArtigo);
+      if (novoArtigo.markdown && novoArtigo.markdown.trim()) {
+        formData.append("markdown", novoArtigo.markdown.trim());
+      }
       if (!isEditing) {
         if (!(novoArtigo.pdf instanceof File)) {
           throw new Error("PDF obrigatório para criar artigo.");
@@ -171,14 +200,40 @@ export const ArtigosPageAdmin = () => {
         throw new Error("Falha ao salvar artigo.");
       }
 
+      if (!isEditing) {
+        let created: Partial<ArtigoApi> | null = null;
+        try {
+          created = (await response.json()) as Partial<ArtigoApi>;
+        } catch {
+          created = null;
+        }
+        if (created && typeof created.id === "number") {
+          const tempoLeitura = Math.max(1, Math.ceil(((created.nPagina as number) || 1) / 2));
+          const mappedCreated: ArtigoAdminView = {
+            ...(created as any),
+            tempoLeitura: `${tempoLeitura} min`,
+            visualizacoes: (created.visualizacoes as number) ?? 0,
+            tags: [],
+          };
+          setArtigos((current) => {
+            const withoutSame = current.filter((a) => a.id !== mappedCreated.id);
+            return [mappedCreated, ...withoutSame];
+          });
+        }
+      }
+
       setShowModal(false);
       setEditingArtigo(undefined);
-      setError("");
+      setActionError("");
 
       // Recarregar a lista após salvar (mesmo se os filtros não mudaram).
       setReloadToken((current) => current + 1);
     } catch (err) {
-      setError("Não foi possível salvar o artigo.");
+      setActionError("Não foi possível salvar o artigo.");
+    } finally {
+      if (!isEditing) {
+        setCreatingArtigos((current) => current.filter((a) => a.tempId !== tempId));
+      }
     }
   };
 
@@ -194,9 +249,9 @@ export const ArtigosPageAdmin = () => {
         throw new Error("Falha ao excluir artigo.");
       }
       setArtigos(artigos.filter(a => a.id !== id));
-      setError("");
+      setActionError("");
     } catch (err) {
-      setError("Não foi possível excluir o artigo.");
+      setActionError("Não foi possível excluir o artigo.");
     }
   };
 
@@ -207,9 +262,9 @@ export const ArtigosPageAdmin = () => {
         throw new Error("Falha ao regerar HTML.");
       }
       setReloadToken((current) => current + 1);
-      setError("");
+      setActionError("");
     } catch (err) {
-      setError("Não foi possível regerar o HTML do artigo.");
+      setActionError("Não foi possível regerar o HTML do artigo.");
     }
   };
 
@@ -221,10 +276,76 @@ export const ArtigosPageAdmin = () => {
         throw new Error("Falha ao regerar HTML.");
       }
       setReloadToken((current) => current + 1);
-      setError("");
+      setActionError("");
     } catch (err) {
-      setError("Não foi possível regerar o HTML de todos os artigos.");
+      setActionError("Não foi possível regerar o HTML de todos os artigos.");
     }
+  };
+
+  const CardLoad = ({
+    variant,
+    titulo,
+  }: {
+    variant?: "default" | "creating";
+    titulo?: string;
+  }) => {
+    const isCreating = variant === "creating";
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-md transition-all duration-300 group cursor-pointer ring-1 ring-black/5 dark:ring-white/10"
+      >
+        <div className="relative h-48 overflow-hidden">
+          <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse" />
+
+          <div className="absolute top-4 left-4 flex items-center gap-2">
+            <div className="h-6 w-28 rounded-full bg-gray-300 dark:bg-gray-700 animate-pulse" />
+          </div>
+
+          <div className="absolute bottom-4 right-4">
+            <div className="h-6 w-16 rounded bg-gray-300 dark:bg-gray-700 animate-pulse" />
+          </div>
+
+          {isCreating && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm px-3 py-2 rounded-xl text-sm font-medium text-gray-800 dark:text-gray-100">
+                <FiRefreshCw className="animate-spin" />
+                <span className="max-w-[220px] truncate">
+                  A publicar{titulo ? `: ${titulo}` : "…"}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-5 space-y-3">
+          <div className="h-5 w-3/4 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="h-4 w-5/6 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          </div>
+
+          <div className="flex items-center justify-between pt-1">
+            <div className="h-3 w-28 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <div className="h-3 w-24 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          </div>
+
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-14 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-3 w-14 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            </div>
+            <div className="flex gap-2">
+              <div className="h-5 w-10 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+              <div className="h-5 w-10 rounded bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
   };
 
  return (
@@ -318,63 +439,100 @@ export const ArtigosPageAdmin = () => {
           </div>
         </div>
 
-        {/* Grid de Artigos */}
-        {loading ? (
-          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-            <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Carregando artigos...</p>
+        {actionError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start justify-between gap-4">
+            <p className="text-sm">{actionError}</p>
+            <button
+              type="button"
+              onClick={() => setActionError("")}
+              className="p-1 rounded-lg hover:bg-red-100 transition-colors"
+              title="Fechar"
+            >
+              <FiX />
+            </button>
           </div>
-        ) : error ? (
+        )}
+
+        {/* Grid de Artigos */}
+        {loadError ? (
           <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
             <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
-            <p className="text-gray-500 mb-4">{error}</p>
-          </div>
-        ) : artigos.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-            <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-700 mb-2">Nenhum artigo encontrado</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm || selectedTipo 
-                ? 'Tente buscar com outros termos ou limpar os filtros'
-                : 'Comece criando seu primeiro artigo!'}
-            </p>
-            {(searchTerm || selectedTipo) ? (
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedTipo(null);
-                }}
-                className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
-              >
-                Limpar filtros
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setEditingArtigo(undefined);
-                  setShowModal(true);
-                }}
-                className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
-              >
-                Criar Primeiro Artigo
-              </button>
-            )}
+            <p className="text-gray-500 mb-4">{loadError}</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <AnimatePresence>
-              {artigos.map((artigo) => (
-                <ArtigoCard
-                  key={artigo.id}
-                  artigo={artigo}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onRegenerateHtml={handleRegenerateHtml}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+          <>
+            {((loading && hasLoadedOnce) || creatingArtigos.length > 0) && (
+              <div className="mb-4 overflow-hidden rounded-xl bg-white border border-gray-100">
+                <div className="h-1 bg-gray-100">
+                  <motion.div
+                    className="h-1 w-1/3 bg-primary-500"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "300%" }}
+                    transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {artigos.length === 0 && creatingArtigos.length === 0 ? (
+              loading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <CardLoad key={`loading-${index}`} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+                  <FiBookOpen className="text-6xl text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-gray-700 mb-2">Nenhum artigo encontrado</h3>
+                  <p className="text-gray-500 mb-4">
+                    {searchTerm || selectedTipo
+                      ? "Tente buscar com outros termos ou limpar os filtros"
+                      : "Comece criando seu primeiro artigo!"}
+                  </p>
+                  {(searchTerm || selectedTipo) ? (
+                    <button
+                      onClick={() => {
+                        setSearchTerm("");
+                        setSelectedTipo(null);
+                      }}
+                      className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+                    >
+                      Limpar filtros
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setEditingArtigo(undefined);
+                        setShowModal(true);
+                      }}
+                      className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+                    >
+                      Criar Primeiro Artigo
+                    </button>
+                  )}
+                </div>
+              )
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence>
+                  {creatingArtigos.map((artigo) => (
+                    <CardLoad key={artigo.tempId} variant="creating" titulo={artigo.titulo} />
+                  ))}
+                  {artigos.map((artigo) => (
+                    <ArtigoCard
+                      key={artigo.id}
+                      artigo={artigo}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onRegenerateHtml={handleRegenerateHtml}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -398,7 +556,8 @@ type ArtigoUpsertPayload = {
   titulo: string;
   descricao: string;
   escritor: string;
-  tipo: string;
+  tipo: ArtigoType;
   pdf?: File;
   img?: File | null;
+  markdown?: string;
 };

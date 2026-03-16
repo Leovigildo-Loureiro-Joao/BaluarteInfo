@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiVideo, FiX, FiCheck } from "react-icons/fi";
+import { FiVideo, FiX, FiCheck, FiUpload, FiImage, FiEye, FiUser } from "react-icons/fi";
 import { VideoType } from "../../types/api";
 import { tiposVideo, Video } from "../../pages/Videos/Videos";
 import { VideoPreviewPlayer } from "./VideoPlayerAdmin";
@@ -15,6 +15,13 @@ type ModalVideoProps = {
 
 type Passo = 1 | 2 | 3 | 4;
 
+const passosMeta: ReadonlyArray<{ id: Passo; label: string }> = [
+  { id: 1, label: "Informações" },
+  { id: 2, label: "Mídia" },
+  { id: 3, label: "Categoria" },
+  { id: 4, label: "Revisão" }
+];
+
 const ModalVideo = ({
   video,
   onClose,
@@ -23,7 +30,7 @@ const ModalVideo = ({
   autoPlayPreview = false
 }: ModalVideoProps) => {
   const [passo, setPasso] = useState<Passo>(1);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [formData, setFormData] = useState({
     titulo: video?.titulo || "",
     descricao: video?.descricao || "",
@@ -75,7 +82,8 @@ const ModalVideo = ({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (passo === 4) {
-      setShowPreview(true);
+      // Último passo - mostrar preview completo
+      setShowPreviewModal(true);
     } else {
       avancarPasso();
     }
@@ -101,38 +109,6 @@ const ModalVideo = ({
   const previewTitle = mode === "preview" ? video?.titulo : formData.titulo;
   const previewCapa = mode === "preview" ? video?.capa : formData.capaPreview;
   const previewTipo = mode === "preview" ? video?.tipo : formData.tipo;
-
-  const renderPreviewSection = () => {
-    if (!previewSource) return null;
-
-    return (
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500">Pré-visualização</p>
-            <p className="text-sm text-gray-400">Reproduz o ficheiro informado</p>
-          </div>
-          <span className="text-xs text-gray-400">
-            {mode === "preview" ? "Somente reprodução" : "Atualiza conforme a edição"}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-          {previewTipo && (
-            <span>{tiposVideo.find((tipo) => tipo.value === previewTipo)?.label}</span>
-          )}
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden">
-          <VideoPreviewPlayer
-            src={previewSource}
-            thumbnail={previewCapa}
-            titulo={previewTitle}
-            autoPlay={autoPlayPreview || mode === "preview"}
-            onClose={mode === "preview" ? onClose : undefined}
-          />
-        </div>
-      </section>
-    );
-  };
 
   const renderPasso1 = () => (
     <motion.div
@@ -180,53 +156,80 @@ const ModalVideo = ({
       exit={{ opacity: 0, x: -20 }}
       className="space-y-4"
     >
+      {/* Capa do Vídeo */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Capa do Vídeo *
         </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setFormData({
-              ...formData,
-              capaFile: file,
-              capaPreview: URL.createObjectURL(file)
-            });
-          }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-          required={!video?.capa}
-        />
-        {formData.capaPreview && (
-          <img
-            src={formData.capaPreview}
-            alt="Preview"
-            className="mt-2 w-full h-32 object-cover rounded-lg"
-          />
-        )}
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="relative flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary-500 hover:bg-primary-50/30 transition-all cursor-pointer group">
+              <FiImage className="text-gray-400 group-hover:text-primary-500 transition-colors" size={20} />
+              <span className="text-sm text-gray-600 group-hover:text-primary-600">
+                {formData.capaPreview ? "Trocar imagem" : "Selecionar imagem"}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setFormData({
+                    ...formData,
+                    capaFile: file,
+                    capaPreview: URL.createObjectURL(file)
+                  });
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </label>
+          </div>
+          {formData.capaPreview && (
+            <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+              <img
+                src={formData.capaPreview}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Arquivo de Vídeo */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Ficheiro de Vídeo *
         </label>
-        <input
-          type="file"
-          accept="video/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setFormData({
-              ...formData,
-              videoFile: file,
-              videoPreview: URL.createObjectURL(file)
-            });
-          }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-          required={!video?.videoUrl}
-        />
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <label className="relative flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary-500 hover:bg-primary-50/30 transition-all cursor-pointer group">
+              <FiVideo className="text-gray-400 group-hover:text-primary-500 transition-colors" size={20} />
+              <span className="text-sm text-gray-600 group-hover:text-primary-600">
+                {formData.videoPreview ? "Trocar vídeo" : "Selecionar arquivo de vídeo"}
+              </span>
+              <input
+                type="file"
+                accept="video/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setFormData({
+                    ...formData,
+                    videoFile: file,
+                    videoPreview: URL.createObjectURL(file)
+                  });
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer"
+              />
+            </label>
+          </div>
+          {formData.videoPreview && (
+            <div className="w-20 h-20 rounded-lg bg-primary-50 border border-primary-200 flex items-center justify-center">
+              <FiVideo className="text-primary-500" size={24} />
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -243,18 +246,28 @@ const ModalVideo = ({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Tipo de Vídeo *
         </label>
-        <select
-          required
-          value={formData.tipo}
-          onChange={(e) => setFormData({ ...formData, tipo: e.target.value as VideoType })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-        >
-          {tiposVideo.map((tipo) => (
-            <option key={tipo.value} value={tipo.value}>
-              {tipo.label}
-            </option>
-          ))}
-        </select>
+        <div className="grid grid-cols-2 gap-3">
+          {tiposVideo.map((tipo) => {
+            const Icon = tipo.icon;
+            const isSelected = formData.tipo === tipo.value;
+            return (
+              <button
+                key={tipo.value}
+                type="button"
+                onClick={() => setFormData({ ...formData, tipo: tipo.value })}
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+                  isSelected
+                    ? `${tipo.color} border-primary-500 text-white`
+                    : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50'
+                }`}
+              >
+                <Icon size={18} />
+                <span className="text-sm font-medium">{tipo.label}</span>
+                {isSelected && <FiCheck className="ml-auto" size={16} />}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </motion.div>
   );
@@ -273,7 +286,7 @@ const ModalVideo = ({
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">Tudo pronto para publicar!</h3>
         <p className="text-gray-600 mb-4">
-          Revise as informações e confira o preview antes de finalizar.
+          Revise as informações e confira o preview completo antes de finalizar.
         </p>
       </div>
 
@@ -291,7 +304,7 @@ const ModalVideo = ({
 
       <button
         type="button"
-        onClick={() => setShowPreview(true)}
+        onClick={() => setShowPreviewModal(true)}
         className="w-full px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
       >
         Ver Preview Completo
@@ -299,19 +312,103 @@ const ModalVideo = ({
     </motion.div>
   );
 
-  if (showPreview) {
+  // Painel de Preview Lateral (sempre visível)
+  const renderPreviewLateral = () => (
+    <div className="md:col-span-1 border-l border-gray-200 pl-6">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <FiEye className="text-primary-500" />
+        Preview do Vídeo
+      </h3>
+
+      <div className="bg-gray-50 rounded-xl overflow-hidden sticky top-6">
+        {/* Thumbnail Preview */}
+        <div className="relative aspect-video overflow-hidden bg-gray-100">
+          {formData.capaPreview ? (
+            <img
+              src={formData.capaPreview}
+              alt={formData.titulo || "Preview"}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <FiVideo size={40} />
+            </div>
+          )}
+
+          {/* Badge de categoria (se já selecionada) */}
+          {formData.tipo && (
+            <div className={`absolute top-3 left-3 ${tiposVideo.find(t => t.value === formData.tipo)?.color || 'bg-gray-500'} text-white px-2 py-1 rounded-full text-xs font-medium`}>
+              {tiposVideo.find(t => t.value === formData.tipo)?.label}
+            </div>
+          )}
+
+          {/* Ícone de play (decorativo) */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center">
+              <FiVideo className="text-white text-xl ml-1" />
+            </div>
+          </div>
+        </div>
+
+        {/* Informações do Preview */}
+        <div className="p-4">
+          <h4 className="font-bold mb-2 line-clamp-2">
+            {formData.titulo || "Título do Vídeo"}
+          </h4>
+          
+          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+            {formData.descricao || "Descrição do vídeo aparecerá aqui..."}
+          </p>
+
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <div className="flex items-center gap-2">
+              <FiUser size={12} />
+              <span>{video?.autor || "Autor não definido"}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiImage size={12} />
+              <span>{formData.capaPreview ? "Com capa" : "Sem capa"}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+            <span className="text-xs text-gray-500 flex items-center gap-1">
+              <FiVideo size={12} />
+              {formData.videoPreview ? "Vídeo pronto" : "Sem vídeo"}
+            </span>
+            {formData.tipo && (
+              <span className="text-[10px] px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                #{formData.tipo.toLowerCase()}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <p className="text-xs text-gray-400 mt-4 text-center">
+        Esta é uma prévia de como o vídeo será exibido
+      </p>
+    </div>
+  );
+
+  // Modal de Preview Completo
+  if (showPreviewModal) {
     return (
       <ModalVideo
         video={{
+          id: "preview",
           titulo: formData.titulo,
           descricao: formData.descricao,
           tipo: formData.tipo,
           capa: formData.capaPreview,
-          videoUrl: formData.videoPreview
+          videoUrl: formData.videoPreview,
+          autor: video?.autor || "Autor",
+          data: video?.data || new Date().toISOString().split('T')[0],
+          visualizacoes: 0
         }}
-        onClose={() => setShowPreview(false)}
+        onClose={() => setShowPreviewModal(false)}
         mode="preview"
-        autoPlayPreview
+        autoPlayPreview={true}
       />
     );
   }
@@ -354,7 +451,50 @@ const ModalVideo = ({
                 <span>{tiposVideo.find((t) => t.value === video.tipo)?.label}</span>
               </div>
             </div>
-            {renderPreviewSection()}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-gray-500">Player</p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden">
+                <VideoPreviewPlayer
+                  src={video.videoUrl}
+                  thumbnail={video.capa}
+                  titulo={video.titulo}
+                  autoPlay={autoPlayPreview}
+                  onClose={onClose}
+                />
+              </div>
+            </div>
+
+            {/* Botões do Preview */}
+            <div className="flex gap-3 pt-4 border-t">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Voltar à Edição
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  // Salvar diretamente
+                  if (onSave) {
+                    onSave({
+                      titulo: video.titulo,
+                      descricao: video.descricao,
+                      tipo: video.tipo,
+                      capa: video.capa,
+                      videoUrl: video.videoUrl
+                    });
+                  }
+                  onClose();
+                }}
+                className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
+              >
+                Confirmar e Publicar
+              </button>
+            </div>
           </div>
         </motion.div>
       </motion.div>
@@ -373,10 +513,11 @@ const ModalVideo = ({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8"
+        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8 "
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 space-y-6">
+          {/* Header */}
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <FiVideo className="text-primary-500" />
@@ -390,6 +531,7 @@ const ModalVideo = ({
             </button>
           </div>
 
+          {/* Barra de Progresso */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Progresso</span>
@@ -405,59 +547,96 @@ const ModalVideo = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-between mb-6">
-            {[1, 2, 3, 4].map((num) => (
-              <div key={num} className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    passo >= num ? "bg-primary-500 text-white" : "bg-gray-200 text-gray-500"
-                  }`}
-                >
-                  {num < 4 ? num : <FiCheck size={16} />}
-                </div>
-                {num < 4 && (
-                  <div
-                    className={`w-12 h-1 ${passo > num ? "bg-primary-500" : "bg-gray-200"}`}
-                  />
-                )}
+          {/* Steps */}
+          <div className="max-w-2xl mx-auto w-full mb-6 ">
+            <div className="relative pt-1">
+              <div className="absolute left-5 right-5 top-5 h-1 rounded-full bg-gray-200 z-0 pointer-events-none" />
+              <div
+                className="absolute left-5 top-5 h-1 rounded-full bg-primary-500 transition-[width] duration-300 z-0 pointer-events-none"
+                style={{
+                  width: `${((passo - 1) / (passosMeta.length - 1)) * 100}%`
+                }}
+              />
+
+              <div className="grid grid-cols-4 relative z-10">
+                {passosMeta.map(({ id }) => (
+                  <div key={id} className="flex justify-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                        passo > id
+                          ? "bg-primary-500 text-white"
+                          : passo === id
+                          ? "bg-primary-500 text-white ring-4 ring-primary-100"
+                          : "bg-gray-200 text-gray-500"
+                      }`}
+                    >
+                      {passo > id ? <FiCheck size={18} /> : id}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="mt-2 grid grid-cols-4 px-1 text-xs text-gray-500">
+              {passosMeta.map(({ id, label }) => (
+                <span
+                  key={id}
+                  className={`text-center ${passo === id ? "text-primary-600 font-semibold" : ""}`}
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <AnimatePresence mode="wait">
-              {passo === 1 && renderPasso1()}
-              {passo === 2 && renderPasso2()}
-              {passo === 3 && renderPasso3()}
-              {passo === 4 && renderPasso4()}
-            </AnimatePresence>
+            <div className="grid md:grid-cols-2 gap-6 overflow-y-scroll overflow-x-hidden h-[60vh]">
+              {/* Formulário */}
+              <div className="md:col-span-1">
+                <AnimatePresence mode="wait">
+                  {passo === 1 && renderPasso1()}
+                  {passo === 2 && renderPasso2()}
+                  {passo === 3 && renderPasso3()}
+                  {passo === 4 && renderPasso4()}
+                </AnimatePresence>
 
-            <div className="flex items-center gap-3 pt-4 border-t">
-              {passo > 1 && (
-                <button
-                  type="button"
-                  onClick={voltarPasso}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Voltar
-                </button>
-              )}
-              {passo < 4 ? (
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
-                >
-                  Avançar
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleConfirmSave}
-                  className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
-                >
-                  Publicar Vídeo
-                </button>
-              )}
+                {/* Botões de navegação */}
+                <div className="flex gap-3 pt-4 border-t mt-6">
+                  {passo > 1 && (
+                    <button
+                      type="button"
+                      onClick={voltarPasso}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      Voltar
+                    </button>
+                  )}
+                  
+                  {passo < 4 ? (
+                    <button
+                      type="submit"
+                      disabled={!podeAvancar()}
+                      className={`flex-1 px-4 py-3 rounded-xl transition-colors ${
+                        podeAvancar()
+                          ? "bg-primary-500 text-white hover:bg-primary-600"
+                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      }`}
+                    >
+                      Avançar
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
+                    >
+                      Revisar e Publicar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Painel de Preview Lateral (sempre visível) */}
+              {renderPreviewLateral()}
             </div>
           </form>
         </div>

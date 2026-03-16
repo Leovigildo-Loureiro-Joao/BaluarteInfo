@@ -32,6 +32,7 @@ import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.UserRepository;
+import com.igreja.api.utils.AvatarUtils;
 
 import jakarta.validation.Valid;
 
@@ -150,10 +151,11 @@ public class ComentarioService {
     }
 
     private ComentarioResult toResult(ComentarioModel model) {
+        UserModel user = model.getUser();
         return new ComentarioResult(
                 model.getId(),
-                model.getUser() == null ? "" : model.getUser().getImg(),
-                model.getUser() == null ? "" : model.getUser().getNome(),
+                user == null ? "" : AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome()),
+                user == null ? "" : user.getNome(),
                 model.getDescricao(),
                 model.isAnalise(),
                 model.getDataPublicacao(),
@@ -187,7 +189,7 @@ public class ComentarioService {
                 user == null ? 0 : user.getId(),
                 user == null ? "" : user.getNome(),
                 user == null ? "" : user.getEmail(),
-                user == null ? "" : user.getImg(),
+                user == null ? "" : AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome()),
                 model.getDescricao(),
                 model.getDataPublicacao(),
                 (int) comentarioLikeRepository.countByComentario(model),

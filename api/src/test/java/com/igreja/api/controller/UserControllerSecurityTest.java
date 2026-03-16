@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,6 +30,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 
 import com.igreja.api.components.JwUtil;
 import com.igreja.api.components.JwtAuthenticationFilter;
@@ -38,7 +42,13 @@ import com.igreja.api.controllers.UserController;
 import com.igreja.api.dto.user.UserDtoData;
 import com.igreja.api.enums.UserStatus;
 import com.igreja.api.exceptions.GlobalExceptionHandler;
+import com.igreja.api.services.AdminAuditLogService;
+import com.igreja.api.services.ComentarioService;
+import com.igreja.api.services.GoogleOAuthService;
+import com.igreja.api.services.InscritosService;
+import com.igreja.api.services.MensagemService;
 import com.igreja.api.services.UserService;
+import com.igreja.api.services.UserDownloadService;
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc
@@ -70,6 +80,24 @@ class UserControllerSecurityTest {
 
     @MockBean
     private JwUtil jwtUtil;
+
+    @MockBean
+    private AdminAuditLogService adminAuditLogService;
+
+    @MockBean
+    private MensagemService mensagemService;
+
+    @MockBean
+    private ComentarioService comentarioService;
+
+    @MockBean
+    private InscritosService inscritosService;
+
+    @MockBean
+    private UserDownloadService userDownloadService;
+
+    @MockBean
+    private GoogleOAuthService googleOAuthService;
 
     @Test
     void shouldLoginSuccessfully() throws Exception {
@@ -179,6 +207,44 @@ class UserControllerSecurityTest {
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("Acesso negado"))
                 .andExpect(jsonPath("$.message").value("Você não tem permissão para aceder a este recurso."));
+    }
+
+    @Test
+    void shouldDenyAvatarUploadWithoutToken() throws Exception {
+        MockMultipartFile avatar = new MockMultipartFile("img", "avatar.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes());
+
+        mockMvc.perform(multipart(HttpMethod.PUT, "/user/me/avatar")
+                        .file(avatar))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Não autenticado"));
+    }
+
+    @Test
+    void shouldAllowAvatarUploadWithValidToken() throws Exception {
+        UserDetails principal = User.withUsername("membro@igreja.com")
+                .password("encoded")
+                .roles("USER")
+                .build();
+        com.igreja.api.models.UserModel userModel = new com.igreja.api.models.UserModel();
+        userModel.setEmail("membro@igreja.com");
+        userModel.setStatus(UserStatus.ATIVO);
+
+        when(jwtUtil.extractUsername("valid-user-token")).thenReturn("membro@igreja.com");
+        when(userService.loadUserByEmail("membro@igreja.com")).thenReturn(userModel);
+        when(userService.buildUserDetails(userModel)).thenReturn(principal);
+        when(userService.isActiveForAccess(userModel)).thenReturn(true);
+        when(jwtUtil.validateToken("valid-user-token", principal)).thenReturn(true);
+        when(userService.updateAvatar(any(), any()))
+                .thenReturn(buildUser(2L, "Membro", "membro@igreja.com", "USER"));
+
+        MockMultipartFile avatar = new MockMultipartFile("img", "avatar.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes());
+
+        mockMvc.perform(multipart(HttpMethod.PUT, "/user/me/avatar")
+                        .file(avatar)
+                        .header("Authorization", "Bearer valid-user-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("membro@igreja.com"))
+                .andExpect(jsonPath("$.roles").value("USER"));
     }
 
     @EnableWebSecurity

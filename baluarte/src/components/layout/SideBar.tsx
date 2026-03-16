@@ -157,7 +157,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
       console.error('Erro ao fazer logout:', error);
     } finally {
       clearAuthSession();
-      navigate('/login');
+      navigate('/auth/login');
     }
   };
 

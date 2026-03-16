@@ -19,6 +19,8 @@ import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.InscritosRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.NotificacaoRepository;
+import com.igreja.api.repositories.VistosRepository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +39,7 @@ public class NotificacaoService {
     private final ComentarioRepository comentarioRepository;
     private final ArtigosRepository artigosRepository;
     private final MidiaRepository midiaRepository;
+    private final VistosRepository vistosRepository;
 
     public NotificacaoService(
             NotificacaoRepository notificacaoRepository,
@@ -47,6 +50,7 @@ public class NotificacaoService {
             InscritosRepository inscritosRepository,
             ComentarioRepository comentarioRepository,
             ArtigosRepository artigosRepository,
+            VistosRepository vistosRepository,
             MidiaRepository midiaRepository) {
         this.notificacaoRepository = notificacaoRepository;
         this.configService = configService;
@@ -57,6 +61,7 @@ public class NotificacaoService {
         this.comentarioRepository = comentarioRepository;
         this.artigosRepository = artigosRepository;
         this.midiaRepository = midiaRepository;
+        this.vistosRepository = vistosRepository;
     }
 
     public List<NotificacaoModel> unread(int page, int size) {
@@ -129,7 +134,8 @@ public class NotificacaoService {
         double limite = configService.SelectByType(ConfigType.VisitasLimite).getValue();
 
         artigosRepository.findAll().forEach(artigo -> {
-            int totalVistos = artigo.getVistos().size();
+            var vistos=vistosRepository.findByArtigo(artigo);
+            int totalVistos = vistos.size();
             if (totalVistos >= limite) {
                 String descricao = "O artigo " + artigo.getTitulo() + " atingiu " + totalVistos
                         + " visualizações e merece destaque na plataforma.";
@@ -138,7 +144,8 @@ public class NotificacaoService {
         });
 
         midiaRepository.findAll().forEach(midia -> {
-            int totalVistos = midia.getVistos().size();
+             var vistos=vistosRepository.findByMidia(midia);
+            int totalVistos = vistos.size();
             if (totalVistos >= limite) {
                 String descricao = "A mídia " + midia.getTitulo() + " atingiu " + totalVistos
                         + " visualizações e merece destaque na plataforma.";

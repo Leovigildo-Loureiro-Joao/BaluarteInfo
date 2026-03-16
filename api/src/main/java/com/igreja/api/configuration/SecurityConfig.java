@@ -61,10 +61,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/health","/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/auth/login", "/auth/register", "/auth/google").permitAll()
+                .requestMatchers("/auth/login", "/auth/register", "/auth/google", "/auth/refresh").permitAll()
                 .requestMatchers("/public/inscritos/**").permitAll()
                 .requestMatchers("/public/mensagem/**").permitAll()
                 .requestMatchers("/public/sobre").permitAll()
+                .requestMatchers(HttpMethod.POST, "/user/me/download/**").permitAll()
                 .requestMatchers(HttpMethod.GET,
                         "/user/home/**",
                         "/user/actividade",

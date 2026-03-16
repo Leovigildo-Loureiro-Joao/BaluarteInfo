@@ -301,6 +301,20 @@
     border-top-style: dashed;
     opacity: 0.9;
   }
+
+  /* Preview no Admin: remove estilos inline do backend e evita duplicar título */
+  .admin-article-html .artigo {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: inherit !important;
+    line-height: inherit !important;
+    color: inherit !important;
+  }
+
+  .admin-article-html .artigo h1 {
+    display: none !important;
+  }
 }
 
 @layer utilities {

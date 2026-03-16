@@ -101,6 +101,23 @@ Base local:
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
+### Erro "Failed to refresh live data ... jmxrmi"
+
+Se estiveres a usar IntelliJ e aparecer algo como:
+
+`Failed to refresh live data from process service:jmx:rmi:///jndi/rmi://127.0.0.1:10000/jmxrmi after retries: 10`
+
+isso normalmente significa que o IDE tentou ler "Live data" via JMX, mas a aplicação não está com o agente JMX remoto ativo (ou o hostname/porta não batem).
+
+Opções:
+
+- **Desligar no IDE**: desativa a recolha de "Live data" / JMX no run configuration do Spring Boot.
+- **Ligar JMX na execução** (apenas dev/local): inicia a API com JMX remoto em `127.0.0.1:10000`:
+
+```bash
+ENABLE_JMX=true JMX_PORT=10000 ./speed.sh
+```
+
 ## Como consumir as rotas
 
 ### Base URL

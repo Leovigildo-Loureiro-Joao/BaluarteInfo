@@ -35,6 +35,7 @@ import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.InscritosRepository;
 import com.igreja.api.repositories.MidiaRepository;
+import com.igreja.api.utils.AvatarUtils;
 
 import jakarta.validation.Valid;
 
@@ -102,7 +103,7 @@ public class ActividadeService {
         int likes = (int) comentarioLikeRepository.countByComentario(comentario);
         comentarios.add(new ComentarioResult(
                 comentario.getId(),
-                user.getImg(),
+                AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome()),
                 user.getNome(),
                 comentario.getDescricao(),
                 comentario.isAnalise(),
@@ -123,7 +124,7 @@ public class ActividadeService {
             int likes = (int) comentarioLikeRepository.countByComentario(comentario);
             comentarios.add(new ComentarioResult(
                     comentario.getId(),
-                    user.getImg(),
+                    AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome()),
                     user.getNome(),
                     comentario.getDescricao(),
                     comentario.isAnalise(),
@@ -180,7 +181,7 @@ public class ActividadeService {
             PublicoAlvoType publicoAlvo,
             com.igreja.api.enums.DuracaoActividade duracao,
             String q) {
-        String search = (q == null || q.isBlank()) ? null : q;
+        String search = (q == null || q.isBlank()) ? "" : q.trim();
         var pageable = PageRequest.of(page, size);
         var result = actividadeRepository.search(tipoEvento, publicoAlvo, duracao, search, pageable);
         return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),

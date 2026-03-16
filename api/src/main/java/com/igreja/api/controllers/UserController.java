@@ -9,12 +9,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.igreja.api.components.JwUtil;
 import com.igreja.api.dto.user.GoogleAuthDto;
@@ -46,10 +49,13 @@ import com.igreja.api.services.UserDownloadService;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import io.jsonwebtoken.Claims;
 
 import javax.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,6 +76,9 @@ public class UserController {
     private final InscritosService inscritosService;
     private final UserDownloadService userDownloadService;
     private final GoogleOAuthService googleOAuthService;
+
+    @Value("${jwt.refresh-max-age-ms:604800000}")
+    private long refreshMaxAgeMs;
 
     public UserController(
             UserService userService,
@@ -116,6 +125,41 @@ public class UserController {
         return ResponseEntity.ok(Map.of("token", token, "user", userData)); 
     }
 
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<?> refreshToken(
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token ausente.");
+        }
+
+        String rawToken = authorization.substring("Bearer ".length()).trim();
+        Claims claims = jwtUtil.parseClaimsAllowExpired(rawToken);
+        if (claims == null || claims.getSubject() == null || claims.getSubject().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido.");
+        }
+
+        if (claims.getIssuedAt() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token inválido.");
+        }
+
+        long now = System.currentTimeMillis();
+        long issuedAt = claims.getIssuedAt().getTime();
+        if (now - issuedAt > refreshMaxAgeMs) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sessão expirada. Faça login novamente.");
+        }
+
+        UserModel user = userService.loadUserByEmail(claims.getSubject());
+        if (user.getStatus() == UserStatus.PENDENTE) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta pendente de aprovação do administrador.");
+        }
+        if (user.getStatus() == UserStatus.BLOQUEADO) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta bloqueada pelo administrador.");
+        }
+
+        String token = jwtUtil.generateToken(userService.buildUserDetails(user));
+        return ResponseEntity.ok(Map.of("token", token));
+    }
+
     @PostMapping("/auth/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody @Valid GoogleAuthDto authDto, HttpServletRequest request) {
         var tokenInfo = googleOAuthService.verify(authDto.credential());
@@ -131,9 +175,14 @@ public class UserController {
             novoUser.setRoles("USER");
             novoUser.setStatus(UserStatus.PENDENTE);
             novoUser.setDataCadastro(LocalDateTime.now());
+            if (tokenInfo.foto() != null && !tokenInfo.foto().isBlank()) {
+                novoUser.setImg(tokenInfo.foto());
+            }
             userService.save(novoUser);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta criada. Aguarde aprovação do administrador.");
         }
+
+        userService.maybeUpdateAvatarFromGoogle(user.getEmail(), tokenInfo.foto());
 
         if (user.getStatus() == UserStatus.PENDENTE) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Conta pendente de aprovação do administrador.");
@@ -178,6 +227,13 @@ public class UserController {
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody @Valid UserProfileDto profileDto) {
         return ResponseEntity.ok(userService.updateProfile(userDetails.getUsername(), profileDto));
+    }
+
+    @PutMapping(value = "/user/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateAvatar(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("img") MultipartFile img) throws Exception {
+        return ResponseEntity.ok(userService.updateAvatar(userDetails.getUsername(), img));
     }
 
      @GetMapping("/admin/user")
@@ -370,6 +426,9 @@ public class UserController {
     public ResponseEntity<?> downloadArtigo(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("id") int artigoId) {
+        if (userDetails == null) {
+            return ResponseEntity.ok(Map.of("registered", false));
+        }
         return ResponseEntity.ok(userDownloadService.registerArtigoDownload(userDetails.getUsername(), artigoId));
     }
 
@@ -377,6 +436,9 @@ public class UserController {
     public ResponseEntity<?> downloadMidia(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("id") int midiaId) {
+        if (userDetails == null) {
+            return ResponseEntity.ok(Map.of("registered", false));
+        }
         return ResponseEntity.ok(userDownloadService.registerMidiaDownload(userDetails.getUsername(), midiaId));
     }
 

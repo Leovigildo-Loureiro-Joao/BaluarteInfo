@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.igreja.api.enums.UserStatus;
-import com.igreja.api.utils.GravatarUtils;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -93,8 +92,6 @@ public class UserModel implements UserDetails{
         this.password = password;
         this.roles = roles;
         this.email = email;
-        this.img = GravatarUtils.getGravatarUrl(email);
-
     }
     @Override
     public String getUsername() {

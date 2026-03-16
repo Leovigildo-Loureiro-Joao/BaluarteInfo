@@ -12,7 +12,8 @@ import {
   FiEdit2,
   FiTrash2,
   FiX,
-  FiUsers
+  FiUsers,
+  FiRefreshCw
 } from "react-icons/fi";
 import {
   GiCalendar,
@@ -32,6 +33,7 @@ import {
   PageResponse
 } from "../../types/api";
 import { apiFetch } from "../../utils/api";
+import { ModalActividade } from "../../components/actividades/ModalActividade";
 
 const tipoOptions: { value: ActividadeType; label: string; icon: any; cor: string }[] = [
   { value: ActividadeType.Culto, label: "Culto", icon: GiPrayer, cor: "bg-purple-500" },
@@ -109,377 +111,7 @@ const labelForPublico = (publico: PublicoAlvoType) => {
 };
 
 // Modal de Actividade
-const ModalActividade = ({
-  actividade,
-  onClose,
-  onSave
-}: {
-  actividade?: ActividadeSummary;
-  onClose: () => void;
-  onSave: (actividade: {
-    titulo: string;
-    descricao: string;
-    tema: string;
-    tipoEvento: ActividadeType;
-    publicoAlvo: PublicoAlvoType;
-    duracao: DuracaoActividade;
-    data: string;
-    hora: string;
-    endereco: string;
-    organizador: string;
-    contactos: string;
-    capacidade: number;
-    imgFile: File;
-  }) => void;
-}) => {
-  const defaultDateTime = splitDateTime(actividade?.dataEvento);
-  const [formData, setFormData] = useState({
-    titulo: actividade?.titulo || "",
-    descricao: actividade?.descricao || "",
-    tema: actividade?.tema || "",
-    tipoEvento: actividade?.tipoEvento || ActividadeType.Culto,
-    publicoAlvo: actividade?.publicoAlvo || PublicoAlvoType.Todos,
-    duracao: actividade?.duracao || DuracaoActividade.Curta,
-    data: defaultDateTime.data,
-    hora: defaultDateTime.hora,
-    endereco: actividade?.endereco || "",
-    organizador: actividade?.organizador || "",
-    contactos: actividade?.contactos || "",
-    capacidade: actividade?.capacidade ? String(actividade.capacidade) : "",
-    imgFile: undefined as File | undefined,
-    imgPreview: actividade?.img || ""
-  });
 
-  const [error, setError] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!formData.imgFile) {
-      setError("Selecione uma imagem para continuar.");
-      return;
-    }
-
-    onSave({
-      titulo: formData.titulo,
-      descricao: formData.descricao,
-      tema: formData.tema,
-      tipoEvento: formData.tipoEvento,
-      publicoAlvo: formData.publicoAlvo,
-      duracao: formData.duracao,
-      data: formData.data,
-      hora: formData.hora,
-      endereco: formData.endereco,
-      organizador: formData.organizador,
-      contactos: formData.contactos,
-      capacidade: Number(formData.capacidade),
-      imgFile: formData.imgFile
-    });
-    onClose();
-  };
-
-  const handleFileChange = (file: File | undefined) => {
-    if (!file) return;
-    const preview = URL.createObjectURL(file);
-    setFormData((prev) => ({
-      ...prev,
-      imgFile: file,
-      imgPreview: preview
-    }));
-    setError("");
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <GiCalendar className="text-primary-500" />
-              {actividade ? "Editar Actividade" : "Nova Actividade"}
-            </h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <FiX size={20} />
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6 overflow-y-auto h-[70vh]">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Coluna Esquerda */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Título da Actividade *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.titulo}
-                    onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    placeholder="Ex: Conferência de Jovens"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tema *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.tema}
-                    onChange={(e) => setFormData({ ...formData, tema: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    placeholder="Ex: Fogo e Unção"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Descrição *
-                  </label>
-                  <textarea
-                    required
-                    value={formData.descricao}
-                    onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    placeholder="Descreva a actividade..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de Actividade *
-                  </label>
-                  <select
-                    required
-                    value={formData.tipoEvento}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        tipoEvento: e.target.value as ActividadeType
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                  >
-                    {tipoOptions.map((tipo) => (
-                      <option key={tipo.value} value={tipo.value}>
-                        {tipo.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Duração *
-                    </label>
-                    <select
-                      required
-                      value={formData.duracao}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          duracao: e.target.value as DuracaoActividade
-                        })
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    >
-                      {duracaoOptions.map((dur) => (
-                        <option key={dur.value} value={dur.value}>
-                          {dur.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Público-alvo *
-                    </label>
-                    <select
-                      required
-                      value={formData.publicoAlvo}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          publicoAlvo: e.target.value as PublicoAlvoType
-                        })
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    >
-                      {publicoOptions.map((pub) => (
-                        <option key={pub.value} value={pub.value}>
-                          {pub.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Coluna Direita */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Data do Evento *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={formData.data}
-                      onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Hora *
-                    </label>
-                    <input
-                      type="time"
-                      required
-                      value={formData.hora}
-                      onChange={(e) => setFormData({ ...formData, hora: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Endereço/Local *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.endereco}
-                    onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    placeholder="Ex: Templo Principal"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Organizador/Responsável *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.organizador}
-                    onChange={(e) => setFormData({ ...formData, organizador: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                    placeholder="Ex: Pr. Antônio Silva"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Contato *
-                    </label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      required
-                      value={formData.contactos}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          contactos: e.target.value.replace(/\D/g, "")
-                        })
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                      placeholder="999999999"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Capacidade *
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min={1}
-                      value={formData.capacidade}
-                      onChange={(e) => setFormData({ ...formData, capacidade: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                      placeholder="Ex: 200"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Imagem *
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    required
-                    onChange={(e) => handleFileChange(e.target.files?.[0])}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                  />
-                  {formData.imgPreview && (
-                    <img
-                      src={formData.imgPreview}
-                      alt="Preview"
-                      className="mt-2 w-full h-32 object-cover rounded-lg"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-sm text-red-500">{error}</p>
-            )}
-
-            {/* Botões */}
-            <div className="flex gap-3 pt-4 border-t">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
-              >
-                {actividade ? "Salvar Alterações" : "Criar Actividade"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
 
 // Card de Actividade (simples, como pedido)
 const ActividadeCard = ({
@@ -627,8 +259,13 @@ export const ActividadesPageAdmin = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingActividade, setEditingActividade] = useState<ActividadeSummary | undefined>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
+  const [creatingActividades, setCreatingActividades] = useState<
+    { tempId: string; titulo: string; startedAt: number }[]
+  >([]);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -652,10 +289,11 @@ export const ActividadesPageAdmin = () => {
         const payload = (await response.json()) as PageResponse<ActividadeSummary>;
         if (!active) return;
         setActividades(payload.content ?? []);
-        setError("");
+        setLoadError("");
+        setHasLoadedOnce(true);
       } catch (err) {
         if (!active) return;
-        setError("Não foi possível carregar as actividades.");
+        setLoadError("Não foi possível carregar as actividades.");
         setActividades([]);
       } finally {
         if (active) setLoading(false);
@@ -683,36 +321,69 @@ export const ActividadesPageAdmin = () => {
     capacidade: number;
     imgFile: File;
   }) => {
-    const formData = new FormData();
-    formData.append("titulo", novaActividade.titulo);
-    formData.append("descricao", novaActividade.descricao);
-    formData.append("tema", novaActividade.tema);
-    formData.append("tipoEvento", novaActividade.tipoEvento);
-    formData.append("publicoAlvo", novaActividade.publicoAlvo);
-    formData.append("duracao", novaActividade.duracao);
-    formData.append("endereco", novaActividade.endereco);
-    formData.append("organizador", novaActividade.organizador);
-    formData.append("contactos", novaActividade.contactos);
-    formData.append("capacidade", String(novaActividade.capacidade));
-    formData.append("dataEvento", makeDateTime(novaActividade.data, novaActividade.hora));
-    formData.append("img", novaActividade.imgFile);
-
-    const endpoint = editingActividade
-      ? `/admin/actividade/${editingActividade.id}`
-      : "/admin/actividade";
-    const method = editingActividade ? "PUT" : "POST";
-
-    const response = await apiFetch(endpoint, {
-      method,
-      body: formData
-    });
-
-    if (!response.ok) {
-      throw new Error("Falha ao salvar actividade.");
+    const isEditing = Boolean(editingActividade);
+    const tempId = `creating-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    if (!isEditing) {
+      setCreatingActividades((current) => [
+        { tempId, titulo: novaActividade.titulo, startedAt: Date.now() },
+        ...current
+      ]);
+      setActionError("");
     }
+    try {
+      const formData = new FormData();
+      formData.append("titulo", novaActividade.titulo);
+      formData.append("descricao", novaActividade.descricao);
+      formData.append("tema", novaActividade.tema);
+      formData.append("tipoEvento", novaActividade.tipoEvento);
+      formData.append("publicoAlvo", novaActividade.publicoAlvo);
+      formData.append("duracao", novaActividade.duracao);
+      formData.append("endereco", novaActividade.endereco);
+      formData.append("organizador", novaActividade.organizador);
+      formData.append("contactos", novaActividade.contactos);
+      formData.append("capacidade", String(novaActividade.capacidade));
+      formData.append("dataEvento", makeDateTime(novaActividade.data, novaActividade.hora));
+      formData.append("img", novaActividade.imgFile);
 
-    setReloadToken((prev) => prev + 1);
-    setEditingActividade(undefined);
+      const endpoint = isEditing
+        ? `/admin/actividade/${editingActividade?.id}`
+        : "/admin/actividade";
+      const method = isEditing ? "PUT" : "POST";
+
+      const response = await apiFetch(endpoint, {
+        method,
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao salvar actividade.");
+      }
+
+      if (!isEditing) {
+        let created: Partial<ActividadeSummary> | null = null;
+        try {
+          created = (await response.json()) as Partial<ActividadeSummary>;
+        } catch {
+          created = null;
+        }
+        if (created && typeof created.id === "number") {
+          setActividades((current) => {
+            const withoutSame = current.filter((a) => a.id !== created!.id);
+            return [created as ActividadeSummary, ...withoutSame];
+          });
+        }
+      }
+
+      setReloadToken((prev) => prev + 1);
+      setEditingActividade(undefined);
+      setActionError("");
+    } catch (err) {
+      setActionError("Não foi possível salvar a actividade.");
+    } finally {
+      if (!isEditing) {
+        setCreatingActividades((current) => current.filter((a) => a.tempId !== tempId));
+      }
+    }
   };
 
   const handleEdit = (actividade: ActividadeSummary) => {
@@ -730,7 +401,7 @@ export const ActividadesPageAdmin = () => {
       }
       setReloadToken((prev) => prev + 1);
     } catch (err) {
-      setError("Não foi possível remover a actividade.");
+      setActionError("Não foi possível remover a actividade.");
     }
   };
 
@@ -739,6 +410,63 @@ export const ActividadesPageAdmin = () => {
   };
 
   const resultados = useMemo(() => actividades.length, [actividades]);
+
+  const CardLoad = ({
+    variant,
+    titulo
+  }: {
+    variant?: "default" | "creating";
+    titulo?: string;
+  }) => {
+    const isCreating = variant === "creating";
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        className="group relative bg-white rounded-2xl overflow-hidden shadow-md transition-all duration-300 border border-gray-200"
+      >
+        <div className="relative h-48 overflow-hidden">
+          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+          <div className="absolute top-4 left-4">
+            <div className="h-6 w-28 rounded-full bg-gray-300 animate-pulse" />
+          </div>
+          <div className="absolute top-4 right-4">
+            <div className="h-6 w-28 rounded-full bg-gray-300 animate-pulse" />
+          </div>
+          {isCreating && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-xl text-sm font-medium text-gray-800">
+                <FiRefreshCw className="animate-spin" />
+                <span className="max-w-[220px] truncate">
+                  A publicar{titulo ? `: ${titulo}` : "…"}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-5 space-y-3">
+          <div className="h-5 w-3/4 rounded bg-gray-200 animate-pulse" />
+          <div className="h-4 w-2/5 rounded bg-gray-200 animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-4 w-full rounded bg-gray-200 animate-pulse" />
+            <div className="h-4 w-5/6 rounded bg-gray-200 animate-pulse" />
+          </div>
+          <div className="space-y-2 pt-2">
+            <div className="h-4 w-1/2 rounded bg-gray-200 animate-pulse" />
+            <div className="h-4 w-1/3 rounded bg-gray-200 animate-pulse" />
+            <div className="h-4 w-2/3 rounded bg-gray-200 animate-pulse" />
+          </div>
+          <div className="flex items-center justify-between text-xs pt-3 border-t border-gray-100">
+            <div className="h-3 w-20 rounded bg-gray-200 animate-pulse" />
+            <div className="h-3 w-24 rounded bg-gray-200 animate-pulse" />
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
@@ -837,13 +565,49 @@ export const ActividadesPageAdmin = () => {
           </div>
         </div>
 
-        {error && (
-          <div className="mb-6 text-sm text-red-500">{error}</div>
+        {actionError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start justify-between gap-4">
+            <p className="text-sm">{actionError}</p>
+            <button
+              type="button"
+              onClick={() => setActionError("")}
+              className="p-1 rounded-lg hover:bg-red-100 transition-colors"
+              title="Fechar"
+            >
+              <FiX />
+            </button>
+          </div>
         )}
 
-        {loading ? (
-          <div className="text-center py-20 text-gray-500">A carregar actividades...</div>
-        ) : actividades.length === 0 ? (
+        {loadError ? (
+          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+            <GiCalendar className="text-6xl text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
+            <p className="text-gray-500 mb-4">{loadError}</p>
+          </div>
+        ) : (
+          <>
+            {((loading && hasLoadedOnce) || creatingActividades.length > 0) && (
+              <div className="mb-4 overflow-hidden rounded-xl bg-white border border-gray-100">
+                <div className="h-1 bg-gray-100">
+                  <motion.div
+                    className="h-1 w-1/3 bg-primary-500"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "300%" }}
+                    transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {actividades.length === 0 && creatingActividades.length === 0 ? (
+              loading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <CardLoad key={`loading-${index}`} />
+                  ))}
+                </div>
+              ) : (
           <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
             <GiCalendar className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-700 mb-2">
@@ -877,9 +641,17 @@ export const ActividadesPageAdmin = () => {
               </button>
             )}
           </div>
-        ) : (
+              )
+            ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
+              {creatingActividades.map((actividade) => (
+                <CardLoad
+                  key={actividade.tempId}
+                  variant="creating"
+                  titulo={actividade.titulo}
+                />
+              ))}
               {actividades.map((actividade) => (
                 <ActividadeCard
                   key={actividade.id}
@@ -891,6 +663,8 @@ export const ActividadesPageAdmin = () => {
               ))}
             </AnimatePresence>
           </div>
+            )}
+          </>
         )}
       </div>
 
@@ -904,9 +678,7 @@ export const ActividadesPageAdmin = () => {
               setEditingActividade(undefined);
             }}
             onSave={(payload) => {
-              handleSave(payload).catch(() => {
-                setError("Não foi possível salvar a actividade.");
-              });
+              handleSave(payload);
             }}
           />
         )}

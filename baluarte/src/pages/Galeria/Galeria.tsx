@@ -8,7 +8,8 @@ import {
   FiX,
   FiCalendar,
   FiEye,
-  FiImage
+  FiImage,
+  FiRefreshCw
 } from "react-icons/fi";
 import { GiPartyPopper } from "react-icons/gi";
 import { apiFetch } from "../../utils/api";
@@ -235,8 +236,11 @@ export const GaleriaPage = () => {
   const [selectedImage, setSelectedImage] = useState<Imagem | null>(null);
   const [filterAtividade, setFilterAtividade] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
+  const [deletingImagemIds, setDeletingImagemIds] = useState<number[]>([]);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -257,10 +261,11 @@ export const GaleriaPage = () => {
         const payload = (await response.json()) as PageResponse<GaleriaAdminItem>;
         if (!active) return;
         setImagens(payload.content ?? []);
-        setError("");
+        setLoadError("");
+        setHasLoadedOnce(true);
       } catch (err) {
         if (!active) return;
-        setError("Não foi possível carregar a galeria.");
+        setLoadError("Não foi possível carregar a galeria.");
         setImagens([]);
       } finally {
         if (active) setLoading(false);
@@ -300,6 +305,8 @@ export const GaleriaPage = () => {
   ).map(([id, nome]) => ({ id, nome }));
 
   const handleDelete = async (id: number) => {
+    setDeletingImagemIds((current) => (current.includes(id) ? current : [id, ...current]));
+    setActionError("");
     try {
       const response = await apiFetch(`/admin/midia/${id}`, {
         method: "DELETE"
@@ -309,7 +316,9 @@ export const GaleriaPage = () => {
       }
       setReloadToken((prev) => prev + 1);
     } catch (err) {
-      setError("Não foi possível remover a imagem.");
+      setActionError("Não foi possível remover a imagem.");
+    } finally {
+      setDeletingImagemIds((current) => current.filter((imgId) => imgId !== id));
     }
   };
 
@@ -318,6 +327,54 @@ export const GaleriaPage = () => {
     link.href = imagem.url;
     link.download = `${imagem.titulo}.jpg`;
     link.click();
+  };
+
+  const CardLoad = ({
+    variant,
+    titulo
+  }: {
+    variant?: "default" | "deleting";
+    titulo?: string;
+  }) => {
+    const isDeleting = variant === "deleting";
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        className="group relative bg-white rounded-xl overflow-hidden shadow-md transition-all duration-300"
+      >
+        <div className="relative aspect-square overflow-hidden">
+          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+
+          <div className="absolute top-2 left-2">
+            <div className="h-6 w-28 rounded-lg bg-gray-300 animate-pulse" />
+          </div>
+
+          <div className="absolute bottom-2 right-2 flex gap-1">
+            <div className="h-9 w-9 rounded-lg bg-gray-300 animate-pulse" />
+            <div className="h-9 w-9 rounded-lg bg-gray-300 animate-pulse" />
+          </div>
+
+          {isDeleting && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-xl text-sm font-medium text-gray-800">
+                <FiRefreshCw className="animate-spin" />
+                <span className="max-w-[220px] truncate">
+                  A remover{titulo ? `: ${titulo}` : "…"}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <div className="h-4 w-3/4 rounded bg-gray-200 animate-pulse" />
+          <div className="mt-2 h-3 w-2/3 rounded bg-gray-200 animate-pulse" />
+        </div>
+      </motion.div>
+    );
   };
 
   return (
@@ -393,11 +450,49 @@ export const GaleriaPage = () => {
           </div>
         </div>
 
-        {error && <div className="mb-6 text-sm text-red-500">{error}</div>}
+        {actionError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start justify-between gap-4">
+            <p className="text-sm">{actionError}</p>
+            <button
+              type="button"
+              onClick={() => setActionError("")}
+              className="p-1 rounded-lg hover:bg-red-100 transition-colors"
+              title="Fechar"
+            >
+              <FiX />
+            </button>
+          </div>
+        )}
 
-        {loading ? (
-          <div className="text-center py-20 text-gray-500">A carregar galeria...</div>
-        ) : filteredImagens.length === 0 ? (
+        {loadError ? (
+          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+            <FiImage className="text-6xl text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
+            <p className="text-gray-500 mb-4">{loadError}</p>
+          </div>
+        ) : (
+          <>
+            {((loading && hasLoadedOnce) || deletingImagemIds.length > 0) && (
+              <div className="mb-4 overflow-hidden rounded-xl bg-white border border-gray-100">
+                <div className="h-1 bg-gray-100">
+                  <motion.div
+                    className="h-1 w-1/3 bg-primary-500"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "300%" }}
+                    transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {filteredImagens.length === 0 ? (
+              loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                  {Array.from({ length: 10 }).map((_, index) => (
+                    <CardLoad key={`loading-${index}`} />
+                  ))}
+                </div>
+              ) : (
           <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
             <FiImage className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-700 mb-2">Nenhuma imagem encontrada</h3>
@@ -418,20 +513,27 @@ export const GaleriaPage = () => {
               </button>
             )}
           </div>
-        ) : (
+              )
+            ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <AnimatePresence>
               {filteredImagens.map((imagem) => (
-                <ImagemCard
-                  key={imagem.id}
-                  imagem={imagem}
-                  onSelect={setSelectedImage}
-                  onDelete={handleDelete}
-                  onDownload={handleDownload}
-                />
+                deletingImagemIds.includes(imagem.id) ? (
+                  <CardLoad key={imagem.id} variant="deleting" titulo={imagem.titulo} />
+                ) : (
+                  <ImagemCard
+                    key={imagem.id}
+                    imagem={imagem}
+                    onSelect={setSelectedImage}
+                    onDelete={handleDelete}
+                    onDownload={handleDownload}
+                  />
+                )
               ))}
             </AnimatePresence>
           </div>
+            )}
+          </>
         )}
       </div>
 

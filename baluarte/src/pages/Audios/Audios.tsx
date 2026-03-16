@@ -9,7 +9,9 @@ import {
   FiPlus,
   FiEdit2,
   FiTrash2,
-  FiPlay
+  FiPlay,
+  FiRefreshCw,
+  FiX
 } from "react-icons/fi";
 import {
   GiMicrophone,
@@ -191,8 +193,13 @@ export const AudiosPage = () => {
   const [editingAudio, setEditingAudio] = useState<Audio | undefined>();
   const [previewAudio, setPreviewAudio] = useState<Audio | undefined>();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
+  const [creatingAudios, setCreatingAudios] = useState<
+    { tempId: string; titulo: string; startedAt: number }[]
+  >([]);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -215,10 +222,11 @@ export const AudiosPage = () => {
         const payload = (await response.json()) as PageResponse<MidiaProjection>;
         if (!active) return;
         setAudios(payload.content ?? []);
-        setError("");
+        setLoadError("");
+        setHasLoadedOnce(true);
       } catch (err) {
         if (!active) return;
-        setError("Não foi possível carregar os áudios.");
+        setLoadError("Não foi possível carregar os áudios.");
         setAudios([]);
       } finally {
         if (active) setLoading(false);
@@ -232,39 +240,73 @@ export const AudiosPage = () => {
   }, [searchTerm, selectedTipo, reloadToken]);
 
   const handleSave = async (novoAudio: Omit<Audio, "id"> & { capaFile?: File; audioFile?: File }) => {
-    const formData = new FormData();
-    formData.append("titulo", novoAudio.titulo);
-    formData.append("descricao", novoAudio.descricao);
-    formData.append("type", MidiaType.Audio);
-    formData.append("audioType", novoAudio.tipo);
+    const isEditing = Boolean(editingAudio);
+    const tempId = `creating-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    if (!isEditing) {
+      setCreatingAudios((current) => [
+        { tempId, titulo: novoAudio.titulo, startedAt: Date.now() },
+        ...current
+      ]);
+      setActionError("");
+    }
+    try {
+      const formData = new FormData();
+      formData.append("titulo", novoAudio.titulo);
+      formData.append("descricao", novoAudio.descricao);
+      formData.append("type", MidiaType.Audio);
+      formData.append("audioType", novoAudio.tipo);
 
-    if (!editingAudio) {
-      if (!novoAudio.capaFile || !novoAudio.audioFile) {
-        throw new Error("Capa e áudio são obrigatórios.");
+      if (!isEditing) {
+        if (!novoAudio.capaFile || !novoAudio.audioFile) {
+          setActionError("Capa e áudio são obrigatórios.");
+          return;
+        }
+        formData.append("imagem", novoAudio.capaFile);
+        formData.append("url", novoAudio.audioFile);
+      } else {
+        if (novoAudio.capaFile) formData.append("imagem", novoAudio.capaFile);
+        if (novoAudio.audioFile) formData.append("url", novoAudio.audioFile);
       }
-      formData.append("imagem", novoAudio.capaFile);
-      formData.append("url", novoAudio.audioFile);
-    } else {
-      if (novoAudio.capaFile) formData.append("imagem", novoAudio.capaFile);
-      if (novoAudio.audioFile) formData.append("url", novoAudio.audioFile);
+
+      const endpoint = isEditing
+        ? `/admin/midia/audio/${editingAudio?.id}`
+        : "/admin/midia/audio";
+      const method = isEditing ? "PUT" : "POST";
+
+      const response = await apiFetch(endpoint, {
+        method,
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao salvar o áudio.");
+      }
+
+      if (!isEditing) {
+        let created: Partial<MidiaProjection> | null = null;
+        try {
+          created = (await response.json()) as Partial<MidiaProjection>;
+        } catch {
+          created = null;
+        }
+        if (created && typeof created.id === "number") {
+          setAudios((current) => {
+            const withoutSame = current.filter((a) => a.id !== created!.id);
+            return [created as MidiaProjection, ...withoutSame];
+          });
+        }
+      }
+
+      setReloadToken((prev) => prev + 1);
+      setEditingAudio(undefined);
+      setActionError("");
+    } catch (err) {
+      setActionError("Não foi possível salvar o áudio.");
+    } finally {
+      if (!isEditing) {
+        setCreatingAudios((current) => current.filter((a) => a.tempId !== tempId));
+      }
     }
-
-    const endpoint = editingAudio
-      ? `/admin/midia/audio/${editingAudio.id}`
-      : "/admin/midia/audio";
-    const method = editingAudio ? "PUT" : "POST";
-
-    const response = await apiFetch(endpoint, {
-      method,
-      body: formData
-    });
-
-    if (!response.ok) {
-      throw new Error("Falha ao salvar o áudio.");
-    }
-
-    setReloadToken((prev) => prev + 1);
-    setEditingAudio(undefined);
   };
 
   const handleEdit = (audio: MidiaProjection) => {
@@ -286,11 +328,62 @@ export const AudiosPage = () => {
       }
       setReloadToken((prev) => prev + 1);
     } catch (err) {
-      setError("Não foi possível remover o áudio.");
+      setActionError("Não foi possível remover o áudio.");
     }
   };
 
   const resultados = useMemo(() => audios.length, [audios]);
+
+  const CardLoad = ({
+    variant,
+    titulo
+  }: {
+    variant?: "default" | "creating";
+    titulo?: string;
+  }) => {
+    const isCreating = variant === "creating";
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        className="group relative bg-white rounded-2xl overflow-hidden shadow-lg transition-all duration-300 border border-gray-200"
+      >
+        <div className="relative aspect-square overflow-hidden">
+          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+          <div className="absolute top-4 left-4">
+            <div className="h-6 w-28 rounded-full bg-gray-300 animate-pulse" />
+          </div>
+          <div className="absolute top-4 right-4">
+            <div className="h-6 w-16 rounded-lg bg-gray-300 animate-pulse" />
+          </div>
+          {isCreating && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-xl text-sm font-medium text-gray-800">
+                <FiRefreshCw className="animate-spin" />
+                <span className="max-w-[220px] truncate">
+                  A publicar{titulo ? `: ${titulo}` : "…"}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-5 space-y-3">
+          <div className="h-5 w-3/4 rounded bg-gray-200 animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-4 w-full rounded bg-gray-200 animate-pulse" />
+            <div className="h-4 w-5/6 rounded bg-gray-200 animate-pulse" />
+          </div>
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+            <div className="h-3 w-24 rounded bg-gray-200 animate-pulse" />
+            <div className="h-3 w-16 rounded bg-gray-200 animate-pulse" />
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
@@ -374,11 +467,49 @@ export const AudiosPage = () => {
           </div>
         </div>
 
-        {error && <div className="mb-6 text-sm text-red-500">{error}</div>}
+        {actionError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start justify-between gap-4">
+            <p className="text-sm">{actionError}</p>
+            <button
+              type="button"
+              onClick={() => setActionError("")}
+              className="p-1 rounded-lg hover:bg-red-100 transition-colors"
+              title="Fechar"
+            >
+              <FiX />
+            </button>
+          </div>
+        )}
 
-        {loading ? (
-          <div className="text-center py-20 text-gray-500">A carregar áudios...</div>
-        ) : audios.length === 0 ? (
+        {loadError ? (
+          <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+            <FiHeadphones className="text-6xl text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
+            <p className="text-gray-500 mb-4">{loadError}</p>
+          </div>
+        ) : (
+          <>
+            {((loading && hasLoadedOnce) || creatingAudios.length > 0) && (
+              <div className="mb-4 overflow-hidden rounded-xl bg-white border border-gray-100">
+                <div className="h-1 bg-gray-100">
+                  <motion.div
+                    className="h-1 w-1/3 bg-primary-500"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "300%" }}
+                    transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {audios.length === 0 && creatingAudios.length === 0 ? (
+              loading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {Array.from({ length: 8 }).map((_, index) => (
+                    <CardLoad key={`loading-${index}`} />
+                  ))}
+                </div>
+              ) : (
           <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
             <FiHeadphones className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-700 mb-2">Nenhum áudio encontrado</h3>
@@ -409,9 +540,13 @@ export const AudiosPage = () => {
               </button>
             )}
           </div>
-        ) : (
+              )
+            ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <AnimatePresence>
+              {creatingAudios.map((audio) => (
+                <CardLoad key={audio.tempId} variant="creating" titulo={audio.titulo} />
+              ))}
               {audios.map((audio) => (
                 <AudioCard
                   key={audio.id}
@@ -423,6 +558,8 @@ export const AudiosPage = () => {
               ))}
             </AnimatePresence>
           </div>
+            )}
+          </>
         )}
       </div>
 
@@ -436,9 +573,7 @@ export const AudiosPage = () => {
               setEditingAudio(undefined);
             }}
             onSave={(payload) => {
-              handleSave(payload).catch(() => {
-                setError("Não foi possível salvar o áudio.");
-              });
+              handleSave(payload);
             }}
           />
         )}

@@ -16,6 +16,7 @@ import {
   FiMoreVertical,
   FiAlertCircle,
   FiFlag,
+  FiRefreshCw,
   FiBookOpen,
   FiVideo,
   FiHeadphones,
@@ -157,13 +158,15 @@ const ModalComentarioDetalhe = ({
   onClose, 
   onOcultar,
   onExcluir,
-  onMarcarResolvido
+  onMarcarResolvido,
+  pending
 }: { 
   comentario: Comentario; 
   onClose: () => void; 
   onOcultar: (id: string) => void;
   onExcluir: (id: string) => void;
   onMarcarResolvido: (id: string) => void;
+  pending?: boolean;
 }) => {
   const getSecaoIcon = (tipo: SecaoTipo) => {
     switch(tipo) {
@@ -265,10 +268,13 @@ const ModalComentarioDetalhe = ({
                   onOcultar(comentario.id);
                   onClose();
                 }}
-                className="flex-1 px-4 py-3 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 flex items-center justify-center gap-2"
+                disabled={pending}
+                className={`flex-1 px-4 py-3 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 flex items-center justify-center gap-2 ${
+                  pending ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
-                <FiEyeOff size={18} />
-                Ocultar Comentário
+                {pending ? <FiRefreshCw size={18} className="animate-spin" /> : <FiEyeOff size={18} />}
+                {pending ? "A processar…" : "Ocultar Comentário"}
               </button>
             )}
 
@@ -278,10 +284,13 @@ const ModalComentarioDetalhe = ({
                   onMarcarResolvido(comentario.id);
                   onClose();
                 }}
-                className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center justify-center gap-2"
+                disabled={pending}
+                className={`flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center justify-center gap-2 ${
+                  pending ? "opacity-60 cursor-not-allowed" : ""
+                }`}
               >
-                <FiCheck size={18} />
-                Marcar como Resolvido
+                {pending ? <FiRefreshCw size={18} className="animate-spin" /> : <FiCheck size={18} />}
+                {pending ? "A processar…" : "Marcar como Resolvido"}
               </button>
             )}
 
@@ -292,10 +301,13 @@ const ModalComentarioDetalhe = ({
                   onClose();
                 }
               }}
-              className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center justify-center gap-2"
+              disabled={pending}
+              className={`flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center justify-center gap-2 ${
+                pending ? "opacity-60 cursor-not-allowed" : ""
+              }`}
             >
-              <FiTrash2 size={18} />
-              Excluir Permanentemente
+              {pending ? <FiRefreshCw size={18} className="animate-spin" /> : <FiTrash2 size={18} />}
+              {pending ? "A processar…" : "Excluir Permanentemente"}
             </button>
           </div>
         </div>
@@ -309,12 +321,14 @@ const ComentarioCard = ({
   comentario, 
   onVerDetalhe,
   onOcultar,
-  onExcluir 
+  onExcluir,
+  pending
 }: { 
   comentario: Comentario; 
   onVerDetalhe: (comentario: Comentario) => void;
   onOcultar: (id: string) => void;
   onExcluir: (id: string) => void;
+  pending?: boolean;
 }) => {
   const [showOptions, setShowOptions] = useState(false);
 
@@ -344,8 +358,16 @@ const ComentarioCard = ({
         comentario.status === 'denunciado' ? 'border-l-red-500' :
         comentario.status === 'oculto' ? 'border-l-gray-500' :
         'border-l-green-500'
-      } shadow-sm hover:shadow-md transition-shadow`}
+      } shadow-sm hover:shadow-md transition-shadow relative`}
     >
+      {pending && (
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-10">
+          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-sm border border-gray-200 text-sm font-medium text-gray-700">
+            <FiRefreshCw className="animate-spin" />
+            A processar…
+          </div>
+        </div>
+      )}
       <div className="flex items-start gap-3">
         <img
           src={comentario.usuarioAvatar || 'https://via.placeholder.com/40'}
@@ -388,7 +410,10 @@ const ComentarioCard = ({
             <div className="relative">
               <button
                 onClick={() => setShowOptions(!showOptions)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                disabled={pending}
+                className={`p-1 hover:bg-gray-100 rounded-lg transition-colors ${
+                  pending ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 <FiMoreVertical size={16} className="text-gray-500" />
               </button>
@@ -406,6 +431,7 @@ const ComentarioCard = ({
                         onVerDetalhe(comentario);
                         setShowOptions(false);
                       }}
+                      disabled={pending}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <FiEye size={14} />
@@ -417,6 +443,7 @@ const ComentarioCard = ({
                           onOcultar(comentario.id);
                           setShowOptions(false);
                         }}
+                        disabled={pending}
                         className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center gap-2"
                       >
                         <FiEyeOff size={14} />
@@ -430,6 +457,7 @@ const ComentarioCard = ({
                         }
                         setShowOptions(false);
                       }}
+                      disabled={pending}
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                     >
                       <FiTrash2 size={14} />
@@ -454,6 +482,7 @@ export const ComentariosPage = () => {
   const [filterStatus, setFilterStatus] = useState<'todos' | 'ativo' | 'denunciado' | 'oculto'>('todos');
   const [selectedComentario, setSelectedComentario] = useState<Comentario | null>(null);
   const [showDetalheModal, setShowDetalheModal] = useState(false);
+  const [pendingComentarioIds, setPendingComentarioIds] = useState<string[]>([]);
 
   // Estatísticas
   const stats = {
@@ -487,20 +516,38 @@ export const ComentariosPage = () => {
     return true;
   });
 
-  const handleOcultar = (id: string) => {
-    setComentarios(comentarios.map(c => 
-      c.id === id ? { ...c, status: 'oculto' } : c
-    ));
+  const startPending = (id: string) => {
+    setPendingComentarioIds((current) => (current.includes(id) ? current : [id, ...current]));
   };
 
-  const handleExcluir = (id: string) => {
-    setComentarios(comentarios.filter(c => c.id !== id));
+  const stopPending = (id: string) => {
+    setPendingComentarioIds((current) => current.filter((pid) => pid !== id));
   };
 
-  const handleMarcarResolvido = (id: string) => {
-    setComentarios(comentarios.map(c => 
-      c.id === id ? { ...c, status: 'ativo', denuncias: 0 } : c
-    ));
+  const handleOcultar = async (id: string) => {
+    if (pendingComentarioIds.includes(id)) return;
+    startPending(id);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    setComentarios((current) => current.map((c) => (c.id === id ? { ...c, status: "oculto" } : c)));
+    stopPending(id);
+  };
+
+  const handleExcluir = async (id: string) => {
+    if (pendingComentarioIds.includes(id)) return;
+    startPending(id);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    setComentarios((current) => current.filter((c) => c.id !== id));
+    stopPending(id);
+  };
+
+  const handleMarcarResolvido = async (id: string) => {
+    if (pendingComentarioIds.includes(id)) return;
+    startPending(id);
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    setComentarios((current) =>
+      current.map((c) => (c.id === id ? { ...c, status: "ativo", denuncias: 0 } : c))
+    );
+    stopPending(id);
   };
 
   return (
@@ -590,6 +637,19 @@ export const ComentariosPage = () => {
         </div>
 
         {/* Lista de Comentários */}
+        {pendingComentarioIds.length > 0 && (
+          <div className="mb-4 overflow-hidden rounded-xl bg-white border border-gray-100">
+            <div className="h-1 bg-gray-100">
+              <motion.div
+                className="h-1 w-1/3 bg-primary-500"
+                initial={{ x: "-100%" }}
+                animate={{ x: "300%" }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </div>
+        )}
+
         {filteredComentarios.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl shadow-sm">
             <FiMessageSquare className="text-6xl text-gray-300 mx-auto mb-4" />
@@ -619,6 +679,7 @@ export const ComentariosPage = () => {
                 <ComentarioCard
                   key={comentario.id}
                   comentario={comentario}
+                  pending={pendingComentarioIds.includes(comentario.id)}
                   onVerDetalhe={(c) => {
                     setSelectedComentario(c);
                     setShowDetalheModal(true);
@@ -641,6 +702,7 @@ export const ComentariosPage = () => {
               setShowDetalheModal(false);
               setSelectedComentario(null);
             }}
+            pending={pendingComentarioIds.includes(selectedComentario.id)}
             onOcultar={handleOcultar}
             onExcluir={handleExcluir}
             onMarcarResolvido={handleMarcarResolvido}

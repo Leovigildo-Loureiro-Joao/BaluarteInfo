@@ -1,6 +1,8 @@
 package com.igreja.api.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -136,5 +138,41 @@ class ArtigoControllerTest {
                         .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Dados inválidos"));
+    }
+
+    @Test
+    void shouldEnhancePreviewFromUpload() throws Exception {
+        MockMultipartFile pdf = new MockMultipartFile(
+                "pdf",
+                "estudo.pdf",
+                MediaType.APPLICATION_PDF_VALUE,
+                "fake-pdf".getBytes());
+
+        when(artigoService.enhancePreviewWithGemini(anyString(), anyString(), any(), anyInt(), any()))
+                .thenReturn(new ArtigoService.ArtigoEnhancePreview("# Título", "<h1>Título</h1>"));
+
+        mockMvc.perform(multipart("/admin/artigo/enhance/preview")
+                        .file(pdf)
+                        .param("titulo", "Estudo de João")
+                        .param("descricao", "Conteúdo")
+                        .param("pages", "3")
+                        .param("instruction", "Organize em tópicos")
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.markdown").value("# Título"))
+                .andExpect(jsonPath("$.html").value("<h1>Título</h1>"));
+    }
+
+    @Test
+    void shouldEnhancePreviewWithInstructionParam() throws Exception {
+        when(artigoService.enhancePreviewWithGemini(1, 3, "Organize em tópicos"))
+                .thenReturn(new ArtigoService.ArtigoEnhancePreview("# Título", "<h1>Título</h1>"));
+
+        mockMvc.perform(get("/admin/artigo/1/enhance/preview")
+                        .param("pages", "3")
+                        .param("instruction", "Organize em tópicos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.markdown").value("# Título"))
+                .andExpect(jsonPath("$.html").value("<h1>Título</h1>"));
     }
 }

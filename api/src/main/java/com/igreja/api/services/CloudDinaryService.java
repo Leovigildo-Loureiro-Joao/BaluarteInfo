@@ -3,9 +3,6 @@ package com.igreja.api.services;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.Map;
 import java.util.UUID;
@@ -18,43 +15,87 @@ import java.util.concurrent.TimeoutException;
 
 import javax.imageio.ImageIO;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 
-import lombok.Getter;
-import lombok.Setter;
-
 @Service
 public class CloudDinaryService {
     private final Cloudinary cloudinary;
     private final ExecutorService uploadExecutor; // Pool dedicado para uploads
-
-    @Getter
-    private String url;
-
-    @Getter @Setter
-    private String uniqueName;
 
     public CloudDinaryService(Cloudinary cloudinary) {
         this.cloudinary = cloudinary;
         this.uploadExecutor = Executors.newVirtualThreadPerTaskExecutor(); // Pool com 4 threads
     }
 
-    // Gera o nome único de forma mais eficiente (sem dependência do MultipartFile)
+    // Mantido por compatibilidade: chamadas antigas não são mais necessárias.
     public void generateUniqueName(String originalFilename) {
-        this.uniqueName = UUID.randomUUID() + "_" + originalFilename;
+        // no-op (o serviço agora é stateless e gera public_id por upload)
+    }
+
+    private static String safeBaseName(String originalFilename) {
+        String base = originalFilename == null ? "" : originalFilename.trim();
+        if (base.isBlank()) {
+            base = "file";
+        }
+        // Alguns browsers enviam "C:\\fakepath\\arquivo.pdf"
+        base = base.replace('\\', '/');
+        int lastSlash = base.lastIndexOf('/');
+        if (lastSlash >= 0 && lastSlash + 1 < base.length()) {
+            base = base.substring(lastSlash + 1);
+        }
+        return base;
+    }
+
+    private static String stripExtension(String name) {
+        if (name == null) {
+            return "";
+        }
+        int dot = name.lastIndexOf('.');
+        if (dot <= 0) {
+            return name;
+        }
+        return name.substring(0, dot);
+    }
+
+    private static String sanitizePublicId(String raw) {
+        String value = raw == null ? "" : raw.trim();
+        if (value.isBlank()) {
+            value = UUID.randomUUID().toString();
+        }
+
+        value = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+
+        // Mantém apenas caracteres seguros para URL/path
+        value = value.replaceAll("[^A-Za-z0-9_-]+", "_")
+                .replaceAll("_+", "_")
+                .replaceAll("^_+|_+$", "");
+
+        if (value.isBlank()) {
+            value = UUID.randomUUID().toString();
+        }
+        if (value.length() > 150) {
+            value = value.substring(0, 150);
+        }
+        return value;
+    }
+
+    private static String buildPublicIdFromFilename(String originalFilename) {
+        String base = safeBaseName(originalFilename);
+        String withoutExt = stripExtension(base);
+        String unique = UUID.randomUUID() + "_" + withoutExt;
+        return sanitizePublicId(unique);
     }
 
     // Upload assíncrono para MultipartFile
     public String uploadFileAsync(MultipartFile file, String resourceType) throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
             try {
-              String encodedPublicId = URLEncoder.encode(this.uniqueName.trim(), StandardCharsets.UTF_8.toString())
-                .replace("+", "_");
+            String publicId = buildPublicIdFromFilename(file == null ? null : file.getOriginalFilename());
             
             Map uploadResult = cloudinary.uploader().upload(file.getBytes(), 
                 ObjectUtils.asMap(
@@ -62,10 +103,12 @@ public class CloudDinaryService {
                     "folder", "upload",
                     "timeout", 4000,
                     "quality", "auto:fast",
-                    "public_id", encodedPublicId,  // Usa o nome normalizado
-                    "filename_override", encodedPublicId // Força o nome do arquivo
+                    "public_id", publicId,
+                    "filename_override", publicId
                 ));
-                return uploadResult.get("url").toString();
+                Object secure = uploadResult.get("secure_url");
+                Object plain = uploadResult.get("url");
+                return (secure != null ? secure : plain).toString();
             } catch (IOException e) {
                 
                 throw new RuntimeException("Falha no upload do arquivo", e);
@@ -77,8 +120,7 @@ public class CloudDinaryService {
             throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
             try {
-                String encodedPublicId = URLEncoder.encode(this.uniqueName.trim(), StandardCharsets.UTF_8.toString())
-                        .replace("+", "_");
+                String publicId = buildPublicIdFromFilename(file == null ? null : file.getOriginalFilename());
 
                 Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
                         ObjectUtils.asMap(
@@ -86,8 +128,8 @@ public class CloudDinaryService {
                                 "folder", "upload",
                                 "timeout", 4000,
                                 "quality", "auto:fast",
-                                "public_id", encodedPublicId,
-                                "filename_override", encodedPublicId));
+                                "public_id", publicId,
+                                "filename_override", publicId));
 
                 String url = uploadResult.containsKey("secure_url")
                         ? uploadResult.get("secure_url").toString()
@@ -117,8 +159,7 @@ public class CloudDinaryService {
         return uploadExecutor.submit(() -> {
             try {
                 ////System.out.println(this.uniqueName);
-              String encodedPublicId = URLEncoder.encode(this.uniqueName.trim(), StandardCharsets.UTF_8.toString())
-                .replace("+", "_");
+            String publicId = sanitizePublicId(UUID.randomUUID().toString());
             
             Map uploadResult = cloudinary.uploader().upload(file, 
                 ObjectUtils.asMap(
@@ -126,10 +167,12 @@ public class CloudDinaryService {
                     "folder", "upload",
                     "timeout", 4000,
                     "quality", "auto:fast",
-                    "public_id", encodedPublicId  // Usa o nome normalizado
+                    "public_id", publicId
                 ));
                     ////System.out.println(this.uniqueName); 
-                return uploadResult.get("url").toString();
+                Object secure = uploadResult.get("secure_url");
+                Object plain = uploadResult.get("url");
+                return (secure != null ? secure : plain).toString();
             } catch (IOException e) {
                 throw new RuntimeException("Falha no upload do arquivo", e);
             }
@@ -144,15 +187,18 @@ public class CloudDinaryService {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(image, "JPEG", baos);
                 byte[] imageBytes = baos.toByteArray();
+                String publicId = sanitizePublicId(UUID.randomUUID().toString());
                 Map uploadResult = cloudinary.uploader().upload(imageBytes, 
                     ObjectUtils.asMap(
                         "resource_type", resourceType,
                         "folder", "upload",
                          "timeout", 4000,
                         "quality", "auto:fast",
-                        "public_id", this.uniqueName.replace(".pdf", "").trim()
+                        "public_id", publicId
                     ));
-                return uploadResult.get("url").toString();
+                Object secure = uploadResult.get("secure_url");
+                Object plain = uploadResult.get("url");
+                return (secure != null ? secure : plain).toString();
             } catch (IOException e) {
                 throw new RuntimeException("Falha no upload da imagem", e);
             }
@@ -164,8 +210,7 @@ public class CloudDinaryService {
             throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
             try {
-                String publicId = this.uniqueName == null ? UUID.randomUUID().toString() : this.uniqueName;
-                publicId = publicId.replace(".pdf", "").trim();
+                String publicId = buildPublicIdFromFilename(imageFile == null ? null : imageFile.getOriginalFilename());
                 Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(),
                         ObjectUtils.asMap(
                                 "resource_type", resourceType,
@@ -188,7 +233,8 @@ public class CloudDinaryService {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 String publicId = extractPublicId(url);
-                Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+                String resourceType = detectResourceType(url);
+                Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
                 return "ok".equals(result.get("result"));
             } catch (Exception e) {
                 throw new RuntimeException("Falha ao excluir arquivo", e);
@@ -217,5 +263,26 @@ public class CloudDinaryService {
         String urlS =url.split("/")[url.split("/").length-1];
         
         return"upload/"+urlS.substring(0, urlS.lastIndexOf(".")); // Extrai o public_id corretamente
+    }
+
+    private String detectResourceType(String url) {
+        if (url == null) {
+            return "image";
+        }
+        String value = url.toLowerCase();
+        if (value.contains("/video/upload/")) {
+            return "video";
+        }
+        if (value.contains("/raw/upload/")) {
+            return "raw";
+        }
+        if (value.contains("/image/upload/")) {
+            return "image";
+        }
+        // Fallback: Cloudinary audio geralmente é servido como "video"
+        if (value.endsWith(".mp3") || value.endsWith(".wav") || value.endsWith(".m4a") || value.endsWith(".aac") || value.endsWith(".ogg")) {
+            return "video";
+        }
+        return "image";
     }
 }
