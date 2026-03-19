@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.igreja.api.controller.UserControllerSecurityTest
--------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 16.66 s -- in com.igreja.api.controller.UserControllerSecurityTest

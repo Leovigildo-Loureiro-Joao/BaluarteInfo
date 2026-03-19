@@ -499,20 +499,20 @@ const ModalAudio = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/60 flex items-start sm:items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8"
+        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-4 sm:my-8 max-h-[90vh] overflow-y-auto text-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
               <FiHeadphones className="text-primary-500" />
               {audio ? "Editar Áudio" : "Novo Áudio"}
             </h2>

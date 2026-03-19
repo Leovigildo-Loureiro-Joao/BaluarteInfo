@@ -1,11 +1,16 @@
 .env
 .env.*
+!.env.example
 
 .env.local
 .env.development
 .env.production
 *.env
 api/.env
+
+# Build outputs
+api/target/
+**/target/
 
 # OS / Editor
 .DS_Store

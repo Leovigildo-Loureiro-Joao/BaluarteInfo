@@ -5,6 +5,8 @@ import { GiPartyPopper, GiPrayer, GiHeartBeats, GiFamilyHouse, GiDuration } from
 import { ActividadeType, PublicoAlvoType, DuracaoActividade } from "../../types/api";
 import { LiaBibleSolid, LiaChairSolid } from "react-icons/lia";
 
+type SaveResult = { ok: true } | { ok: false; message?: string };
+
 // Tipos (ajuste conforme sua estrutura)
 type ActividadeSummary = {
   id?: string;
@@ -39,7 +41,7 @@ type ModalActividadeProps = {
     contactos: string;
     capacidade: number;
     imgFile: File;
-  }) => void;
+  }) => Promise<SaveResult>;
 };
 
 type Passo = 1 | 2 | 3 | 4;
@@ -87,12 +89,31 @@ const splitDateTime = (dataEvento?: string) => {
   return { data, hora: hora?.substring(0, 5) || "" };
 };
 
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
+const formatLocalDate = (date: Date) => {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+};
+
+const formatLocalTimeHHmm = (date: Date) => {
+  return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+};
+
+const dateTimeInPast = (data: string, hora: string) => {
+  if (!data || !hora) return false;
+  const candidate = new Date(`${data}T${hora}:00`);
+  if (Number.isNaN(candidate.getTime())) return false;
+  return candidate.getTime() < Date.now();
+};
+
 const ModalActividade = ({
   actividade,
   onClose,
   onSave
 }: ModalActividadeProps) => {
   const defaultDateTime = splitDateTime(actividade?.dataEvento);
+  const isEditing = Boolean(actividade);
+  const [isSaving, setIsSaving] = useState(false);
   const [passo, setPasso] = useState<Passo>(1);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -135,7 +156,9 @@ const ModalActividade = ({
       case 1:
         return formData.titulo && formData.descricao && formData.tema;
       case 2:
-        return formData.data && formData.hora && formData.endereco;
+        if (!(formData.data && formData.hora && formData.endereco)) return false;
+        if (!isEditing && dateTimeInPast(formData.data, formData.hora)) return false;
+        return true;
       case 3:
         return formData.organizador && formData.contactos && formData.capacidade;
       case 4:
@@ -146,9 +169,15 @@ const ModalActividade = ({
   };
 
   const avancarPasso = () => {
-    if (passo < 4 && podeAvancar()) {
-      setPasso((passo + 1) as Passo);
+    if (passo >= 4) return;
+    if (!podeAvancar()) {
+      if (passo === 2 && !isEditing && formData.data && formData.hora && dateTimeInPast(formData.data, formData.hora)) {
+        setError("A data/hora do evento não pode ser no passado.");
+      }
+      return;
     }
+    setError("");
+    setPasso((passo + 1) as Passo);
   };
 
   const voltarPasso = () => {
@@ -157,32 +186,53 @@ const ModalActividade = ({
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     if (passo === 4) {
+      if (isSaving) return;
+
       // Último passo - validar imagem e salvar
       if (!formData.imgFile) {
         setError("Selecione uma imagem para continuar.");
         return;
       }
 
-      onSave({
-        titulo: formData.titulo,
-        descricao: formData.descricao,
-        tema: formData.tema,
-        tipoEvento: formData.tipoEvento,
-        publicoAlvo: formData.publicoAlvo,
-        duracao: formData.duracao,
-        data: formData.data,
-        hora: formData.hora,
-        endereco: formData.endereco,
-        organizador: formData.organizador,
-        contactos: formData.contactos,
-        capacidade: Number(formData.capacidade),
-        imgFile: formData.imgFile
-      });
-      onClose();
+      if (!isEditing && dateTimeInPast(formData.data, formData.hora)) {
+        setError("A data/hora do evento não pode ser no passado.");
+        setPasso(2);
+        return;
+      }
+
+      setIsSaving(true);
+      setError("");
+      try {
+        const result = await onSave({
+          titulo: formData.titulo,
+          descricao: formData.descricao,
+          tema: formData.tema,
+          tipoEvento: formData.tipoEvento,
+          publicoAlvo: formData.publicoAlvo,
+          duracao: formData.duracao,
+          data: formData.data,
+          hora: formData.hora,
+          endereco: formData.endereco,
+          organizador: formData.organizador,
+          contactos: formData.contactos,
+          capacidade: Number(formData.capacidade),
+          imgFile: formData.imgFile
+        });
+        if (result.ok) {
+          onClose();
+        } else {
+          const message = "message" in result ? result.message : undefined;
+          setError(message || "Não foi possível salvar a actividade.");
+        }
+      } catch {
+        setError("Não foi possível salvar a actividade.");
+      } finally {
+        setIsSaving(false);
+      }
     } else {
       avancarPasso();
     }
@@ -251,41 +301,70 @@ const ModalActividade = ({
     </motion.div>
   );
 
-  const renderPasso2 = () => (
-    <motion.div
-      key="passo2"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="space-y-4"
-    >
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Data do Evento *
-          </label>
-          <input
-            type="date"
-            required
-            value={formData.data}
-            onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-          />
-        </div>
+  const renderPasso2 = () => {
+    const now = new Date();
+    const minDate = formatLocalDate(now);
+    const minTimeDate = new Date(now.getTime());
+    minTimeDate.setSeconds(0, 0);
+    if (minTimeDate.getTime() < Date.now()) {
+      minTimeDate.setMinutes(minTimeDate.getMinutes() + 1);
+    }
+    const minTimeToday = formatLocalTimeHHmm(minTimeDate);
+    const effectiveMinTime = formData.data === minDate ? minTimeToday : undefined;
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Hora *
-          </label>
-          <input
-            type="time"
-            required
-            value={formData.hora}
-            onChange={(e) => setFormData({ ...formData, hora: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-          />
+    return (
+      <motion.div
+        key="passo2"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        className="space-y-4"
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Data do Evento *
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.data}
+              min={!isEditing ? minDate : undefined}
+              onChange={(e) => {
+                const nextDate = e.target.value;
+                setFormData((prev) => ({ ...prev, data: nextDate }));
+                if (!isEditing && nextDate && formData.hora && dateTimeInPast(nextDate, formData.hora)) {
+                  setError("A data/hora do evento não pode ser no passado.");
+                } else {
+                  setError("");
+                }
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hora *
+            </label>
+            <input
+              type="time"
+              required
+              value={formData.hora}
+              min={!isEditing ? effectiveMinTime : undefined}
+              onChange={(e) => {
+                const nextTime = e.target.value;
+                setFormData((prev) => ({ ...prev, hora: nextTime }));
+                if (!isEditing && formData.data && nextTime && dateTimeInPast(formData.data, nextTime)) {
+                  setError("A data/hora do evento não pode ser no passado.");
+                } else {
+                  setError("");
+                }
+              }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            />
+          </div>
         </div>
-      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -338,8 +417,9 @@ const ModalActividade = ({
           </select>
         </div>
       </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
+  };
 
   const renderPasso3 = () => (
     <motion.div
@@ -472,9 +552,6 @@ const ModalActividade = ({
             </div>
           )}
         </div>
-        {error && (
-          <p className="mt-2 text-sm text-red-500">{error}</p>
-        )}
       </div>
 
       <div className="bg-gray-50 rounded-xl p-4">
@@ -500,7 +577,7 @@ const ModalActividade = ({
 
     return (
       <div className="md:col-span-1 border-l border-gray-200 pl-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
           <FiEye className="text-primary-500" />
           Preview da Actividade
         </h3>
@@ -602,20 +679,20 @@ const ModalActividade = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/60 flex items-start sm:items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8"
+        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-4 sm:my-8 max-h-[90vh] overflow-y-auto text-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
               <FiCalendar className="text-primary-500" />
               {actividade ? "Editar Actividade" : "Nova Actividade"}
             </h2>
@@ -696,6 +773,12 @@ const ModalActividade = ({
                   {passo === 4 && renderPasso4()}
                 </AnimatePresence>
 
+                {error && (
+                  <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                    {error}
+                  </div>
+                )}
+
                 {/* Botões de navegação */}
                 <div className="flex gap-3 pt-4 border-t mt-6">
                   {passo > 1 && (
@@ -711,9 +794,9 @@ const ModalActividade = ({
                   {passo < 4 ? (
                     <button
                       type="submit"
-                      disabled={!podeAvancar()}
+                      disabled={!podeAvancar() || isSaving}
                       className={`flex-1 px-4 py-3 rounded-xl transition-colors ${
-                        podeAvancar()
+                        podeAvancar() && !isSaving
                           ? "bg-primary-500 text-white hover:bg-primary-600"
                           : "bg-gray-200 text-gray-500 cursor-not-allowed"
                       }`}
@@ -723,9 +806,10 @@ const ModalActividade = ({
                   ) : (
                     <button
                       type="submit"
-                      className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
+                      disabled={isSaving}
+                      className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {actividade ? "Salvar Alterações" : "Criar Actividade"}
+                      {isSaving ? "A salvar..." : actividade ? "Salvar Alterações" : "Criar Actividade"}
                     </button>
                   )}
                 </div>

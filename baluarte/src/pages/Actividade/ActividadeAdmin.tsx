@@ -320,7 +320,7 @@ export const ActividadesPageAdmin = () => {
     contactos: string;
     capacidade: number;
     imgFile: File;
-  }) => {
+  }): Promise<{ ok: true } | { ok: false; message?: string }> => {
     const isEditing = Boolean(editingActividade);
     const tempId = `creating-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     if (!isEditing) {
@@ -356,7 +356,20 @@ export const ActividadesPageAdmin = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Falha ao salvar actividade.");
+        let message = "Falha ao salvar actividade.";
+        try {
+          const contentType = response.headers.get("Content-Type") || "";
+          if (contentType.includes("application/json")) {
+            const payload = await response.json().catch(() => null);
+            message = payload?.message || payload?.error || payload?.details || message;
+          } else {
+            const text = await response.text().catch(() => "");
+            if (text) message = text;
+          }
+        } catch {
+          // ignore
+        }
+        throw new Error(message);
       }
 
       if (!isEditing) {
@@ -377,8 +390,11 @@ export const ActividadesPageAdmin = () => {
       setReloadToken((prev) => prev + 1);
       setEditingActividade(undefined);
       setActionError("");
+      return { ok: true };
     } catch (err) {
-      setActionError("Não foi possível salvar a actividade.");
+      const message = err instanceof Error ? err.message : "Não foi possível salvar a actividade.";
+      setActionError(message || "Não foi possível salvar a actividade.");
+      return { ok: false, message };
     } finally {
       if (!isEditing) {
         setCreatingActividades((current) => current.filter((a) => a.tempId !== tempId));
