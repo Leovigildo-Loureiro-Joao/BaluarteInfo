@@ -29,6 +29,7 @@ import com.igreja.api.dto.midia.ConnectMidiaDto;
 import com.igreja.api.dto.midia.GaleriaAdminItem;
 import com.igreja.api.dto.midia.MidiaActividade;
 import com.igreja.api.dto.midia.MidiaActividadeV;
+import com.igreja.api.dto.midia.MidiaDetailDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
 import com.igreja.api.dto.midia.MidiaSimple;
@@ -80,12 +81,17 @@ public class MidiaService {
         } else {
             midia.setUrl(midiaDto.url());
         }
+        if (midiaDto.type() != null
+                && midiaDto.type().equals(MidiaType.IMAGE)
+                && (midia.getImagem() == null || midia.getImagem().isBlank())) {
+            midia.setImagem(midia.getUrl());
+        }
         return midiaRepository.save(midia);
     }
 
        public Object addMidia(MidiaActividadeV actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
         ActividadeModel actividadeModel= actividadeRepository.findById(actividadeDto.id()).orElseThrow();
-        MidiaModel midiaModel=save(new MidiaDto(actividadeDto.titulo(),"--/--/--",actividadeDto.img(),actividadeDto.type(), null));    
+        MidiaModel midiaModel=save(new MidiaDto(actividadeDto.titulo(),"--/--/--",null,actividadeDto.img(),actividadeDto.type(), null));    
         midiaModel.setActividade(actividadeModel);
         midiaRepository.save(midiaModel);
         actividadeRepository.save(actividadeModel);
@@ -95,7 +101,7 @@ public class MidiaService {
 
     public Object addMidia(MidiaActividade actividadeDto) throws InterruptedException, ExecutionException, TimeoutException, UnsupportedAudioFileException, IOException {
         ActividadeModel actividadeModel= actividadeRepository.findById(actividadeDto.id()).orElseThrow();
-        MidiaModel midiaModel=save(new MidiaFile(actividadeDto.titulo(),"--/--/--",null,actividadeDto.img(),actividadeDto.type(),null ,null));    
+        MidiaModel midiaModel=save(new MidiaFile(actividadeDto.titulo(),"--/--/--",null,null,actividadeDto.img(),actividadeDto.type(),null ,null));    
         midiaModel.setActividade(actividadeModel);
         midiaRepository.save(midiaModel);
         actividadeRepository.save(actividadeModel);
@@ -197,9 +203,29 @@ public class MidiaService {
     }
     
     public MidiaModel Select(int id)  {
+
         MidiaModel midia=midiaRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
         return midia;
    }
+
+    public MidiaDetailDto SelectDetail(int id) {
+        Visto(id);
+        MidiaModel midia = Select(id);
+        long visualizacoes = vistosRepository.countByMidia(midia);
+        return new MidiaDetailDto(
+                midia.getId(),
+                midia.getTitulo(),
+                midia.getDescricao(),
+                midia.getAutor(),
+                midia.getImagem(),
+                midia.getTempo(),
+                midia.getType(),
+                midia.getAudioType(),
+                midia.getVideoType(),
+                midia.getUrl(),
+                midia.getDataPublicacao(),
+                visualizacoes);
+    }
 
     public MidiaModel Visto(int id)  {
         MidiaModel midia=midiaRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));

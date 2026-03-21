@@ -10,6 +10,7 @@ public interface MidiaProjection {
     String getDescricao();
     String getImagem();
     String getTempo();
+    String getAutor();
     MidiaType getType();
     AudioType getAudioType();
     VideoType getVideoType();

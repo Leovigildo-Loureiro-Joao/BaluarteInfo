@@ -96,7 +96,8 @@ public class NotificacaoService {
     public void notifyActividadeGaleria() {
         actividadeService.AllData().forEach(t -> {
             int comentarios = comentarioRepository.findByActividade(t).size();
-            if (comentarios >= configService.SelectByType(ConfigType.ComentarioLimiteActividade).getValue() && t.getDataEvento().isBefore(LocalDateTime.now())) {
+            double limite = configService.numberValueOrDefault(ConfigType.ComentarioLimiteActividade, 50);
+            if (comentarios >= limite && t.getDataEvento().isBefore(LocalDateTime.now())) {
                 String descricao = "A actividade " + t.getTema() + " já tem " + comentarios
                         + " comentários e foi encerrada. Actualize a galeria para marcar os momentos.";
                 createNotificationIfAbsent(t.getTema(), descricao, NotificacaoType.GALERIA);
@@ -105,7 +106,7 @@ public class NotificacaoService {
     }
 
     public void notifyActividadeLimiteInscritos() {
-        double totalIncritos = configService.SelectByType(ConfigType.IncritosLimiteActividade).getValue();
+        double totalIncritos = configService.numberValueOrDefault(ConfigType.IncritosLimiteActividade, 100);
         actividadeService.AllData().forEach(t -> {
             int inscritos = inscritosRepository.findByActividade(t).size();
             boolean closeToLimit = inscritos >= Math.max(1, totalIncritos - WARNING_MARGIN);
@@ -131,7 +132,7 @@ public class NotificacaoService {
     }
 
     public void notifyVistos() {
-        double limite = configService.SelectByType(ConfigType.VisitasLimite).getValue();
+        double limite = configService.numberValueOrDefault(ConfigType.VisitasLimite, 100);
 
         artigosRepository.findAll().forEach(artigo -> {
             var vistos=vistosRepository.findByArtigo(artigo);

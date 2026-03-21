@@ -33,6 +33,7 @@ const ModalVideo = ({
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [formData, setFormData] = useState({
     titulo: video?.titulo || "",
+    autor: video?.autor || "",
     descricao: video?.descricao || "",
     tipo: video?.tipo || VideoType.Sermon,
     capaFile: undefined as File | undefined,
@@ -82,8 +83,7 @@ const ModalVideo = ({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (passo === 4) {
-      // Último passo - mostrar preview completo
-      setShowPreviewModal(true);
+      handleConfirmSave()
     } else {
       avancarPasso();
     }
@@ -94,6 +94,7 @@ const ModalVideo = ({
 
     onSave({
       titulo: formData.titulo,
+      autor: formData.autor,
       descricao: formData.descricao,
       tipo: formData.tipo,
       capa: formData.capaPreview,
@@ -107,6 +108,7 @@ const ModalVideo = ({
 
   const previewSource = mode === "preview" ? video?.videoUrl : formData.videoPreview;
   const previewTitle = mode === "preview" ? video?.titulo : formData.titulo;
+  const previewAutor = mode === "preview" ? video?.autor : formData.autor;
   const previewCapa = mode === "preview" ? video?.capa : formData.capaPreview;
   const previewTipo = mode === "preview" ? video?.tipo : formData.tipo;
 
@@ -129,6 +131,19 @@ const ModalVideo = ({
           onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           placeholder="Ex: A Vitória é Certa"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Autor
+        </label>
+        <input
+          type="text"
+          value={formData.autor}
+          onChange={(e) => setFormData({ ...formData, autor: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+          placeholder="Ex: Pr. João Silva"
         />
       </div>
 
@@ -363,7 +378,7 @@ const ModalVideo = ({
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center gap-2">
               <FiUser size={12} />
-              <span>{video?.autor || "Autor não definido"}</span>
+              <span>{previewAutor || "Autor não definido"}</span>
             </div>
             <div className="flex items-center gap-2">
               <FiImage size={12} />
@@ -402,11 +417,15 @@ const ModalVideo = ({
           tipo: formData.tipo,
           capa: formData.capaPreview,
           videoUrl: formData.videoPreview,
-          autor: video?.autor || "Autor",
+          autor: formData.autor || video?.autor || "Autor",
           data: video?.data || new Date().toISOString().split('T')[0],
           visualizacoes: 0
         }}
         onClose={() => setShowPreviewModal(false)}
+        onSave={(preview) => {
+          setShowPreviewModal(false);
+          handleConfirmSave();
+        }}
         mode="preview"
         autoPlayPreview={true}
       />
@@ -492,7 +511,7 @@ const ModalVideo = ({
                 }}
                 className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
               >
-                Confirmar e Publicar
+                Confirmar
               </button>
             </div>
           </div>
@@ -629,7 +648,7 @@ const ModalVideo = ({
                       type="submit"
                       className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
                     >
-                      Revisar e Publicar
+                       Publicar
                     </button>
                   )}
                 </div>

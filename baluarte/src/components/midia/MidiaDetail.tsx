@@ -8,13 +8,11 @@ import {
   FiEye, 
   FiClock,
   FiShare2,
-  FiHeart,
   FiDownload,
   FiArrowLeft,
   FiThumbsUp,
   FiMessageCircle,
   FiMoreHorizontal,
-  FiFlag,
   FiBookmark,
   FiVolume2,
   FiVolumeX,
@@ -37,6 +35,9 @@ import {
   GiMegaphone 
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
+import { apiFetch } from "../../utils/api";
+import { getStoredUser } from "../../utils/auth";
+import type { ComentarioResult } from "../../types/api";
 
 // Tipos de áudio para badge
 const audioTypeInfo: Record<string, { label: string, icon: any, color: string }> = {
@@ -461,64 +462,77 @@ const AudioPlayer = ({ src, title, author, type, thumbnail }: any) => {
 };
 
 // Componente de Comentários
-const CommentSection = () => {
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      user: "João Pedro",
-      avatar: "https://i.pravatar.cc/150?img=1",
-      time: "2 horas atrás",
-      content: "Palavra poderosa! Fui muito abençoado com essa mensagem. Deus continue usando o irmão.",
-      likes: 23,
-      replies: [
-        {
-          user: "Maria Silva",
-          avatar: "https://i.pravatar.cc/150?img=2",
-          time: "1 hora atrás",
-          content: "Amém! Também fui abençoada.",
-          likes: 5
-        }
-      ]
-    },
-    {
-      id: 2,
-      user: "Ana Carolina",
-      avatar: "https://i.pravatar.cc/150?img=3",
-      time: "5 horas atrás",
-      content: "Que mensagem linda! Compartilhei com minha família. Deus é fiel!",
-      likes: 15,
-      replies: []
-    },
-    {
-      id: 3,
-      user: "Pedro Santos",
-      avatar: "https://i.pravatar.cc/150?img=4",
-      time: "1 dia atrás",
-      content: "Precisava muito ouvir essa palavra hoje. Deus sabe exatamente o que precisamos.",
-      likes: 32,
-      replies: []
-    }
-  ]);
-
+const CommentSection = ({ midiaId }: { midiaId: number }) => {
+  const [comments, setComments] = useState<ComentarioResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [newComment, setNewComment] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      try {
+        const response = await apiFetch(`/user/midia/${midiaId}/comentarioAll`);
+        if (!response.ok) throw new Error("Falha ao carregar comentários.");
+        const payload = (await response.json()) as ComentarioResult[];
+        if (!active) return;
+        setComments(Array.isArray(payload) ? payload : []);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError("Não foi possível carregar os comentários.");
+        setComments([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    setLoading(true);
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [midiaId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const comment = {
-      id: comments.length + 1,
-      user: "Visitante",
-      avatar: "https://i.pravatar.cc/150?img=5",
-      time: "Agora mesmo",
-      content: newComment,
-      likes: 0,
-      replies: []
-    };
+    const user = getStoredUser();
+    if (!user?.id) {
+      setError("Faça login para comentar.");
+      return;
+    }
 
-    setComments([comment, ...comments]);
-    setNewComment("");
+    try {
+      const response = await apiFetch("/user/comentario", {
+        method: "POST",
+        body: {
+          idUser: user.id,
+          idSeccao: midiaId,
+          seccao: "Midia",
+          descricao: newComment.trim()
+        }
+      });
+
+      if (!response.ok) {
+        setError("Não foi possível enviar o comentário.");
+        return;
+      }
+
+      const payload = (await response.json()) as ComentarioResult;
+      setComments([payload, ...comments]);
+      setNewComment("");
+      setError("");
+    } catch (err) {
+      setError("Não foi possível enviar o comentário.");
+    }
   };
+
+  const currentUser = getStoredUser();
+  const avatar = currentUser?.img || "https://i.pravatar.cc/150?img=5";
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -527,14 +541,9 @@ const CommentSection = () => {
         Comentários ({comments.length})
       </h3>
 
-      {/* Formulário */}
       <form onSubmit={handleSubmit} className="mb-8">
         <div className="flex gap-3">
-          <img
-            src="https://i.pravatar.cc/150?img=5"
-            alt="Avatar"
-            className="w-10 h-10 rounded-full"
-          />
+          <img src={avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover" />
           <div className="flex-1">
             <textarea
               value={newComment}
@@ -555,67 +564,51 @@ const CommentSection = () => {
         </div>
       </form>
 
-      {/* Lista de comentários */}
-      <div className="space-y-6">
-        {comments.map((comment) => (
-          <motion.div
-            key={comment.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="border-b border-gray-100 last:border-0 pb-6 last:pb-0"
-          >
-            <div className="flex gap-3">
-              <img
-                src={comment.avatar}
-                alt={comment.user}
-                className="w-10 h-10 rounded-full"
-              />
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="font-semibold">{comment.user}</h4>
-                  <span className="text-xs text-gray-500">{comment.time}</span>
-                </div>
-                <p className="text-gray-700 mb-3">{comment.content}</p>
-                <div className="flex items-center gap-4">
+      {error && (
+        <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+          {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-8 text-gray-500">Carregando comentários...</div>
+      ) : comments.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">Ainda não há comentários.</div>
+      ) : (
+        <div className="space-y-6">
+          {comments.map((comment) => (
+            <motion.div
+              key={comment.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="border-b border-gray-100 last:border-0 pb-6 last:pb-0"
+            >
+              <div className="flex gap-3">
+                <img
+                  src={comment.imagem}
+                  alt={comment.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-semibold">{comment.name}</h4>
+                    {comment.dataPublicacao && (
+                      <span className="text-xs text-gray-500">
+                        {new Date(comment.dataPublicacao).toLocaleDateString("pt-BR")}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-700 mb-3">{comment.descricao}</p>
                   <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary transition-colors">
                     <FiThumbsUp size={14} />
-                    {comment.likes}
-                  </button>
-                  <button className="text-sm text-gray-500 hover:text-primary transition-colors">
-                    Responder
+                    {comment.likes ?? 0}
                   </button>
                 </div>
-
-                {/* Respostas */}
-                {comment.replies.length > 0 && (
-                  <div className="mt-4 ml-8 space-y-4">
-                    {comment.replies.map((reply, index) => (
-                      <div key={index} className="flex gap-3">
-                        <img
-                          src={reply.avatar}
-                          alt={reply.user}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <h5 className="font-semibold text-sm">{reply.user}</h5>
-                            <span className="text-xs text-gray-500">{reply.time}</span>
-                          </div>
-                          <p className="text-gray-700 text-sm mb-2">{reply.content}</p>
-                          <button className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary transition-colors">
-                            <FiThumbsUp size={12} />
-                            {reply.likes}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -624,73 +617,63 @@ export const MidiaDetalhe = () => {
   const { id } = useParams();
   const [midia, setMidia] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState('sobre');
-  const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    // Simular busca de dados
-    setTimeout(() => {
-      const item = {
-        id: 1,
-        titulo: "A Vitória é Certa - Culto de Domingo",
-        descricao: "Nesta mensagem poderosa, o Pr. Antônio Silva traz uma palavra de ânimo e esperança para todos que estão enfrentando lutas e desafios. Baseado em Romanos 8:37, aprendemos que em todas as coisas somos mais que vencedores.",
-        conteudo: "Em meio às tempestades da vida, é fácil perder a esperança e pensar que Deus nos abandonou. Mas a verdade é que Ele nunca nos deixa e tem um propósito em cada dificuldade. Neste culto, exploramos como a fé pode nos sustentar nos momentos mais difíceis e como podemos confiar no caráter de Deus mesmo quando não entendemos Seus planos.",
-        imagem: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80",
-        tipo: "VIDEO",
-        videoUrl: "https://example.com/video.mp4",
-        audioType: "SERMON",
-        duracao: "45:30",
-        visualizacoes: 1234,
-        data: "2024-01-15",
-        autor: "Pr. Antônio Silva",
-        autorFoto: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
-        autorBio: "Pastor há 20 anos, formado em Teologia, especialista em Aconselhamento Bíblico e conferencista internacional.",
-        likes: 89,
-        shares: 34,
-        downloads: 56,
-        tags: ["fé", "perseverança", "vitória", "esperança"],
-        capitulos: [
-          { time: "00:00", titulo: "Abertura e Louvor" },
-          { time: "10:30", titulo: "Leitura da Palavra" },
-          { time: "15:45", titulo: "Introdução: O Contexto da Luta" },
-          { time: "22:30", titulo: "Ponto 1: Deus Está no Controle" },
-          { time: "30:15", titulo: "Ponto 2: O Propósito nas Provações" },
-          { time: "38:00", titulo: "Ponto 3: A Vitória é Certa" },
-          { time: "42:30", titulo: "Oração Final" }
-        ],
-        relacionados: [
-          {
-            id: 2,
-            titulo: "Estudo Bíblico - Romanos 8",
-            imagem: "https://images.unsplash.com/photo-1503593245033-a040be3f3c82?auto=format&fit=crop&w=400&q=80",
-            tipo: "VIDEO",
-            duracao: "58:20",
-            autor: "Pb. Marcos Oliveira"
-          },
-          {
-            id: 3,
-            titulo: "Podcast: Juventude e Fé",
-            imagem: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=400&q=80",
-            tipo: "AUDIO",
-            duracao: "32:15",
-            autor: "Pr. João Santos"
-          },
-          {
-            id: 4,
-            titulo: "Série: Os Atributos de Deus",
-            imagem: "https://images.unsplash.com/photo-1496568816309-51d7c20e3b21?auto=format&fit=crop&w=400&q=80",
-            tipo: "AUDIO",
-            duracao: "45:10",
-            autor: "Pr. Antônio Silva"
-          }
-        ]
-      };
+    let active = true;
 
-      setMidia(item);
-      setLoading(false);
-    }, 1000);
+    const load = async () => {
+      if (!id) {
+        setError("Mídia não encontrada.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await apiFetch(`/user/midia/${id}`);
+        if (!response.ok) throw new Error("Falha ao carregar mídia.");
+        const payload = await response.json();
+        if (!active) return;
+
+        setMidia({
+          id: payload.id,
+          titulo: payload.titulo,
+          autor: payload.autor,
+          descricao: payload.descricao,
+          imagem: payload.imagem || payload.url || "",
+          type: payload.type,
+          audioType: payload.audioType,
+          videoType: payload.videoType,
+          url: payload.url,
+          tempo: payload.tempo || "--:--",
+          dataPublicacao: payload.dataPublicacao,
+          visualizacoes: payload.visualizacoes ?? payload.vistos?.length ?? 0
+        });
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError("Não foi possível carregar a mídia.");
+        setMidia(null);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      active = false;
+    };
   }, [id]);
+
+  const isImage = midia?.type === "IMAGE";
+  const tabs = isImage ? ['sobre'] : ['sobre', 'comentários', 'transcrição'];
+
+  useEffect(() => {
+    if (midia?.type === "IMAGE") setActiveTab("sobre");
+  }, [midia?.type]);
 
   if (loading) {
     return (
@@ -700,8 +683,29 @@ export const MidiaDetalhe = () => {
     );
   }
 
-  const AudioIcon = audioTypeInfo[midia.audioType]?.icon || GiMicrophone;
-  const audioColor = audioTypeInfo[midia.audioType]?.color || "bg-primary";
+  if (error || !midia) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container-custom">
+          <div className="bg-white rounded-2xl shadow p-8 text-center">
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Erro</h2>
+            <p className="text-gray-600 mb-6">{error || "Não foi possível carregar a mídia."}</p>
+            <Link
+              to="/midia"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+            >
+              <FiArrowLeft />
+              Voltar para Mídia
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const audioKey = midia.audioType || "";
+  const AudioIcon = audioTypeInfo[audioKey]?.icon || GiMicrophone;
+  const audioColor = audioTypeInfo[audioKey]?.color || "bg-primary";
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -717,36 +721,48 @@ export const MidiaDetalhe = () => {
           </Link>
           
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setIsLiked(!isLiked)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                isLiked 
-                  ? 'bg-red-50 text-red-500' 
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard?.writeText(window.location.href);
+                } catch (err) {
+                  // ignore
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <FiHeart className={isLiked ? 'fill-current' : ''} />
-              <span className="hidden sm:inline">{isLiked ? 'Curtido' : 'Curtir'}</span>
-              <span className="text-sm">({midia.likes})</span>
-            </button>
-            
-            <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-100 transition-colors">
               <FiShare2 />
               <span className="hidden sm:inline">Compartilhar</span>
             </button>
+
+            {isImage && midia.url && (
+              <a
+                href={midia.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <FiDownload />
+                <span className="hidden sm:inline">Baixar</span>
+              </a>
+            )}
             
-            <button 
-              onClick={() => setIsSaved(!isSaved)}
-              className={`p-2 rounded-lg transition-colors ${
-                isSaved ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <FiBookmark className={isSaved ? 'fill-current' : ''} />
-            </button>
-            
-            <button className="p-2 bg-white rounded-lg hover:bg-gray-100 transition-colors">
-              <FiMoreHorizontal />
-            </button>
+            {!isImage && (
+              <>
+                <button 
+                  onClick={() => setIsSaved(!isSaved)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    isSaved ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <FiBookmark className={isSaved ? 'fill-current' : ''} />
+                </button>
+                
+                <button className="p-2 bg-white rounded-lg hover:bg-gray-100 transition-colors">
+                  <FiMoreHorizontal />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -758,20 +774,24 @@ export const MidiaDetalhe = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {midia.tipo === 'VIDEO' ? (
-                <VideoPlayer
-                  src={midia.videoUrl}
-                  thumbnail={midia.imagem}
-                  title={midia.titulo}
-                />
-              ) : (
+              {midia.type === "VIDEO" ? (
+                <VideoPlayer src={midia.url} thumbnail={midia.imagem} title={midia.titulo} />
+              ) : midia.type === "AUDIO" ? (
                 <AudioPlayer
-                  src={midia.audioUrl || '#'}
+                  src={midia.url || "#"}
                   title={midia.titulo}
-                  author={midia.autor}
+                  author={midia.autor || "Baluarte"}
                   type={midia.audioType}
                   thumbnail={midia.imagem}
                 />
+              ) : (
+                <div className="bg-black rounded-2xl overflow-hidden">
+                  <img
+                    src={midia.url || midia.imagem}
+                    alt={midia.titulo}
+                    className="w-full max-h-[520px] object-contain bg-black"
+                  />
+                </div>
               )}
             </motion.div>
 
@@ -784,7 +804,7 @@ export const MidiaDetalhe = () => {
             >
               <div className="border-b border-gray-200">
                 <nav className="flex">
-                  {['sobre', 'comentários', 'transcrição'].map((tab) => (
+                  {tabs.map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -813,53 +833,67 @@ export const MidiaDetalhe = () => {
                     
                     <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
-                        <FiUser />
-                        {midia.autor}
-                      </span>
-                      <span className="flex items-center gap-1">
                         <FiCalendar />
-                        {new Date(midia.data).toLocaleDateString('pt-BR')}
+                        {midia.dataPublicacao ? new Date(midia.dataPublicacao).toLocaleDateString('pt-BR') : "--"}
                       </span>
                       <span className="flex items-center gap-1">
                         <FiEye />
-                        {midia.visualizacoes} visualizações
+                        {midia.visualizacoes ?? 0} visualizações
                       </span>
-                      <span className="flex items-center gap-1">
-                        <FiClock />
-                        {midia.duracao}
+                      {midia.tempo && (
+                        <span className="flex items-center gap-1">
+                          <FiClock />
+                          {midia.tempo}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                        {midia.type === "VIDEO" ? <FiVideo /> : midia.type === "AUDIO" ? <AudioIcon /> : <FiDownload />}
+                        {midia.type}
                       </span>
+                      {midia.audioType && (
+                        <span
+                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium text-white ${audioColor}`}
+                        >
+                          <AudioIcon size={12} />
+                          {audioTypeInfo[audioKey]?.label || midia.audioType}
+                        </span>
+                      )}
+                      {midia.videoType && (
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary text-white">
+                          <FiVideo size={12} />
+                          {midia.videoType}
+                        </span>
+                      )}
                     </div>
 
                     <p className="text-gray-700 leading-relaxed">
                       {midia.descricao}
                     </p>
 
-                    <p className="text-gray-700 leading-relaxed">
-                      {midia.conteudo}
-                    </p>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2 pt-4">
-                      {midia.tags.map((tag: string) => (
-                        <Link
-                          key={tag}
-                          to={`/midia?tag=${tag}`}
-                          className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-primary hover:text-white transition-colors"
-                        >
-                          #{tag}
-                        </Link>
-                      ))}
-                    </div>
+                    {midia.url && (
+                      <a
+                        href={midia.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                      >
+                        <FiDownload />
+                        Abrir/Baixar mídia
+                      </a>
+                    )}
                   </div>
                 )}
 
-                {activeTab === 'comentários' && <CommentSection />}
+                {!isImage && activeTab === 'comentários' && <CommentSection midiaId={midia.id} />}
 
 
-                {activeTab === 'transcrição' && (
+                {!isImage && activeTab === 'transcrição' && (
                   <div className="prose max-w-none">
                     <p className="text-gray-700 leading-relaxed">
-                      [Transcrição completa do áudio/vídeo seria exibida aqui...]
+                      Transcrição indisponível no momento.
                     </p>
                   </div>
                 )}
@@ -874,146 +908,50 @@ export const MidiaDetalhe = () => {
             transition={{ delay: 0.3 }}
             className="lg:col-span-1 space-y-6"
           >
-            {/* Card do autor */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <FiUser className="text-primary" />
-                Sobre o autor
-              </h3>
-              <div className="flex items-center gap-4 mb-4">
-                <img
-                  src={midia.autorFoto}
-                  alt={midia.autor}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div>
-                  <h4 className="font-semibold">{midia.autor}</h4>
-                  <p className="text-sm text-gray-500">Pastor</p>
+              <h3 className="font-bold text-lg mb-4">Detalhes</h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Tipo</span>
+                  <span className="font-medium text-gray-800">{midia.type}</span>
+                </div>
+                {midia.audioType && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Áudio</span>
+                    <span className="font-medium text-gray-800">
+                      {audioTypeInfo[audioKey]?.label || midia.audioType}
+                    </span>
+                  </div>
+                )}
+                {midia.videoType && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Vídeo</span>
+                    <span className="font-medium text-gray-800">{midia.videoType}</span>
+                  </div>
+                )}
+                {midia.tempo && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Duração</span>
+                    <span className="font-medium text-gray-800">{midia.tempo}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">Visualizações</span>
+                  <span className="font-medium text-gray-800">{midia.visualizacoes ?? 0}</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {midia.autorBio}
-              </p>
-            </div>
 
-            {/* Capítulos (para vídeos) */}
-            {midia.capitulos && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <FiClock className="text-primary" />
-                  Capítulos
-                </h3>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {midia.capitulos.map((capitulo: any, index: number) => (
-                    <button
-                      key={index}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors text-left group"
-                    >
-                      <span className="text-primary font-mono text-sm bg-primary/10 px-2 py-1 rounded">
-                        {capitulo.time}
-                      </span>
-                      <span className="text-gray-700 text-sm group-hover:text-primary transition-colors">
-                        {capitulo.titulo}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Downloads */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <FiDownload className="text-primary" />
-                Downloads
-              </h3>
-              <div className="space-y-3">
-                <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FiVideo className="text-primary" />
-                    <div className="text-left">
-                      <p className="font-medium text-sm">Vídeo (HD)</p>
-                      <p className="text-xs text-gray-500">450 MB</p>
-                    </div>
-                  </div>
-                  <FiDownload className="text-gray-400" />
-                </button>
-                
-                <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FiDownload className="text-primary" />
-                    <div className="text-left">
-                      <p className="font-medium text-sm">Áudio (MP3)</p>
-                      <p className="text-xs text-gray-500">85 MB</p>
-                    </div>
-                  </div>
-                  <FiDownload className="text-gray-400" />
-                </button>
-                
-                <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FiBookmark className="text-primary" />
-                    <div className="text-left">
-                      <p className="font-medium text-sm">Transcrição (PDF)</p>
-                      <p className="text-xs text-gray-500">2.3 MB</p>
-                    </div>
-                  </div>
-                  <FiDownload className="text-gray-400" />
-                </button>
-              </div>
-            </div>
-
-            {/* Mídia relacionada */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="font-bold text-lg mb-4">Relacionados</h3>
-              <div className="space-y-4">
-                {midia.relacionados.map((item: any) => (
-                  <Link
-                    key={item.id}
-                    to={`/midia/${item.id}`}
-                    className="flex gap-3 group"
-                  >
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                      <img
-                        src={item.imagem}
-                        alt={item.titulo}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                      {item.duracao && (
-                        <span className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1 rounded">
-                          {item.duracao}
-                        </span>
-                      )}
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        {item.tipo === 'VIDEO' ? (
-                          <FiPlay className="text-white" size={20} />
-                        ) : (
-                          <GiMicrophone className="text-white" size={20} />
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-sm group-hover:text-primary transition-colors line-clamp-2">
-                        {item.titulo}
-                      </h4>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {item.autor}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {item.tipo === 'VIDEO' ? 'Vídeo' : 'Áudio'} • {item.duracao}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
-              <Link
-                to="/midia"
-                className="flex items-center justify-center gap-2 mt-4 text-primary hover:gap-3 transition-all"
-              >
-                Ver mais
-                <FiChevronRight />
-              </Link>
+              {midia.url && (
+                <a
+                  href={midia.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-5 inline-flex w-full items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+                >
+                  <FiDownload />
+                  Abrir/Baixar
+                </a>
+              )}
             </div>
           </motion.aside>
         </div>

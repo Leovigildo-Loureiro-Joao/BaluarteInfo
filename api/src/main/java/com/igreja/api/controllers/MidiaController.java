@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.midia.MidiaActividade;
 import com.igreja.api.dto.midia.MidiaActividadeV;
+import com.igreja.api.dto.midia.MidiaDetailDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
 import com.igreja.api.services.MidiaService;
@@ -163,7 +164,8 @@ public class MidiaController {
 
     @GetMapping(value = "/user/midia/{id}")
     public ResponseEntity<?> SelectComentario(@PathVariable int id) throws IOException {
-        return ResponseEntity.ok(midiaService.Select(id));
+        MidiaDetailDto detail = midiaService.SelectDetail(id);
+        return ResponseEntity.ok(detail);
     }
 
     @PostMapping(value = "/admin/actividade/trailer")

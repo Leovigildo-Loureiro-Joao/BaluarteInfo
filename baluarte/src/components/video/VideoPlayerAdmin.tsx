@@ -82,6 +82,18 @@ export const VideoPreviewPlayer = ({
     const video = videoRef.current;
     if (!video) return;
 
+    if (autoPlay) {
+      video.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  }, [autoPlay, src]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
     const handleTimeUpdate = () => setCurrentTime(video.currentTime);
     const handleDurationChange = () => setDuration(video.duration);
     const handleEnded = () => setIsPlaying(false);

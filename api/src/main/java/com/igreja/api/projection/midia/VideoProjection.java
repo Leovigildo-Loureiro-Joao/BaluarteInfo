@@ -6,6 +6,7 @@ public interface VideoProjection {
     Integer getId();
     String getDescricao();
     String getTitulo();
+    String getAutor();
     String getUrl();
     VideoType getVideoType();
 

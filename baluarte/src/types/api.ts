@@ -66,7 +66,13 @@ export enum ConfigType {
   MembrosTotais = 'MembrosTotais',
   MinisteriosTotais = 'MinisteriosTotais',
   HomeStatsVisible = 'HomeStatsVisible',
-  HomeCarouselVisible = 'HomeCarouselVisible'
+  HomeCarouselVisible = 'HomeCarouselVisible',
+  DashboardRefreshIntervalMs = 'DashboardRefreshIntervalMs',
+  MensagemUnreadDays = 'MensagemUnreadDays',
+  MensagemReenviarPendentes = 'MensagemReenviarPendentes',
+  InscricaoQrEnabled = 'InscricaoQrEnabled',
+  InscricaoQrAutoDisable = 'InscricaoQrAutoDisable',
+  InscricaoQrExpiresHours = 'InscricaoQrExpiresHours'
 }
 
 export enum DuracaoActividade {
@@ -191,7 +197,7 @@ export interface ActividadeDto {
 }
 
 export interface ActividadeSummary {
-  id: number;
+  id: number|string;
   descricao: string;
   tema: string;
   titulo: string;
@@ -499,6 +505,7 @@ export interface MidiaProjection {
   titulo: string;
   descricao: string;
   imagem: string;
+  autor?: string;
   tempo?: string;
   type: MidiaType;
   audioType?: AudioType | null;
@@ -513,8 +520,36 @@ export interface NewlesterDto {
 }
 
 export interface ConfiguracaoDto {
-  value: number;
+  value: unknown;
   type: ConfigType;
+}
+
+export interface AdminConfigDto {
+  dashboard: {
+    cards: unknown[];
+    timeRanges: unknown[];
+    refreshIntervalMs: number;
+  };
+  messages: {
+    retention: { unreadDays: number };
+    actions: { reenviarPendentes: boolean };
+  };
+  inscricoes: {
+    qr: {
+      enabled: boolean;
+      autoDisableAfterActivity: boolean;
+      expiresAfterHours: number;
+    };
+  };
+  activities: {
+    types: {
+      id: string;
+      label: string;
+      color: string;
+      icon: string;
+    }[];
+  };
+  homeCarousel: CarouselItemDto[];
 }
 
 export interface CarouselItemDto {

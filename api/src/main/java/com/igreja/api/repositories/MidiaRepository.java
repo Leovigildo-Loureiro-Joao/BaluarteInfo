@@ -25,6 +25,7 @@ public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
                 m.id as id,
                 m.descricao as descricao,
                 m.titulo as titulo,
+                m.autor as autor,
                 m.url as url,
                 m.videoType as videoType,
                 (SELECT COUNT(v) FROM VistosModel v WHERE v.midia = m) as visualizacoes
@@ -48,6 +49,7 @@ public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
                 m.descricao as descricao,
                 m.imagem as imagem,
                 m.tempo as tempo,
+                m.autor as autor,
                 m.audioType as audioType,
                 m.url as url,
                 (SELECT COUNT(v) FROM VistosModel v WHERE v.midia = m) as visualizacoes
@@ -67,6 +69,7 @@ public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
                 m.descricao as descricao,
                 m.imagem as imagem,
                 m.tempo as tempo,
+                m.autor as autor,
                 m.type as type,
                 m.audioType as audioType,
                 m.videoType as videoType,
@@ -87,6 +90,7 @@ public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
                 m.descricao as descricao,
                 m.imagem as imagem,
                 m.tempo as tempo,
+                m.autor as autor,
                 m.type as type,
                 m.audioType as audioType,
                 m.videoType as videoType,

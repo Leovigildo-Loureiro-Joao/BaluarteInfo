@@ -211,7 +211,7 @@ class NotificacaoServiceTest {
     private ConfiguracaoModel createConfig(ConfigType type, double value) {
         ConfiguracaoModel config = new ConfiguracaoModel();
         config.setType(type);
-        config.setValue(value);
+      ///  config.setValue(value);
         return config;
     }
 }

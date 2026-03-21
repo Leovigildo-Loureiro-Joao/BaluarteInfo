@@ -191,6 +191,7 @@ public class ArtigoService{
    }
 
    public ArtigoDetailProjection detail(int id) {
+      Visto(id);
       return artigoRepository.findDetailById(id)
             .orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
    }

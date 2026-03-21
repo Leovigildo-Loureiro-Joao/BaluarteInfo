@@ -1,13 +1,12 @@
 package com.igreja.api.models;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import org.hibernate.validator.constraints.UniqueElements;
-
 import com.igreja.api.enums.ConfigType;
-import com.igreja.api.enums.NotificacaoType;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,6 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,7 +30,9 @@ public class ConfiguracaoModel {
     @Enumerated(EnumType.STRING)
     private ConfigType type;
 
-    private double value;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private JsonNode value;
 
     private LocalDateTime editado;
 

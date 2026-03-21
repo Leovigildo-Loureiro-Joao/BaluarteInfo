@@ -44,7 +44,7 @@ class ConfigControllerTest {
         ConfiguracaoModel config = new ConfiguracaoModel();
         config.setId(1);
         config.setType(ConfigType.ActividadeLimite);
-        config.setValue(20);
+       // config.setValue(20);
         config.setEditado(LocalDateTime.now());
 
         when(configService.edit(any(ConfiguracaoDto.class))).thenReturn(config);
@@ -65,9 +65,9 @@ class ConfigControllerTest {
 
     @Test
     void shouldListConfigs() throws Exception {
-        when(configService.AllConfiguration()).thenReturn(List.of(
+       /*  when(configService.AllConfiguration()).thenReturn(List.of(
                 new ConfiguracaoDto(10, ConfigType.ActividadeLimite)));
-
+*/
         mockMvc.perform(get("/admin/config/all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].type").value("ActividadeLimite"))

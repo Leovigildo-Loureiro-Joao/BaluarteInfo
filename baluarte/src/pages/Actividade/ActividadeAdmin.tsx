@@ -257,7 +257,7 @@ export const ActividadesPageAdmin = () => {
   const [selectedTipo, setSelectedTipo] = useState<ActividadeType | null>(null);
   const [selectedDuracao, setSelectedDuracao] = useState<DuracaoActividade | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [editingActividade, setEditingActividade] = useState<ActividadeSummary | undefined>();
+  const [editingActividade, setEditingActividade] = useState<ActividadeSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [actionError, setActionError] = useState("");

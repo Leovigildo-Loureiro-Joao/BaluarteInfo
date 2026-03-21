@@ -359,7 +359,7 @@ export const ArtigosPageAdmin = () => {
 
       <div className="container-custom relative z-10 py-8">
         {/* Header - simplificado */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
               Artigos
@@ -369,22 +369,22 @@ export const ArtigosPageAdmin = () => {
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex w-full flex-col sm:flex-row sm:flex-wrap gap-3 lg:w-auto">
             {/* Busca */}
-            <div className="relative">
+            <div className="relative w-full sm:flex-1 sm:min-w-[16rem] sm:max-w-[24rem] min-w-0">
               <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Buscar artigos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sm:w-80 pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                className="w-full min-w-0 pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
               />
             </div>
 
             <button
               onClick={handleRegenerateHtmlAll}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors whitespace-nowrap"
               title="Regerar HTML de todos os artigos"
             >
               <FiRefreshCw size={18} />
@@ -396,7 +396,7 @@ export const ArtigosPageAdmin = () => {
                 setEditingArtigo(undefined);
                 setShowModal(true);
               }}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors shadow-lg shadow-primary-500/20"
+              className="flex w-full sm:w-auto items-center justify-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors shadow-lg shadow-primary-500/20 whitespace-nowrap"
             >
               <FiPlus size={20} />
               Novo Artigo

@@ -11,7 +11,8 @@ import {
   FiTrash2,
   FiPlay,
   FiRefreshCw,
-  FiX
+  FiX,
+  FiUser
 } from "react-icons/fi";
 import {
   GiMicrophone,
@@ -45,6 +46,7 @@ export const tiposAudio: { value: AudioType; label: string; icon: any; color: st
 export interface Audio {
   id?: number;
   titulo: string;
+  autor?: string;
   descricao: string;
   tipo: AudioType;
   capa?: string;
@@ -55,6 +57,7 @@ export interface Audio {
 const mapToFormAudio = (audio: MidiaProjection): Audio => ({
   id: audio.id,
   titulo: audio.titulo,
+  autor: audio.autor,
   descricao: audio.descricao,
   tipo: audio.audioType || AudioType.Sermon,
   capa: audio.imagem,
@@ -170,6 +173,13 @@ const AudioCard = ({
           {audio.titulo}
         </h3>
 
+        {audio.autor && (
+          <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+            <FiUser size={12} />
+            {audio.autor}
+          </p>
+        )}
+
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{audio.descricao}</p>
 
         {/* Estatísticas */}
@@ -252,6 +262,7 @@ export const AudiosPage = () => {
     try {
       const formData = new FormData();
       formData.append("titulo", novoAudio.titulo);
+      if (novoAudio.autor?.trim()) formData.append("autor", novoAudio.autor.trim());
       formData.append("descricao", novoAudio.descricao);
       formData.append("type", MidiaType.Audio);
       formData.append("audioType", novoAudio.tipo);

@@ -161,7 +161,6 @@ export const ActividadesPage = () => {
           if (!active) return;
           setError("Não foi possível carregar as actividades.");
           setActividades([]);
-          setTotal(0);
         } finally {
           if (active) setLoading(false);
         }
@@ -400,7 +399,34 @@ export const ActividadesPage = () => {
         </AnimatePresence>
 
         {/* Resultados */}
-        {filteredActividades.length === 0 ? (
+        {error ? (
+          <motion.div
+            className="text-center py-20 bg-white rounded-2xl shadow"
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+          >
+            <FiCalendar className="text-6xl text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <button
+              onClick={clearFilters}
+              className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark"
+            >
+              Limpar filtros
+            </button>
+          </motion.div>
+        ) : loading ? (
+          <motion.div
+            className="text-center py-20 bg-white rounded-2xl shadow"
+            variants={fadeInUp}
+            initial="hidden"
+            animate="visible"
+          >
+            <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-500">Carregando actividades...</p>
+          </motion.div>
+        ) : filteredActividades.length === 0 ? (
           <motion.div
             className="text-center py-20 bg-white rounded-2xl shadow"
             variants={fadeInUp}

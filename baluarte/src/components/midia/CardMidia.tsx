@@ -1,6 +1,6 @@
 // src/components/midia/CardMidia.tsx
 import { Link } from "react-router-dom";
-import { FiPlay, FiHeadphones, FiEye } from "react-icons/fi";
+import { FiPlay, FiHeadphones, FiEye, FiUser } from "react-icons/fi";
 
 interface CardMidiaProps {
   midia: {
@@ -8,6 +8,7 @@ interface CardMidiaProps {
     titulo: string;
     descricao: string;
     imagem: string;
+    autor?: string;
     tipo: string;
     duracao: string;
     visualizacoes: number;
@@ -51,6 +52,13 @@ export const CardMidia = ({ midia }: CardMidiaProps) => {
         <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
           {midia.titulo}
         </h3>
+
+        {midia.autor && (
+          <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+            <FiUser size={14} />
+            {midia.autor}
+          </p>
+        )}
         
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
           {midia.descricao}

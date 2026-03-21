@@ -11,4 +11,5 @@ import java.util.List;
 public interface VistosRepository extends JpaRepository<VistosModel,Integer> {
     List<VistosModel> findByArtigo(ArtigoModel artigo);
     List<VistosModel> findByMidia(MidiaModel midia);
+    long countByMidia(MidiaModel midia);
 }

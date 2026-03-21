@@ -11,7 +11,8 @@ import {
   FiTrash2,
   FiPlay,
   FiRefreshCw,
-  FiX
+  FiX,
+  FiUser
 } from "react-icons/fi";
 import {
   GiMicrophone,
@@ -42,13 +43,16 @@ export const tiposVideo: { value: VideoType; label: string; icon: any; color: st
 ];
 
 export interface Video {
-  id?: number;
+  id?: string | number;
   titulo: string;
   descricao: string;
   tipo: VideoType;
   capa?: string;
   videoUrl?: string;
   tempo?: string;
+  data?:string;
+  autor?:string;
+  visualizacoes?:number
 }
 
 const resolveYoutubeId = (value: string) => {
@@ -76,6 +80,7 @@ const mapToFormVideo = (video: MidiaProjection): Video => ({
   titulo: video.titulo,
   descricao: video.descricao,
   tipo: video.videoType || VideoType.Sermon,
+  autor: video.autor,
   capa: video.imagem,
   videoUrl: video.url,
   tempo: video.tempo
@@ -170,6 +175,13 @@ const VideoCard = ({
           {video.titulo}
         </h3>
 
+        {video.autor && (
+          <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+            <FiUser size={12} />
+            {video.autor}
+          </p>
+        )}
+
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{video.descricao}</p>
 
         {/* Estatísticas */}
@@ -258,6 +270,7 @@ export const VideosPage = () => {
     try {
       const formData = new FormData();
       formData.append("titulo", novoVideo.titulo);
+      if (novoVideo.autor?.trim()) formData.append("autor", novoVideo.autor.trim());
       formData.append("descricao", novoVideo.descricao);
       formData.append("type", MidiaType.Video);
       formData.append("videoType", novoVideo.tipo);

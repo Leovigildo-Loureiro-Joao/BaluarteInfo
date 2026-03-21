@@ -1,6 +1,7 @@
 package com.igreja.api.services;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -27,8 +28,21 @@ public class CarouselItemService {
 
     @Transactional
     public List<CarouselItemDto> upsertAll(List<CarouselItemDto> dtos) {
+        List<Long> incomingIds = dtos == null ? List.of()
+                : dtos.stream().map(CarouselItemDto::id).filter(Objects::nonNull).toList();
+        List<Long> existingIds = repository.findAll().stream()
+                .map(CarouselItemModel::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        List<Long> toDelete = existingIds.stream()
+                .filter(id -> !incomingIds.contains(id))
+                .toList();
+        if (!toDelete.isEmpty()) {
+            repository.deleteAllByIdInBatch(toDelete);
+        }
+
         AtomicInteger index = new AtomicInteger(0);
-        List<CarouselItemModel> models = dtos.stream()
+        List<CarouselItemModel> models = (dtos == null ? List.<CarouselItemDto>of() : dtos).stream()
                 .map(dto -> {
                     CarouselItemModel model = dto.id() != null ? repository.findById(dto.id()).orElse(new CarouselItemModel())
                             : new CarouselItemModel();

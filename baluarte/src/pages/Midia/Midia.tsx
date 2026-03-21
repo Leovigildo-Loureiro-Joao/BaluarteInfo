@@ -11,8 +11,10 @@ import {
   FiX,
   FiClock,
   FiEye,
-  FiCalendar,
-  FiUser
+  FiUser,
+  FiChevronLeft,
+  FiChevronRight,
+  FiCalendar
 } from "react-icons/fi";
 import { 
   GiMicrophone,
@@ -27,6 +29,9 @@ import {
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
 import { fadeInUp, staggerContainer } from "../../utils/animation";
+import { apiFetch } from "../../utils/api";
+import { MidiaProjection, PageResponse } from "../../types/api";
+import { ImageViewerModal } from "../../components/midia/ImageViewerModal";
 
 // Tipos baseados nos seus Enums
 const midiaTypes = [
@@ -56,146 +61,88 @@ const videoTypes = [
   { value: "INTERVIEW", label: "Entrevistas", icon: GiMegaphone, color: "bg-indigo-500" },
 ];
 
-// Dados mockados
-const midiaMock = [
-  {
-    id: 1,
-    titulo: "Culto de Domingo - A Vitória é Certa",
-    descricao: "Mensagem poderosa sobre perseverança e fé inabalável",
-    imagem: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=800&q=80",
-    tipo: "VIDEO",
-    videoType: "SERMON",
-    duracao: "45:30",
-    visualizacoes: 1234,
-    data: "2024-01-15",
-    pregador: "Pr. Antônio Silva",
-    qualidade: "1080p"
-  },
-  {
-    id: 2,
-    titulo: "Podcast: Juventude e Fé",
-    descricao: "Conversa sobre desafios da juventude cristã no século XXI",
-    imagem: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=800&q=80",
-    tipo: "AUDIO",
-    audioType: "PODCAST",
-    duracao: "32:15",
-    visualizacoes: 856,
-    data: "2024-01-14",
-    apresentador: "Pr. João Santos"
-  },
-  {
-    id: 3,
-    titulo: "Estudo Bíblico - Romanos 8",
-    descricao: "Estudo aprofundado do capítulo 8 de Romanos",
-    imagem: "https://images.unsplash.com/photo-1503593245033-a040be3f3c82?auto=format&fit=crop&w=800&q=80",
-    tipo: "VIDEO",
-    videoType: "STUDY",
-    duracao: "58:20",
-    visualizacoes: 2341,
-    data: "2024-01-13",
-    pregador: "Pb. Marcos Oliveira",
-    qualidade: "720p"
-  },
-  {
-    id: 4,
-    titulo: "Série: Os Atributos de Deus",
-    descricao: "Aula 1 - A Soberania de Deus",
-    imagem: "https://images.unsplash.com/photo-1496568816309-51d7c20e3b21?auto=format&fit=crop&w=800&q=80",
-    tipo: "AUDIO",
-    audioType: "STUDY",
-    duracao: "45:10",
-    visualizacoes: 567,
-    data: "2024-01-12",
-    apresentador: "Pr. Antônio Silva"
-  },
-  {
-    id: 5,
-    titulo: "Momentos do Culto - Louvor",
-    descricao: "Melhores momentos do louvor da igreja",
-    imagem: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80",
-    tipo: "IMAGE",
-    visualizacoes: 3456,
-    data: "2024-01-11",
-    local: "Templo Central"
-  },
-  {
-    id: 6,
-    titulo: "Testemunho: Libertação das Drogas",
-    descricao: "Testemunho poderoso de transformação",
-    imagem: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
-    tipo: "AUDIO",
-    audioType: "TESTIMONY",
-    duracao: "12:30",
-    visualizacoes: 987,
-    data: "2024-01-10",
-    apresentador: "Irmão Carlos"
-  },
-  {
-    id: 7,
-    titulo: "Música: Grandioso És Tu",
-    descricao: "Hino clássico da fé cristã",
-    imagem: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=800&q=80",
-    tipo: "AUDIO",
-    audioType: "MUSIC",
-    duracao: "5:20",
-    visualizacoes: 2156,
-    data: "2024-01-09",
-    artista: "Ministério Baluarte"
-  },
-  {
-    id: 8,
-    titulo: "Oração pela Manhã",
-    descricao: "Momento de oração e intercessão",
-    imagem: "https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=800&q=80",
-    tipo: "AUDIO",
-    audioType: "PRAYER",
-    duracao: "20:00",
-    visualizacoes: 654,
-    data: "2024-01-08",
-    lider: "Pra. Maria"
-  }
-];
-
 export const MidiaPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedAudioType, setSelectedAudioType] = useState<string | null>(null);
   const [selectedVideoType, setSelectedVideoType] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [midia, setMidia] = useState(midiaMock);
+  const [midia, setMidia] = useState<MidiaProjection[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [selectedImage, setSelectedImage] = useState<MidiaProjection | null>(null);
 
-  // Filtrar mídia
   useEffect(() => {
-    let filtered = midiaMock;
-
-    if (searchTerm) {
-      filtered = filtered.filter(item => 
-        item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.descricao.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedType) {
-      filtered = filtered.filter(item => item.tipo === selectedType);
-    }
-
-    if (selectedVideoType) {
-      filtered = filtered.filter(item => item.videoType === selectedVideoType);
-    }
-
-    if (selectedAudioType) {
-      filtered = filtered.filter(item => item.audioType === selectedAudioType);
-    }
-
-    setMidia(filtered);
+    setPage(0);
   }, [searchTerm, selectedType, selectedAudioType, selectedVideoType]);
+
+  useEffect(() => {
+    if (selectedType === "VIDEO") {
+      setSelectedAudioType(null);
+    } else if (selectedType === "AUDIO") {
+      setSelectedVideoType(null);
+    } else if (selectedType === "IMAGE") {
+      setSelectedAudioType(null);
+      setSelectedVideoType(null);
+    }
+  }, [selectedType]);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+
+    const timeout = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("size", "12");
+
+        if (selectedType) params.set("type", selectedType);
+        if (selectedAudioType) params.set("audioType", selectedAudioType);
+        if (selectedVideoType) params.set("videoType", selectedVideoType);
+        if (searchTerm.trim()) params.set("q", searchTerm.trim());
+
+        const response = await apiFetch(`/user/midia?${params.toString()}`);
+        if (!response.ok) throw new Error("Falha ao carregar midias.");
+
+        const payload = (await response.json()) as PageResponse<MidiaProjection>;
+        if (!active) return;
+
+        setMidia(Array.isArray(payload.content) ? payload.content : []);
+        setTotal(payload.totalElements ?? payload.content?.length ?? 0);
+        setTotalPages(payload.totalPages ?? 0);
+        setLoadError("");
+      } catch (err) {
+        if (!active) return;
+        setLoadError("Não foi possível carregar as mídias.");
+        setMidia([]);
+        setTotal(0);
+        setTotalPages(0);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [searchTerm, selectedType, selectedAudioType, selectedVideoType, page]);
 
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedType(null);
     setSelectedAudioType(null);
     setSelectedVideoType(null);
+    setPage(0);
   };
+
+  const midiaTypeCount = (type: string) => midia.filter((m) => m.type === type).length;
+  const audioTypeCount = (type: string) => midia.filter((m) => m.audioType === type).length;
+  const videoTypeCount = (type: string) => midia.filter((m) => m.videoType === type).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -293,7 +240,7 @@ export const MidiaPage = () => {
                         </div>
                         <span className="flex-1 text-left">{type.label}</span>
                         <span className="text-xs opacity-75">
-                          {midiaMock.filter(m => m.tipo === type.value).length}
+                          {midiaTypeCount(type.value)}
                         </span>
                       </button>
                     );
@@ -308,7 +255,7 @@ export const MidiaPage = () => {
                   <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
                     {audioTypes.map((type) => {
                       const Icon = type.icon;
-                      const count = midiaMock.filter(m => m.audioType === type.value).length;
+                      const count = audioTypeCount(type.value);
                       
                       return (
                         <button
@@ -338,7 +285,7 @@ export const MidiaPage = () => {
                   <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
                     {videoTypes.map((type) => {
                       const Icon = type.icon;
-                      const count = midiaMock.filter(m => m.videoType === type.value).length;
+                      const count = videoTypeCount(type.value);
 
                       return (
                         <button
@@ -467,10 +414,30 @@ export const MidiaPage = () => {
           >
             {/* Contador de resultados */}
             <div className="mb-4 text-gray-600">
-              {midia.length} {midia.length === 1 ? 'item encontrado' : 'itens encontrados'}
+              {loading ? "A carregar..." : `${total} ${total === 1 ? "item encontrado" : "itens encontrados"}`}
             </div>
 
-            {midia.length === 0 ? (
+            {loadError ? (
+              <motion.div
+                className="text-center py-20 bg-white rounded-2xl shadow"
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <h3 className="text-xl font-bold text-gray-700 mb-2">Erro ao carregar</h3>
+                <p className="text-gray-500 mb-4">{loadError}</p>
+              </motion.div>
+            ) : loading ? (
+              <motion.div
+                className="text-center py-20 bg-white rounded-2xl shadow"
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+              >
+                <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-gray-500">A carregar mídias...</p>
+              </motion.div>
+            ) : midia.length === 0 ? (
               <motion.div
                 className="text-center py-20 bg-white rounded-2xl shadow"
                 variants={fadeInUp}
@@ -490,11 +457,82 @@ export const MidiaPage = () => {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {midia.map((item) => {
-                  const typeInfo = midiaTypes.find(t => t.value === item.tipo);
+                  const typeInfo = midiaTypes.find(t => t.value === item.type);
                   const audioTypeInfo = item.audioType ? audioTypes.find(t => t.value === item.audioType) : null;
                   const videoTypeInfo = item.videoType ? videoTypes.find(t => t.value === item.videoType) : null;
-                  const categoryInfo = item.tipo === "VIDEO" ? videoTypeInfo : item.tipo === "AUDIO" ? audioTypeInfo : null;
+                  const categoryInfo = item.type === "VIDEO" ? videoTypeInfo : item.type === "AUDIO" ? audioTypeInfo : null;
                   const Icon = typeInfo?.icon || FiPlay;
+
+                  const CardContent = (
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
+                      {/* Thumbnail */}
+                      <div className="relative aspect-video overflow-hidden">
+                        <img
+                          src={item.imagem || item.url || "https://via.placeholder.com/800x450?text=Midia"}
+                          alt={item.titulo}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+
+                        {/* Overlay com ícone */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
+                            <Icon className="text-white text-2xl" />
+                          </div>
+                        </div>
+
+                        {/* Badge de tipo */}
+                        <div className={`absolute top-3 left-3 ${typeInfo?.color} text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1`}>
+                          <Icon size={12} />
+                          {typeInfo?.label}
+                        </div>
+
+                        {/* Badge de duração (para vídeo/áudio) */}
+                        {item.tempo && (
+                          <div className="absolute bottom-3 right-3 bg-black/80 text-white px-2 py-1 rounded-lg text-xs flex items-center gap-1">
+                            <FiClock size={12} />
+                            {item.tempo}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-4">
+                        {categoryInfo && (
+                          <div className="flex items-center gap-1 mb-2">
+                            <div className={`w-5 h-5 ${categoryInfo.color} rounded flex items-center justify-center text-white`}>
+                              <categoryInfo.icon size={12} />
+                            </div>
+                            <span className="text-xs text-gray-500">{categoryInfo.label}</span>
+                          </div>
+                        )}
+
+                        <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-2">
+                          {item.titulo}
+                        </h3>
+
+                        {item.autor && (
+                          <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                            <FiUser size={12} />
+                            {item.autor}
+                          </p>
+                        )}
+
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                          {item.descricao}
+                        </p>
+
+                        {/* Metadados */}
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <div className="flex items-center gap-3">
+                            <span className="flex items-center gap-1">
+                              <FiEye size={12} />
+                              {item.visualizacoes ?? 0}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
                   
                   return (
                     <motion.div
@@ -502,94 +540,62 @@ export const MidiaPage = () => {
                       variants={fadeInUp}
                       className="group"
                     >
-                      <Link to={`/midia/${item.id}`}>
-                        <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
-                          {/* Thumbnail */}
-                          <div className="relative aspect-video overflow-hidden">
-                            <img
-                              src={item.imagem}
-                              alt={item.titulo}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            />
-                            
-                            {/* Overlay com ícone */}
-                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-                                <Icon className="text-white text-2xl" />
-                              </div>
-                            </div>
-
-                            {/* Badge de tipo */}
-                            <div className={`absolute top-3 left-3 ${typeInfo?.color} text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1`}>
-                              <Icon size={12} />
-                              {typeInfo?.label}
-                            </div>
-
-                            {/* Badge de duração (para vídeo/áudio) */}
-                            {item.duracao && (
-                              <div className="absolute bottom-3 right-3 bg-black/80 text-white px-2 py-1 rounded-lg text-xs flex items-center gap-1">
-                                <FiClock size={12} />
-                                {item.duracao}
-                              </div>
-                            )}
-
-                            {/* Badge de qualidade (para vídeo) */}
-                            {item.qualidade && (
-                              <div className="absolute bottom-3 left-3 bg-black/80 text-white px-2 py-1 rounded-lg text-xs">
-                                {item.qualidade}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="p-4">
-                            {categoryInfo && (
-                              <div className="flex items-center gap-1 mb-2">
-                                <div className={`w-5 h-5 ${categoryInfo.color} rounded flex items-center justify-center text-white`}>
-                                  <categoryInfo.icon size={12} />
-                                </div>
-                                <span className="text-xs text-gray-500">{categoryInfo.label}</span>
-                              </div>
-                            )}
-
-                            <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors line-clamp-2">
-                              {item.titulo}
-                            </h3>
-                            
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                              {item.descricao}
-                            </p>
-
-                            {/* Metadados */}
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <div className="flex items-center gap-3">
-                                <span className="flex items-center gap-1">
-                                  <FiEye size={12} />
-                                  {item.visualizacoes}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <FiCalendar size={12} />
-                                  {new Date(item.data).toLocaleDateString('pt-BR')}
-                                </span>
-                              </div>
-                              {item.pregador && (
-                                <span className="flex items-center gap-1">
-                                  <FiUser size={12} />
-                                  {item.pregador.split(' ')[0]}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
+                      {item.type === "IMAGE" ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedImage(item)}
+                          className="text-left w-full"
+                        >
+                          {CardContent}
+                        </button>
+                      ) : (
+                        <Link to={`/midia/${item.id}`}>
+                          {CardContent}
+                        </Link>
+                      )}
                     </motion.div>
                   );
                 })}
               </div>
             )}
+
+            {!loading && !loadError && totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page <= 0}
+                  className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <FiChevronLeft />
+                  Anterior
+                </button>
+                <span className="text-sm text-gray-600">
+                  Página {page + 1} de {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => (totalPages ? Math.min(totalPages - 1, p + 1) : p + 1))}
+                  disabled={totalPages > 0 ? page >= totalPages - 1 : midia.length < 12}
+                  className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  Próxima
+                  <FiChevronRight />
+                </button>
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
+
+      <AnimatePresence>
+        {selectedImage && (
+          <ImageViewerModal
+            midia={selectedImage}
+            onClose={() => setSelectedImage(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

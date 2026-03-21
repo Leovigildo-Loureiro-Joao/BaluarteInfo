@@ -50,8 +50,13 @@ public class MidiaModel {
     @NotBlank
     private String descricao;
 
+
     @NotBlank
     private String titulo;
+
+    /** Autor / pregador / responsável pela mídia (opcional para compatibilidade). */
+    @Column(nullable = true)
+    private String autor;
 
     @Column(nullable = true)
     private String tempo;

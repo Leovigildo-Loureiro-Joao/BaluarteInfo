@@ -1,5 +1,5 @@
 // src/pages/Actividades/ActividadeDetails.tsx
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { 
@@ -36,211 +36,31 @@ import {
   GiPhotoCamera
 } from "react-icons/gi";
 import { LiaBibleSolid, LiaChairSolid } from "react-icons/lia";
+import { apiFetch } from "../../utils/api";
+import {
+  ActividadeSummary,
+  ActividadeType,
+  ComentarioResult,
+  DuracaoActividade,
+  MidiaSimple,
+  MidiaType,
+  PageResponse,
+  PublicoAlvoType,
+} from "../../types/api";
 
-// Tipos (reutilizar os mesmos)
-enum TipoActividade {
-  Culto = 'Culto',
-  Evento = 'Evento',
-  Escola = 'Escola',
-  Jovens = 'Jovens',
-  Familia = 'Família',
-  Louvor = 'Louvor',
-  Oracao = 'Oração'
-}
+type Actividade = ActividadeSummary;
 
-enum PublicoActividade {
-  Todos = 'Todos',
-  Jovens = 'Jovens',
-  Adultos = 'Adultos',
-  Crianças = 'Crianças',
-  Idosos = 'Idosos',
-  Mulheres = 'Mulheres',
-  Homens = 'Homens',
-  Casais = 'Casais'
-}
+const isYoutubeId = (value: string) => /^[\w-]{11}$/.test(value);
 
-enum DuracaoActividade {
-  Mensal = 'Mensal',
-  Anual = 'Anual',
-  Projecto = 'Projecto'
-}
-
-// Interface do Trailler
-interface Trailler {
-  id: string;
-  videoId: string; // ID do vídeo existente
-  titulo: string;
-  thumbnail: string;
-  duracao: string;
-}
-
-// Interface da Imagem (Galeria)
-interface ImagemGaleria {
-  id: string;
-  url: string;
-  titulo: string;
-  data: string;
-  tamanho: string;
-}
-
-// Interface do Comentário
-interface Comentario {
-  id: string;
-  usuarioId: string;
-  usuarioNome: string;
-  usuarioAvatar: string;
-  texto: string;
-  data: string;
-  likes: number;
-  isAdmin?: boolean;
-  isAutor?: boolean;
-  respostas?: Comentario[];
-}
-
-// Interface da Actividade (completa)
-interface Actividade {
-  id: string;
-  titulo: string;
-  descricao: string;
-  tema: string;
-  tipo: TipoActividade;
-  publico: PublicoActividade;
-  duracao: DuracaoActividade;
-  dataInicio: string;
-  dataFim?: string;
-  horario: string;
-  endereco: string;
-  organizador: string;
-  contato: string;
-  email?: string;
-  imagem: string;
-  visualizacoes: number;
-  inscritos: number;
-  capacidade?: number;
-  tags: string[];
-  traillers?: Trailler[];
-  galeria?: ImagemGaleria[];
-  comentarios: Comentario[];
-}
-
-// Dados mockados
-const actividadeMock: Actividade = {
-  id: '1',
-  titulo: "Conferência de Jovens",
-  descricao: "Três dias de louvor, palavra e comunhão para a juventude que busca um encontro genuíno com Deus. Teremos preletores convidados, banda de louvor, momentos de oração e muito mais.",
-  tema: "Fogo e Unção",
-  tipo: TipoActividade.Jovens,
-  publico: PublicoActividade.Jovens,
-  duracao: DuracaoActividade.Anual,
-  dataInicio: "2024-03-22",
-  dataFim: "2024-03-24",
-  horario: "20:00",
-  endereco: "Igreja Baluarte - Auditório Principal, Rua da Igreja, 123 - Centro",
-  organizador: "Pr. João Santos",
-  contato: "(11) 98765-4321",
-  email: "jovens@igrejabaluarte.com",
-  imagem: "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80",
-  visualizacoes: 2341,
-  inscritos: 156,
-  capacidade: 300,
-  tags: ["jovens", "conferência", "avivamento", "fogo"],
-  traillers: [
-    {
-      id: 't1',
-      videoId: 'v1',
-      titulo: 'Trailler Oficial - Conferência de Jovens 2024',
-      thumbnail: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=800&q=80',
-      duracao: '1:30'
-    }
-  ],
-  galeria: [
-    {
-      id: 'g1',
-      url: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Palco montado para o evento',
-      data: '2024-03-15',
-      tamanho: '2.3 MB'
-    },
-    {
-      id: 'g2',
-      url: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Equipe de louvor ensaiando',
-      data: '2024-03-14',
-      tamanho: '1.8 MB'
-    },
-    {
-      id: 'g3',
-      url: 'https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Momento de oração',
-      data: '2024-03-13',
-      tamanho: '2.1 MB'
-    }
-  ],
-  comentarios: [
-    {
-      id: 'c1',
-      usuarioId: 'user1',
-      usuarioNome: 'João Silva',
-      usuarioAvatar: 'https://i.pravatar.cc/150?img=1',
-      texto: 'Mal posso esperar por esse evento! Deus vai fazer algo extraordinário.',
-      data: '2024-03-10T14:30:00',
-      likes: 12,
-      respostas: [
-        {
-          id: 'c1r1',
-          usuarioId: 'admin1',
-          usuarioNome: 'Pr. João Santos',
-          usuarioAvatar: 'https://i.pravatar.cc/150?img=2',
-          texto: 'Amém, irmão! Será um tempo especial. Estaremos orando por todos.',
-          data: '2024-03-10T15:45:00',
-          likes: 5,
-          isAdmin: true
-        }
-      ]
-    },
-    {
-      id: 'c2',
-      usuarioId: 'user2',
-      usuarioNome: 'Maria Oliveira',
-      usuarioAvatar: 'https://i.pravatar.cc/150?img=3',
-      texto: 'Vou levar minha célula inteira! Deus tem preparado algo grande.',
-      data: '2024-03-09T09:15:00',
-      likes: 8,
-      isAutor: true
-    },
-    {
-      id: 'c3',
-      usuarioId: 'user3',
-      usuarioNome: 'Pedro Santos',
-      usuarioAvatar: 'https://i.pravatar.cc/150?img=4',
-      texto: 'Alguém sabe se vai ter tradução em libras?',
-      data: '2024-03-08T22:10:00',
-      likes: 3
-    }
-  ]
+const getYoutubeThumb = (idOrUrl: string) => {
+  if (isYoutubeId(idOrUrl)) return `https://img.youtube.com/vi/${idOrUrl}/hqdefault.jpg`;
+  return "";
 };
 
-// Mock de vídeos existentes (para selecionar trailler)
-const videosExistentes = [
-  {
-    id: 'v1',
-    titulo: 'Culto de Domingo - A Vitória é Certa',
-    thumbnail: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=800&q=80',
-    duracao: '45:30'
-  },
-  {
-    id: 'v2',
-    titulo: 'Estudo Bíblico - Romanos 8',
-    thumbnail: 'https://images.unsplash.com/photo-1503593245033-a040be3f3c82?auto=format&fit=crop&w=800&q=80',
-    duracao: '58:20'
-  },
-  {
-    id: 'v3',
-    titulo: 'Podcast: Juventude e Fé',
-    thumbnail: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=800&q=80',
-    duracao: '32:15'
-  }
-];
+const getTrailerHref = (idOrUrl: string) => {
+  if (isYoutubeId(idOrUrl)) return `https://www.youtube.com/watch?v=${idOrUrl}`;
+  return idOrUrl;
+};
 
 // Componente de Seleção de Trailler
 const ModalSelecionarTrailler = ({ 
@@ -248,8 +68,12 @@ const ModalSelecionarTrailler = ({
   onSelect 
 }: { 
   onClose: () => void; 
-  onSelect: (video: any) => void;
+  onSelect: (value: { titulo: string; url: string }) => void;
 }) => {
+  const [titulo, setTitulo] = useState("");
+  const [url, setUrl] = useState("");
+  const canSubmit = titulo.trim().length > 0 && url.trim().length > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -269,32 +93,52 @@ const ModalSelecionarTrailler = ({
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold flex items-center gap-2">
               <GiVideoCamera className="text-primary-500" />
-              Selecionar Vídeo para Trailler
+              Adicionar Trailler
             </h3>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
               <FiX size={20} />
             </button>
           </div>
 
-          <div className="space-y-3">
-            {videosExistentes.map((video) => (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+              <input
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                placeholder="Ex: Culto de Domingo"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Link do vídeo (YouTube) ou URL</label>
+              <input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+              <p className="mt-1 text-xs text-gray-500">Se for YouTube, o backend extrai e guarda o ID.</p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
               <button
-                key={video.id}
-                onClick={() => onSelect(video)}
-                className="w-full flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors text-left border border-gray-200"
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
               >
-                <img
-                  src={video.thumbnail}
-                  alt={video.titulo}
-                  className="w-20 h-12 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h4 className="font-medium">{video.titulo}</h4>
-                  <p className="text-sm text-gray-500">Duração: {video.duracao}</p>
-                </div>
-                <FiPlay className="text-primary-500" />
+                Cancelar
               </button>
-            ))}
+              <button
+                type="button"
+                disabled={!canSubmit}
+                onClick={() => onSelect({ titulo: titulo.trim(), url: url.trim() })}
+                className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Adicionar
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -302,168 +146,60 @@ const ModalSelecionarTrailler = ({
   );
 };
 
-// Componente de Comentário
-const ComentarioItem = ({ 
-  comentario, 
-  nivel = 0,
-  onResponder,
-  onExcluir,
-  usuarioAtual = 'user2' // Mock: usuário atual
-}: { 
-  comentario: Comentario; 
-  nivel?: number;
-  onResponder: (comentarioId: string, texto: string) => void;
-  onExcluir: (comentarioId: string) => void;
-  usuarioAtual?: string;
+const ComentarioItem = ({
+  comentario,
+  onToggleAnalise,
+}: {
+  comentario: ComentarioResult;
+  onToggleAnalise: (id: number, analiseAtual: boolean) => void;
 }) => {
-  const [mostrarResposta, setMostrarResposta] = useState(false);
-  const [textoResposta, setTextoResposta] = useState('');
-  const [mostrarOpcoes, setMostrarOpcoes] = useState(false);
-
-  const handleResponder = () => {
-    if (textoResposta.trim()) {
-      onResponder(comentario.id, textoResposta);
-      setTextoResposta('');
-      setMostrarResposta(false);
-    }
-  };
-
-  const podeExcluir = usuarioAtual === comentario.usuarioId || comentario.isAdmin;
-
+  const data = comentario.dataPublicacao ? new Date(comentario.dataPublicacao) : null;
   return (
-    <div className={`${nivel > 0 ? 'ml-12' : ''}`}>
-      <div className="flex gap-3 p-4 bg-gray-50 rounded-xl">
-        <img
-          src={comentario.usuarioAvatar}
-          alt={comentario.usuarioNome}
-          className="w-10 h-10 rounded-full"
-        />
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-sm">{comentario.usuarioNome}</h4>
-              {comentario.isAdmin && (
-                <span className="bg-primary-100 text-primary-600 text-xs px-2 py-0.5 rounded-full">
-                  Admin
-                </span>
-              )}
-              {comentario.isAutor && (
-                <span className="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded-full">
-                  Autor
-                </span>
-              )}
-              <span className="text-xs text-gray-500">
-                {new Date(comentario.data).toLocaleDateString('pt-BR')} às {' '}
-                {new Date(comentario.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+    <div className="flex gap-3 p-4 bg-gray-50 rounded-xl">
+      <img
+        src={comentario.imagem}
+        alt={comentario.name}
+        className="w-10 h-10 rounded-full"
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-semibold text-sm truncate">{comentario.name}</h4>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full ${
+                  comentario.analise ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {comentario.analise ? "Analisado" : "Em análise"}
               </span>
+              {data && (
+                <span className="text-xs text-gray-500">
+                  {data.toLocaleDateString("pt-BR")} às{" "}
+                  {data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              )}
             </div>
-            
-            <div className="relative">
-              <button
-                onClick={() => setMostrarOpcoes(!mostrarOpcoes)}
-                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
-              >
-                <FiMoreVertical size={16} className="text-gray-500" />
-              </button>
-              
-              <AnimatePresence>
-                {mostrarOpcoes && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 top-8 bg-white rounded-lg shadow-xl border border-gray-200 py-1 w-32 z-10"
-                  >
-                    {podeExcluir && (
-                      <button
-                        onClick={() => {
-                          onExcluir(comentario.id);
-                          setMostrarOpcoes(false);
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                      >
-                        <FiTrash2 size={14} />
-                        Excluir
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setMostrarOpcoes(false)}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <FiFlag size={14} />
-                      Reportar
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <p className="text-gray-700 text-sm mt-2 whitespace-pre-line break-words">
+              {comentario.descricao}
+            </p>
           </div>
 
-          <p className="text-gray-700 text-sm mb-2">{comentario.texto}</p>
-
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1 text-xs text-gray-500 hover:text-primary-500 transition-colors">
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1 text-xs text-gray-500">
               <FiHeart size={14} />
-              {comentario.likes}
-            </button>
+              {comentario.likes ?? 0}
+            </div>
             <button
-              onClick={() => setMostrarResposta(!mostrarResposta)}
-              className="text-xs text-gray-500 hover:text-primary-500 transition-colors"
+              type="button"
+              onClick={() => onToggleAnalise(comentario.id, comentario.analise)}
+              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50"
             >
-              Responder
+              {comentario.analise ? "Marcar pendente" : "Marcar analisado"}
             </button>
           </div>
-
-          {/* Resposta inline */}
-          <AnimatePresence>
-            {mostrarResposta && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mt-3 flex gap-2"
-              >
-                <input
-                  type="text"
-                  value={textoResposta}
-                  onChange={(e) => setTextoResposta(e.target.value)}
-                  placeholder="Escreva sua resposta..."
-                  className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                  autoFocus
-                />
-                <button
-                  onClick={handleResponder}
-                  className="px-3 py-2 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600"
-                >
-                  Enviar
-                </button>
-                <button
-                  onClick={() => setMostrarResposta(false)}
-                  className="px-3 py-2 bg-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-300"
-                >
-                  <FiX size={16} />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
-
-      {/* Respostas existentes */}
-      {comentario.respostas && comentario.respostas.length > 0 && (
-        <div className="mt-3 space-y-3">
-          {comentario.respostas.map((resposta) => (
-            <ComentarioItem
-              key={resposta.id}
-              comentario={resposta}
-              nivel={nivel + 1}
-              onResponder={onResponder}
-              onExcluir={onExcluir}
-              usuarioAtual={usuarioAtual}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -475,24 +211,36 @@ const GaleriaActividade = ({
   onRemover,
   onDownload
 }: { 
-  imagens: ImagemGaleria[];
-  onAdicionar: () => void;
-  onRemover: (id: string) => void;
-  onDownload: (imagem: ImagemGaleria) => void;
+  imagens: MidiaSimple[];
+  onAdicionar: (file: File) => void;
+  onRemover: (id: number) => void;
+  onDownload: (imagem: MidiaSimple) => void;
 }) => {
-  const [imagemSelecionada, setImagemSelecionada] = useState<ImagemGaleria | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [imagemSelecionada, setImagemSelecionada] = useState<MidiaSimple | null>(null);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold">Galeria de Imagens</h3>
         <button
-          onClick={onAdicionar}
+          onClick={() => inputRef.current?.click()}
           className="flex items-center gap-2 px-3 py-1.5 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600"
         >
           <FiPlus size={16} />
           Adicionar Imagem
         </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) onAdicionar(file);
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -515,9 +263,7 @@ const GaleriaActividade = ({
               </button>
               <button
                 onClick={() => {
-                  if (window.confirm('Remover esta imagem da galeria?')) {
-                    onRemover(img.id);
-                  }
+                  onRemover(img.id);
                 }}
                 className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
                 title="Remover"
@@ -553,9 +299,6 @@ const GaleriaActividade = ({
               />
               <div className="text-center text-white mt-4">
                 <p className="font-medium">{imagemSelecionada.titulo}</p>
-                <p className="text-sm text-gray-400">
-                  {new Date(imagemSelecionada.data).toLocaleDateString('pt-BR')} • {imagemSelecionada.tamanho}
-                </p>
               </div>
               <button
                 onClick={() => setImagemSelecionada(null)}
@@ -575,154 +318,177 @@ const GaleriaActividade = ({
 export const ActividadeDetails = () => {
   const { id } = useParams();
   const [actividade, setActividade] = useState<Actividade | null>(null);
+  const [comentarios, setComentarios] = useState<ComentarioResult[]>([]);
+  const [traillers, setTraillers] = useState<MidiaSimple[]>([]);
+  const [galeria, setGaleria] = useState<MidiaSimple[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [activeTab, setActiveTab] = useState<'info' | 'comentarios' | 'galeria'>('info');
   const [showTraillerModal, setShowTraillerModal] = useState(false);
-  const [novoComentario, setNovoComentario] = useState('');
+  const actividadeId = Number(id);
 
   useEffect(() => {
-    // Simular carregamento
-    setTimeout(() => {
-      setActividade(actividadeMock);
-      setLoading(false);
-    }, 500);
-  }, [id]);
+    let active = true;
 
-  const handleAdicionarTrailler = (video: any) => {
-    if (!actividade) return;
-    
-    const novoTrailler: Trailler = {
-      id: `t${Date.now()}`,
-      videoId: video.id,
-      titulo: video.titulo,
-      thumbnail: video.thumbnail,
-      duracao: video.duracao
+    if (!Number.isFinite(actividadeId)) {
+      setLoadError("Actividade inválida.");
+      setLoading(false);
+      return;
+    }
+
+    const loadAll = async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const [actividadeRes, comentariosRes, galeriaRes, traillerRes] = await Promise.all([
+          apiFetch(`/user/actividade/${actividadeId}`),
+          apiFetch(`/user/actividade/${actividadeId}/comentarios`),
+          apiFetch(`/user/actividade/galeria/${actividadeId}?page=0&size=50`),
+          apiFetch(`/user/actividade/trailler/${actividadeId}?page=0&size=50`),
+        ]);
+
+        if (!actividadeRes.ok) throw new Error("Falha ao buscar a actividade.");
+
+        const actividadePayload = (await actividadeRes.json()) as Actividade;
+        const comentariosPayload = comentariosRes.ok
+          ? ((await comentariosRes.json()) as ComentarioResult[])
+          : [];
+        const galeriaPayload = galeriaRes.ok
+          ? ((await galeriaRes.json()) as PageResponse<MidiaSimple>)
+          : ({ content: [] } as any);
+        const traillerPayload = traillerRes.ok
+          ? ((await traillerRes.json()) as PageResponse<MidiaSimple>)
+          : ({ content: [] } as any);
+
+        if (!active) return;
+        setActividade(actividadePayload);
+        setComentarios(Array.isArray(comentariosPayload) ? comentariosPayload : []);
+        setGaleria(Array.isArray(galeriaPayload?.content) ? galeriaPayload.content : []);
+        setTraillers(Array.isArray(traillerPayload?.content) ? traillerPayload.content : []);
+      } catch (err) {
+        if (!active) return;
+        setLoadError("Não foi possível carregar a actividade.");
+        setActividade(null);
+        setComentarios([]);
+        setGaleria([]);
+        setTraillers([]);
+      } finally {
+        if (active) setLoading(false);
+      }
     };
 
-    setActividade({
-      ...actividade,
-      traillers: [...(actividade.traillers || []), novoTrailler]
-    });
-    setShowTraillerModal(false);
+    loadAll();
+    return () => {
+      active = false;
+    };
+  }, [actividadeId]);
+
+  const reloadGaleria = async () => {
+    if (!Number.isFinite(actividadeId)) return;
+    const response = await apiFetch(`/user/actividade/galeria/${actividadeId}?page=0&size=50`);
+    if (!response.ok) return;
+    const payload = (await response.json()) as PageResponse<MidiaSimple>;
+    setGaleria(Array.isArray(payload?.content) ? payload.content : []);
   };
 
-  const handleRemoverTrailler = (traillerId: string) => {
-    if (!actividade) return;
-    
-    if (window.confirm('Remover este trailler?')) {
-      setActividade({
-        ...actividade,
-        traillers: actividade.traillers?.filter(t => t.id !== traillerId)
+  const reloadTraillers = async () => {
+    if (!Number.isFinite(actividadeId)) return;
+    const response = await apiFetch(`/user/actividade/trailler/${actividadeId}?page=0&size=50`);
+    if (!response.ok) return;
+    const payload = (await response.json()) as PageResponse<MidiaSimple>;
+    setTraillers(Array.isArray(payload?.content) ? payload.content : []);
+  };
+
+  const reloadComentarios = async () => {
+    if (!Number.isFinite(actividadeId)) return;
+    const response = await apiFetch(`/user/actividade/${actividadeId}/comentarios`);
+    if (!response.ok) return;
+    const payload = (await response.json()) as ComentarioResult[];
+    setComentarios(Array.isArray(payload) ? payload : []);
+  };
+
+  const handleAdicionarTrailler = async (value: { titulo: string; url: string }) => {
+    if (!Number.isFinite(actividadeId)) return;
+    try {
+      const response = await apiFetch(`/admin/actividade/trailer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: actividadeId,
+          titulo: value.titulo,
+          type: MidiaType.Video,
+          img: value.url,
+        }),
       });
+      if (!response.ok) throw new Error("Falha ao adicionar trailler.");
+      setShowTraillerModal(false);
+      await reloadTraillers();
+    } catch {
+      // noop
     }
   };
 
-  const handleAdicionarComentario = () => {
-    if (!actividade || !novoComentario.trim()) return;
-
-    const comentario: Comentario = {
-      id: `c${Date.now()}`,
-      usuarioId: 'user2', // Mock: usuário atual
-      usuarioNome: 'Maria Oliveira',
-      usuarioAvatar: 'https://i.pravatar.cc/150?img=3',
-      texto: novoComentario,
-      data: new Date().toISOString(),
-      likes: 0,
-      isAutor: true
-    };
-
-    setActividade({
-      ...actividade,
-      comentarios: [comentario, ...actividade.comentarios]
-    });
-    setNovoComentario('');
+  const handleRemoverTrailler = async (midiaId: number) => {
+    if (!window.confirm("Remover este trailler?")) return;
+    try {
+      const response = await apiFetch(`/admin/midia/${midiaId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Falha ao remover trailler.");
+      await reloadTraillers();
+    } catch {
+      // noop
+    }
   };
 
-  const handleResponderComentario = (comentarioId: string, texto: string) => {
-    if (!actividade) return;
+  const handleAdicionarImagem = async (file: File) => {
+    if (!Number.isFinite(actividadeId)) return;
+    try {
+      const formData = new FormData();
+      formData.append("id", String(actividadeId));
+      formData.append("titulo", file.name);
+      formData.append("type", MidiaType.Image);
+      formData.append("img", file);
 
-    const resposta: Comentario = {
-      id: `r${Date.now()}`,
-      usuarioId: 'admin1', // Mock: admin
-      usuarioNome: 'Pr. João Santos',
-      usuarioAvatar: 'https://i.pravatar.cc/150?img=2',
-      texto: texto,
-      data: new Date().toISOString(),
-      likes: 0,
-      isAdmin: true
-    };
-
-    const atualizarComentarios = (comentarios: Comentario[]): Comentario[] => {
-      return comentarios.map(c => {
-        if (c.id === comentarioId) {
-          return {
-            ...c,
-            respostas: [...(c.respostas || []), resposta]
-          };
-        }
-        if (c.respostas) {
-          return {
-            ...c,
-            respostas: atualizarComentarios(c.respostas)
-          };
-        }
-        return c;
+      const response = await apiFetch(`/admin/actividade/galeria`, {
+        method: "POST",
+        body: formData,
       });
-    };
-
-    setActividade({
-      ...actividade,
-      comentarios: atualizarComentarios(actividade.comentarios)
-    });
+      if (!response.ok) throw new Error("Falha ao adicionar imagem.");
+      await reloadGaleria();
+    } catch {
+      // noop
+    }
   };
 
-  const handleExcluirComentario = (comentarioId: string) => {
-    if (!actividade) return;
-
-    const excluirRecursivo = (comentarios: Comentario[]): Comentario[] => {
-      return comentarios.filter(c => {
-        if (c.id === comentarioId) return false;
-        if (c.respostas) {
-          c.respostas = excluirRecursivo(c.respostas);
-        }
-        return true;
-      });
-    };
-
-    setActividade({
-      ...actividade,
-      comentarios: excluirRecursivo(actividade.comentarios)
-    });
+  const handleRemoverImagem = async (midiaId: number) => {
+    if (!window.confirm("Remover esta imagem da galeria?")) return;
+    try {
+      const response = await apiFetch(`/admin/midia/${midiaId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Falha ao remover imagem.");
+      await reloadGaleria();
+    } catch {
+      // noop
+    }
   };
 
-  const handleAdicionarImagem = () => {
-    // Mock: adicionar imagem
-    const novaImagem: ImagemGaleria = {
-      id: `g${Date.now()}`,
-      url: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Nova imagem adicionada',
-      data: new Date().toISOString().split('T')[0],
-      tamanho: '1.5 MB'
-    };
-
-    setActividade({
-      ...actividade!,
-      galeria: [...(actividade!.galeria || []), novaImagem]
-    });
-  };
-
-  const handleRemoverImagem = (imagemId: string) => {
-    setActividade({
-      ...actividade!,
-      galeria: actividade!.galeria?.filter(img => img.id !== imagemId)
-    });
-  };
-
-  const handleDownloadImagem = (imagem: ImagemGaleria) => {
-    const link = document.createElement('a');
+  const handleDownloadImagem = (imagem: MidiaSimple) => {
+    const link = document.createElement("a");
     link.href = imagem.url;
-    link.download = `${imagem.titulo}.jpg`;
+    link.download = `${imagem.titulo || "imagem"}.jpg`;
     link.click();
+  };
+
+  const handleToggleAnalise = async (comentarioId: number, analiseAtual: boolean) => {
+    try {
+      const response = await apiFetch(`/admin/comentario/analise`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: comentarioId, analise: !analiseAtual }),
+      });
+      if (!response.ok) throw new Error("Falha ao atualizar análise.");
+      await reloadComentarios();
+    } catch {
+      // noop
+    }
   };
 
   if (loading) {
@@ -737,8 +503,10 @@ export const ActividadeDetails = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Actividade não encontrada</h2>
-          <Link to="admin/actividades" className="text-primary-500 hover:underline">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            {loadError || "Actividade não encontrada"}
+          </h2>
+          <Link to="/admin/actividades" className="text-primary-500 hover:underline">
             Voltar para actividades
           </Link>
         </div>
@@ -746,25 +514,47 @@ export const ActividadeDetails = () => {
     );
   }
 
-  const tipoConfig: Record<TipoActividade, { icon: any; cor: string; label: string }> = {
-    [TipoActividade.Culto]: { icon: GiPrayer, cor: "bg-purple-500", label: "Culto" },
-    [TipoActividade.Evento]: { icon: GiPartyPopper, cor: "bg-pink-500", label: "Evento Especial" },
-    [TipoActividade.Escola]: { icon: LiaBibleSolid, cor: "bg-blue-500", label: "Escola Bíblica" },
-    [TipoActividade.Jovens]: { icon: GiHeartBeats, cor: "bg-green-500", label: "Juventude" },
-    [TipoActividade.Familia]: { icon: GiFamilyHouse, cor: "bg-amber-500", label: "Família" },
-    [TipoActividade.Louvor]: { icon: LiaChairSolid, cor: "bg-indigo-500", label: "Louvor" },
-    [TipoActividade.Oracao]: { icon: GiPrayer, cor: "bg-red-500", label: "Oração" }
+  const tipoConfig: Record<ActividadeType, { icon: any; cor: string; label: string }> = {
+    [ActividadeType.Culto]: { icon: GiPrayer, cor: "bg-purple-500", label: "Culto" },
+    [ActividadeType.Evento]: { icon: GiPartyPopper, cor: "bg-pink-500", label: "Evento" },
+    [ActividadeType.Escola]: { icon: LiaBibleSolid, cor: "bg-blue-500", label: "Escola" },
+    [ActividadeType.Jovens]: { icon: GiHeartBeats, cor: "bg-green-500", label: "Jovens" },
+    [ActividadeType.Familia]: { icon: GiFamilyHouse, cor: "bg-amber-500", label: "Família" },
+    [ActividadeType.Louvor]: { icon: LiaChairSolid, cor: "bg-indigo-500", label: "Louvor" },
+    [ActividadeType.Oracao]: { icon: GiPrayer, cor: "bg-red-500", label: "Oração" },
+    [ActividadeType.Evangelismo]: { icon: FiUsers, cor: "bg-emerald-500", label: "Evangelismo" },
+    [ActividadeType.Acampamento]: { icon: GiFamilyHouse, cor: "bg-teal-500", label: "Acampamento" },
+    [ActividadeType.Conferencia]: { icon: FiCalendar, cor: "bg-sky-500", label: "Conferência" },
   };
 
-  const config = tipoConfig[actividade.tipo];
-  const Icon = config.icon;
+  const publicoLabel: Record<PublicoAlvoType, string> = {
+    [PublicoAlvoType.Todos]: "Todos",
+    [PublicoAlvoType.Jovens]: "Jovens",
+    [PublicoAlvoType.Adultos]: "Adultos",
+    [PublicoAlvoType.Criancas]: "Crianças",
+    [PublicoAlvoType.Idosos]: "Idosos",
+    [PublicoAlvoType.Mulheres]: "Mulheres",
+    [PublicoAlvoType.Homens]: "Homens",
+    [PublicoAlvoType.Casais]: "Casais",
+  };
+
+  const duracaoLabel: Record<DuracaoActividade, string> = {
+    [DuracaoActividade.Curta]: "Curta",
+    [DuracaoActividade.Media]: "Média",
+    [DuracaoActividade.Longa]: "Longa",
+    [DuracaoActividade.Extendida]: "Extendida",
+    [DuracaoActividade.MultiplosDias]: "Múltiplos dias",
+  };
+
+  const config = tipoConfig[actividade.tipoEvento] ?? tipoConfig[ActividadeType.Evento];
+  const Icon = config?.icon ?? FiFlag;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Image */}
       <div className="relative h-[400px] overflow-hidden">
         <img
-          src={actividade.imagem}
+          src={actividade.img}
           alt={actividade.titulo}
           className="w-full h-full object-cover rounded-t-xl  "
         />
@@ -777,7 +567,7 @@ export const ActividadeDetails = () => {
               {config.label}
             </span>
             <span className="bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-              {actividade.duracao}
+              {duracaoLabel[actividade.duracao] ?? actividade.duracao}
             </span>
           </div>
           
@@ -818,7 +608,7 @@ export const ActividadeDetails = () => {
               }`}
             >
               <FiMessageCircle size={16} />
-              Comentários ({actividade.comentarios.length})
+              Comentários ({comentarios.length})
             </button>
             <button
               onClick={() => setActiveTab('galeria')}
@@ -829,7 +619,7 @@ export const ActividadeDetails = () => {
               }`}
             >
               <GiPhotoCamera size={16} />
-              Galeria ({actividade.galeria?.length || 0})
+              Galeria ({galeria.length})
             </button>
           </nav>
         </div>
@@ -868,28 +658,53 @@ export const ActividadeDetails = () => {
                     </button>
                   </div>
 
-                  {actividade.traillers && actividade.traillers.length > 0 ? (
+                  {traillers.length > 0 ? (
                     <div className="space-y-3">
-                      {actividade.traillers.map((trailler) => (
-                        <div key={trailler.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                          <img
-                            src={trailler.thumbnail}
-                            alt={trailler.titulo}
-                            className="w-32 h-20 object-cover rounded-lg"
-                          />
-                          <div className="flex-1">
-                            <h3 className="font-medium">{trailler.titulo}</h3>
-                            <p className="text-sm text-gray-500">Duração: {trailler.duracao}</p>
+                      {traillers.map((trailler) => {
+                        const href = getTrailerHref(trailler.url);
+                        const thumb = getYoutubeThumb(trailler.url);
+                        return (
+                          <div key={trailler.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                            {thumb ? (
+                              <a href={href} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={thumb}
+                                  alt={trailler.titulo}
+                                  className="w-32 h-20 object-cover rounded-lg"
+                                />
+                              </a>
+                            ) : (
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-32 h-20 rounded-lg bg-gray-200 flex items-center justify-center text-gray-600"
+                                title="Abrir trailler"
+                              >
+                                <FiPlay size={20} />
+                              </a>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium truncate">{trailler.titulo}</h3>
+                              <a
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary-600 hover:underline"
+                              >
+                                Abrir
+                              </a>
+                            </div>
+                            <button
+                              onClick={() => handleRemoverTrailler(trailler.id)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Remover"
+                            >
+                              <FiTrash2 size={18} />
+                            </button>
                           </div>
-                          <button
-                            onClick={() => handleRemoverTrailler(trailler.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Remover"
-                          >
-                            <FiTrash2 size={18} />
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-gray-500 text-center py-4">
@@ -905,21 +720,26 @@ export const ActividadeDetails = () => {
                     <div>
                       <dt className="text-sm text-gray-500">Data</dt>
                       <dd className="font-medium">
-                        {new Date(actividade.dataInicio).toLocaleDateString('pt-BR')}
-                        {actividade.dataFim && ` - ${new Date(actividade.dataFim).toLocaleDateString('pt-BR')}`}
+                        {new Date(actividade.dataEvento).toLocaleDateString('pt-BR')}
                       </dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">Horário</dt>
-                      <dd className="font-medium">{actividade.horario}</dd>
+                      <dd className="font-medium">
+                        {new Date(actividade.dataEvento).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">Público-alvo</dt>
-                      <dd className="font-medium">{actividade.publico}</dd>
+                      <dd className="font-medium">
+                        {publicoLabel[actividade.publicoAlvo] ?? actividade.publicoAlvo}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">Duração</dt>
-                      <dd className="font-medium">{actividade.duracao}</dd>
+                      <dd className="font-medium">
+                        {duracaoLabel[actividade.duracao] ?? actividade.duracao}
+                      </dd>
                     </div>
                   </dl>
                 </div>
@@ -937,42 +757,19 @@ export const ActividadeDetails = () => {
                   Comentários
                 </h2>
 
-                {/* Novo comentário */}
-                <div className="flex gap-3 mb-8">
-                  <img
-                    src="https://i.pravatar.cc/150?img=3"
-                    alt="Seu avatar"
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div className="flex-1">
-                    <textarea
-                      value={novoComentario}
-                      onChange={(e) => setNovoComentario(e.target.value)}
-                      placeholder="Escreva um comentário..."
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-                      rows={3}
-                    />
-                    <div className="flex justify-end mt-2">
-                      <button
-                        onClick={handleAdicionarComentario}
-                        className="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600"
-                      >
-                        Comentar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Lista de comentários */}
                 <div className="space-y-6">
-                  {actividade.comentarios.map((comentario) => (
-                    <ComentarioItem
-                      key={comentario.id}
-                      comentario={comentario}
-                      onResponder={handleResponderComentario}
-                      onExcluir={handleExcluirComentario}
-                    />
-                  ))}
+                  {comentarios.length > 0 ? (
+                    comentarios.map((comentario) => (
+                      <ComentarioItem
+                        key={comentario.id}
+                        comentario={comentario}
+                        onToggleAnalise={handleToggleAnalise}
+                      />
+                    ))
+                  ) : (
+                    <p className="text-gray-500 text-center py-6">Nenhum comentário ainda.</p>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -984,7 +781,7 @@ export const ActividadeDetails = () => {
                 className="bg-white rounded-2xl shadow-sm p-6"
               >
                 <GaleriaActividade
-                  imagens={actividade.galeria || []}
+                  imagens={galeria}
                   onAdicionar={handleAdicionarImagem}
                   onRemover={handleRemoverImagem}
                   onDownload={handleDownloadImagem}
@@ -999,16 +796,21 @@ export const ActividadeDetails = () => {
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <h3 className="font-bold text-lg mb-4">Participação</h3>
               
-              {actividade.capacidade && (
+              {typeof actividade.capacidade === "number" && actividade.capacidade > 0 && (
                 <div className="mb-4">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-500">Vagas</span>
-                    <span className="font-medium">{actividade.inscritos}/{actividade.capacidade}</span>
+                    <span className="font-medium">{actividade.inscritos ?? 0}/{actividade.capacidade}</span>
                   </div>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary-500 rounded-full"
-                      style={{ width: `${(actividade.inscritos / actividade.capacidade) * 100}%` }}
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          ((actividade.inscritos ?? 0) / actividade.capacidade) * 100
+                        )}%`,
+                      }}
                     />
                   </div>
                 </div>
@@ -1048,31 +850,10 @@ export const ActividadeDetails = () => {
               <p className="font-medium mb-2">{actividade.organizador}</p>
               
               <div className="space-y-2">
-                <a href={`tel:${actividade.contato}`} className="flex items-center gap-2 text-gray-600 hover:text-primary-500 transition-colors">
+                <a href={`tel:${actividade.contactos}`} className="flex items-center gap-2 text-gray-600 hover:text-primary-500 transition-colors">
                   <FiPhone size={14} />
-                  <span className="text-sm">{actividade.contato}</span>
+                  <span className="text-sm">{actividade.contactos}</span>
                 </a>
-                {actividade.email && (
-                  <a href={`mailto:${actividade.email}`} className="flex items-center gap-2 text-gray-600 hover:text-primary-500 transition-colors">
-                    <FiMail size={14} />
-                    <span className="text-sm">{actividade.email}</span>
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h3 className="font-bold text-lg mb-3">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {actividade.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
-                  >
-                    #{tag}
-                  </span>
-                ))}
               </div>
             </div>
           </div>

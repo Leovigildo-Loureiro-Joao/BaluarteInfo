@@ -22,7 +22,7 @@ import {
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
 import { fadeInUp, staggerContainer } from "../../utils/animation";
-import { apiFetch } from "../../utils/api.js";
+import { apiFetch } from "../../utils/api";
 
 
 // Tipos baseados no seu Enum ArtigoType
@@ -309,7 +309,7 @@ export const ArtigosPage = () => {
           >
             {/* Contador de resultados */}
             <div className="mb-4 text-gray-600">
-              {total} {total === 1 ? 'artigo encontrado' : 'artigos encontrados'}
+              {loading ? "A carregar..." : `${total} ${total === 1 ? "artigo encontrado" : "artigos encontrados"}`}
             </div>
 
             {loading ? (

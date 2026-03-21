@@ -8,7 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-public record MidiaDto(@NotBlank String titulo,@NotBlank String descricao,  @NotBlank(message = "URL é obrigatória")  // Não pode ser vazio
+public record MidiaDto(@NotBlank String titulo,@NotBlank String descricao, String autor,  @NotBlank(message = "URL é obrigatória")  // Não pode ser vazio
 @Pattern(
     regexp = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$",  // Regex para URLs
     message = "URL inválida! Ex: http://exemplo.com") String url, @Enumerated(EnumType.STRING) MidiaType type, @Enumerated(EnumType.STRING) VideoType videoType) {

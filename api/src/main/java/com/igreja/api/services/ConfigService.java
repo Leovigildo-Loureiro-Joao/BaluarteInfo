@@ -13,6 +13,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.igreja.api.dto.comentario.ComentarioDto;
 import com.igreja.api.dto.config.AdminConfigDto;
 import com.igreja.api.dto.config.CarouselItemDto;
@@ -80,30 +82,34 @@ public class ConfigService {
     }
 
     public ConfiguracaoModel edit(ConfiguracaoDto dto){
-        ConfiguracaoModel config=configurationRepository.findByType(dto.type()).orElse(null);
+        ConfiguracaoModel config = configurationRepository.findByType(dto.type()).orElseGet(ConfiguracaoModel::new);
+        config.setType(dto.type());
+        if (config.getLancado() == null) {
+            config.setLancado(LocalDateTime.now());
+        }
         config.setEditado(LocalDateTime.now());
         BeanUtils.copyProperties(dto, config);
         return configurationRepository.save(config);
     }
 
     public void StartUse(){
-        save(new ConfiguracaoDto(100, ConfigType.ActividadeLimite));
-        save(new ConfiguracaoDto(50, ConfigType.ComentarioLimiteActividade));
-        save(new ConfiguracaoDto(100, ConfigType.IncritosLimiteActividade));
-        save(new ConfiguracaoDto(50, ConfigType.MembrosLimite));
-        save(new ConfiguracaoDto(100, ConfigType.VisitasLimite));
-        save(new ConfiguracaoDto(100, ConfigType.NewlesterLimite));
-        save(new ConfiguracaoDto(15, ConfigType.HistoriaAnos));
-        save(new ConfiguracaoDto(500, ConfigType.MembrosTotais));
-        save(new ConfiguracaoDto(30, ConfigType.MinisteriosTotais));
-        save(new ConfiguracaoDto(1, ConfigType.HomeStatsVisible));
-        save(new ConfiguracaoDto(1, ConfigType.HomeCarouselVisible));
-        save(new ConfiguracaoDto(300000, ConfigType.DashboardRefreshIntervalMs));
-        save(new ConfiguracaoDto(7, ConfigType.MensagemUnreadDays));
-        save(new ConfiguracaoDto(1, ConfigType.MensagemReenviarPendentes));
-        save(new ConfiguracaoDto(1, ConfigType.InscricaoQrEnabled));
-        save(new ConfiguracaoDto(1, ConfigType.InscricaoQrAutoDisable));
-        save(new ConfiguracaoDto(6, ConfigType.InscricaoQrExpiresHours));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.ActividadeLimite));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(50), ConfigType.ComentarioLimiteActividade));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.IncritosLimiteActividade));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(50), ConfigType.MembrosLimite));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.VisitasLimite));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.NewlesterLimite));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(15), ConfigType.HistoriaAnos));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(500), ConfigType.MembrosTotais));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(30), ConfigType.MinisteriosTotais));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.HomeStatsVisible));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.HomeCarouselVisible));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(300000), ConfigType.DashboardRefreshIntervalMs));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(7), ConfigType.MensagemUnreadDays));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.MensagemReenviarPendentes));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.InscricaoQrEnabled));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.InscricaoQrAutoDisable));
+        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(6), ConfigType.InscricaoQrExpiresHours));
     }
 
 
@@ -112,30 +118,32 @@ public class ConfigService {
         return configurationRepository.findByType(limiteInscritos).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este config não existe na base dados"));
     }
 
-    public Map<ConfigType, Value> Estatisticas() {
-        Map<ConfigType, Value> lista = new HashMap<>();
+    public Map<ConfigType, Object> Estatisticas() {
+        Map<ConfigType, Object> lista = new HashMap<>();
         for (ConfiguracaoModel value : configurationRepository.findAll()) {
 
             switch (value.getType()) {
                 case MembrosLimite:
-                    lista.put(value.getType(), new Value(userRepository.count() - 1, value.getValue()));
+                    lista.put(value.getType(), new Value(userRepository.count() - 1, asDouble(value.getValue(), 0)));
                     break;
                 case ActividadeLimite:
-                    lista.put(value.getType(), new Value(actividadeRepository.count(), value.getValue()));
+                    lista.put(value.getType(), new Value(actividadeRepository.count(), asDouble(value.getValue(), 0)));
                     int inscrito = 0;
                     int comentario = 0;
                     for (ActividadeModel actividadeModel : actividadeRepository.findAll()) {
                         inscrito += inscritosRepository.findByActividade(actividadeModel).size();
                         comentario += comentarioRepository.findByActividade(actividadeModel).size();
                     }
-                    lista.put(ConfigType.IncritosLimiteActividade, new Value(inscrito, SelectByType(ConfigType.IncritosLimiteActividade).getValue()));
-                    lista.put(ConfigType.ComentarioLimiteActividade, new Value(comentario, SelectByType(ConfigType.ComentarioLimiteActividade).getValue()));
+                    lista.put(ConfigType.IncritosLimiteActividade,
+                            new Value(inscrito, asDouble(SelectByType(ConfigType.IncritosLimiteActividade).getValue(), 0)));
+                    lista.put(ConfigType.ComentarioLimiteActividade,
+                            new Value(comentario, asDouble(SelectByType(ConfigType.ComentarioLimiteActividade).getValue(), 0)));
                     break;
                 case VisitasLimite:
-                    lista.put(value.getType(), new Value(vistosRepository.count(), value.getValue()));
+                    lista.put(value.getType(), new Value(vistosRepository.count(), asDouble(value.getValue(), 0)));
                     break;
                 case NewlesterLimite:
-                    lista.put(value.getType(), new Value(newlesterRepository.count(), value.getValue()));
+                    lista.put(value.getType(), new Value(newlesterRepository.count(), asDouble(value.getValue(), 0)));
                     break;
                 default:
                     break;
@@ -179,8 +187,15 @@ public class ConfigService {
         return configValueOrDefault(ConfigType.HomeCarouselVisible, 1) > 0;
     }
 
+    public double numberValueOrDefault(ConfigType type, double fallback) {
+        return configValueOrDefault(type, fallback);
+    }
+
     private double configValueOrDefault(ConfigType type, double fallback) {
-        return configurationRepository.findByType(type).map(ConfiguracaoModel::getValue).orElse(fallback);
+        return configurationRepository.findByType(type)
+                .map(ConfiguracaoModel::getValue)
+                .map(value -> asDouble(value, fallback))
+                .orElse(fallback);
     }
 
     public AdminConfigDto adminConfig() {
@@ -233,12 +248,26 @@ public class ConfigService {
     private void upsertConfig(ConfigType type, double value) {
         ConfiguracaoModel config = configurationRepository.findByType(type).orElseGet(ConfiguracaoModel::new);
         config.setType(type);
-        config.setValue(value);
+        config.setValue(JsonNodeFactory.instance.numberNode(value));
         if (config.getLancado() == null) {
             config.setLancado(LocalDateTime.now());
         }
         config.setEditado(LocalDateTime.now());
         configurationRepository.save(config);
+    }
+
+    private double asDouble(JsonNode value, double fallback) {
+        if (value == null || value.isNull()) return fallback;
+        if (value.isNumber()) return value.asDouble();
+        if (value.isBoolean()) return value.booleanValue() ? 1 : 0;
+        if (value.isTextual()) {
+            try {
+                return Double.parseDouble(value.asText());
+            } catch (Exception ignored) {
+                return fallback;
+            }
+        }
+        return fallback;
     }
 
     private List<AdminConfigDto.ActividadeTipoDto> listActivityTypes() {

@@ -33,6 +33,7 @@ const ModalAudio = ({
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [formData, setFormData] = useState({
     titulo: audio?.titulo || "",
+    autor: audio?.autor || "",
     descricao: audio?.descricao || "",
     tipo: audio?.tipo || AudioType.Sermon,
     capaFile: undefined as File | undefined,
@@ -82,7 +83,7 @@ const ModalAudio = ({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (passo === 4) {
-      setShowPreviewModal(true);
+      handleConfirmSave()
     } else {
       avancarPasso();
     }
@@ -93,6 +94,7 @@ const ModalAudio = ({
 
     onSave({
       titulo: formData.titulo,
+      autor: formData.autor,
       descricao: formData.descricao,
       tipo: formData.tipo,
       capa: formData.capaPreview,
@@ -123,6 +125,19 @@ const ModalAudio = ({
           onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           placeholder="Ex: O Poder da Oração"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Autor
+        </label>
+        <input
+          type="text"
+          value={formData.autor}
+          onChange={(e) => setFormData({ ...formData, autor: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+          placeholder="Ex: Pr. João Silva"
         />
       </div>
 
@@ -357,7 +372,7 @@ const ModalAudio = ({
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center gap-2">
               <FiUser size={12} />
-              <span>{audio?.autor || "Autor não definido"}</span>
+              <span>{formData.autor || audio?.autor || "Autor não definido"}</span>
             </div>
             <div className="flex items-center gap-2">
               <FiImage size={12} />
@@ -396,11 +411,15 @@ const ModalAudio = ({
           tipo: formData.tipo,
           capa: formData.capaPreview,
           audioUrl: formData.audioPreview,
-          autor: audio?.autor || "Autor",
+          autor: formData.autor || audio?.autor || "Autor",
           data: audio?.data || new Date().toISOString().split('T')[0],
           visualizacoes: 0
         }}
         onClose={() => setShowPreviewModal(false)}
+        onSave={(preview) => {
+          setShowPreviewModal(false);
+          onClose();
+        }}
         mode="preview"
         autoPlayPreview={true}
       />
@@ -472,20 +491,11 @@ const ModalAudio = ({
               <button
                 type="button"
                 onClick={() => {
-                  if (onSave) {
-                    onSave({
-                      titulo: audio.titulo,
-                      descricao: audio.descricao,
-                      tipo: audio.tipo,
-                      capa: audio.capa,
-                      audioUrl: audio.audioUrl
-                    });
-                  }
                   onClose();
                 }}
                 className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors"
               >
-                Confirmar e Publicar
+                Confirmar
               </button>
             </div>
           </div>
@@ -626,7 +636,7 @@ const ModalAudio = ({
                       type="submit"
                       className="flex-1 px-4 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors"
                     >
-                      Revisar e Publicar
+                      Publicar
                     </button>
                   )}
                 </div>

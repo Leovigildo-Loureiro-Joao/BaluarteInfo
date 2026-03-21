@@ -8,6 +8,7 @@ public interface AudioProjection {
     String getDescricao();
     String getImagem();
     String getTempo();
+    String getAutor();
     AudioType getAudioType();
     String getUrl();
 

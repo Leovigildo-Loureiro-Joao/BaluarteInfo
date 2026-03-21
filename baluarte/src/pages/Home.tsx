@@ -147,12 +147,13 @@ export const Home = () => {
   const midiaHome = useMemo(() => {
     if (!homeData?.media?.length) return [];
     return homeData.media
-      .filter((midia) => Boolean(midia?.imagem))
+      .filter((midia) => Boolean(midia?.imagem || midia?.url))
       .map((midia) => ({
         id: midia.id,
         titulo: midia.titulo,
         descricao: midia.descricao,
-        imagem: midia.imagem || "",
+        imagem: midia.imagem || midia.url || "",
+        autor: midia.autor || "Igreja Baluarte",
         tipo: midia.type,
         duracao: midia.tempo || "--:--",
         visualizacoes: midia.visualizacoes ?? 0,

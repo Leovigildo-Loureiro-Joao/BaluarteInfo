@@ -1,5 +1,5 @@
 // src/pages/Admin/ConfiguracoesPage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { 
   FiSave,
@@ -20,6 +20,7 @@ import {
   FiToggleRight,
   FiImage,
   FiPlus,
+  FiUpload,
   FiTrash2,
   FiArrowUp,
   FiArrowDown
@@ -31,6 +32,9 @@ import {
   GiFamilyHouse,
 } from "react-icons/gi";
 import { LiaBibleSolid, LiaChairSolid } from "react-icons/lia";
+import { apiFetch } from "../../utils/api";
+import { compressImageToMaxBytes } from "../../utils/imageCompression";
+import { AdminConfigDto, CarouselItemDto, ConfigType, ConfiguracaoDto } from "../../types/api";
 
 // Tipos baseados no JSON
 interface ConfiguracaoTipoAtividade {
@@ -75,13 +79,7 @@ interface ConfiguracaoCarroselVisible {
   };
 }
 
-interface CarouselImage {
-  id: string;
-  url: string;
-  titulo: string;
-  legenda: string;
-  ordem: number;
-}
+type CarouselImage = CarouselItemDto;
 
 interface Configuracoes {
   dashboard: ConfiguracaoDashboard;
@@ -132,21 +130,21 @@ const configuracoesMock: Configuracoes = {
   },
   homeCarousel: [
     {
-      id: "c1",
+      id: 1,
       url: "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
       titulo: "Culto de celebração",
       legenda: "Louvor, ensino e comunhão com toda a família Baluarte.",
       ordem: 1
     },
     {
-      id: "c2",
+      id: 2,
       url: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80",
       titulo: "Jovens on fire",
       legenda: "Experiências profundas e momentos de oração impactantes.",
       ordem: 2
     },
     {
-      id: "c3",
+      id: 3,
       url: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80",
       titulo: "Ministério infantil",
       legenda: "Crianças aprendendo a Palavra com alegria e criatividade.",
@@ -436,16 +434,200 @@ export const ConfiguracoesPage = () => {
     titulo: "",
     legenda: ""
   });
+  const [carouselUpload, setCarouselUpload] = useState<{
+    file: File | null;
+    titulo: string;
+    legenda: string;
+  }>({
+    file: null,
+    titulo: "",
+    legenda: "",
+  });
+  const [carouselUploading, setCarouselUploading] = useState(false);
 
-  const handleSave = () => {
-    // Aqui chamaria a API para salvar
-    setEditando(false);
-    alert('Configurações salvas com sucesso!');
+  const asNumber = (value: unknown) => {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "boolean") return value ? 1 : 0;
+    if (typeof value === "string") {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  };
+
+  const asBoolean = (value: unknown) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value > 0;
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (["true", "1", "yes", "sim"].includes(normalized)) return true;
+      if (["false", "0", "no", "nao", "não"].includes(normalized)) return false;
+    }
+    return null;
+  };
+
+  function switchTypeConfig(config: ConfiguracaoDto) {
+    switch (config.type as ConfigType) {
+      case "HomeCarouselVisible": {
+        const enabled = asBoolean(config.value);
+        if (enabled === null) return;
+        setConfiguracoes((prev) => ({
+          ...prev,
+          homeCarouselVisible: { visible: { enabled } },
+        }));
+        break;
+      }
+      case "DashboardRefreshIntervalMs": {
+        const refreshIntervalMs = asNumber(config.value);
+        if (refreshIntervalMs === null) return;
+        setConfiguracoes((prev) => ({
+          ...prev,
+          dashboard: { ...prev.dashboard, refreshIntervalMs: Math.max(0, Math.trunc(refreshIntervalMs)) },
+        }));
+        break;
+      }
+      case "MensagemUnreadDays": {
+        const unreadDays = asNumber(config.value);
+        if (unreadDays === null) return;
+        setConfiguracoes((prev) => ({
+          ...prev,
+          messages: {
+            ...prev.messages,
+            retention: { unreadDays: Math.max(0, Math.trunc(unreadDays)) },
+          },
+        }));
+        break;
+      }
+      case "MensagemReenviarPendentes": {
+        const reenviarPendentes = asBoolean(config.value);
+        if (reenviarPendentes === null) return;
+        setConfiguracoes((prev) => ({
+          ...prev,
+          messages: {
+            ...prev.messages,
+            actions: { reenviarPendentes },
+          },
+        }));
+        break;
+      }
+      case "InscricaoQrEnabled": {
+        const enabled = asBoolean(config.value);
+        if (enabled === null) return;
+        setConfiguracoes((prev) => ({
+          ...prev,
+          inscricoes: {
+            ...prev.inscricoes,
+            qr: { ...prev.inscricoes.qr, enabled },
+          },
+        }));
+        break;
+      }
+      case "InscricaoQrAutoDisable": {
+        const autoDisableAfterActivity = asBoolean(config.value);
+        if (autoDisableAfterActivity === null) return;
+        setConfiguracoes((prev) => ({
+          ...prev,
+          inscricoes: {
+            ...prev.inscricoes,
+            qr: { ...prev.inscricoes.qr, autoDisableAfterActivity },
+          },
+        }));
+        break;
+      }
+      case "InscricaoQrExpiresHours": {
+        const expiresAfterHours = asNumber(config.value);
+        if (expiresAfterHours === null) return;
+        setConfiguracoes((prev) => ({
+          ...prev,
+          inscricoes: {
+            ...prev.inscricoes,
+            qr: { ...prev.inscricoes.qr, expiresAfterHours: Math.max(0, Math.trunc(expiresAfterHours)) },
+          },
+        }));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  const loadConfiguracoes = async () => {
+    const [appRes, allRes] = await Promise.all([
+      apiFetch(`/admin/config/app`),
+      apiFetch(`/admin/config/all`),
+    ]);
+
+    if (appRes.ok) {
+      const payload = (await appRes.json()) as AdminConfigDto;
+      setConfiguracoes((prev) => ({
+        ...prev,
+        dashboard: payload.dashboard,
+        messages: payload.messages,
+        inscricoes: payload.inscricoes,
+        activities: payload.activities,
+        homeCarousel: payload.homeCarousel,
+      }));
+    }
+
+    if (allRes.ok) {
+      const payload = (await allRes.json()) as ConfiguracaoDto[];
+      payload.forEach((item) => switchTypeConfig(item));
+    }
+  };
+
+  useEffect(() => {
+    let active = true;
+    const timeout = setTimeout(async () => {
+      try {
+        if (!active) return;
+        await loadConfiguracoes();
+      } catch {
+        // noop
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      const appPayload: AdminConfigDto = {
+        dashboard: configuracoes.dashboard,
+        messages: configuracoes.messages,
+        inscricoes: configuracoes.inscricoes,
+        activities: configuracoes.activities,
+        homeCarousel: configuracoes.homeCarousel,
+      };
+
+      const [appRes, visibleRes] = await Promise.all([
+        apiFetch(`/admin/config/app`, { method: "PUT", body: appPayload }),
+        apiFetch(`/admin/config/edit`, {
+          method: "PUT",
+          body: {
+            type: ConfigType.HomeCarouselVisible,
+            value: configuracoes.homeCarouselVisible.visible.enabled ? 1 : 0,
+          } satisfies ConfiguracaoDto,
+        }),
+      ]);
+
+      if (!appRes.ok || !visibleRes.ok) {
+        throw new Error("Falha ao salvar configurações.");
+      }
+
+      await loadConfiguracoes();
+      setEditando(false);
+      alert("Configurações salvas com sucesso!");
+    } catch {
+      alert("Não foi possível salvar as configurações.");
+    }
   };
 
   const handleReset = () => {
-    if (window.confirm('Restaurar configurações padrão?')) {
-      setConfiguracoes(configuracoesMock);
+    if (window.confirm("Restaurar configurações padrão?")) {
+      loadConfiguracoes().catch(() => {});
     }
   };
 
@@ -455,7 +637,6 @@ export const ConfiguracoesPage = () => {
     if (!titulo || !url) return;
 
     const novo: CarouselImage = {
-      id: `c-${Date.now()}`,
       url,
       titulo,
       legenda: carouselForm.legenda.trim(),
@@ -470,11 +651,47 @@ export const ConfiguracoesPage = () => {
     setCarouselForm({ url: "", titulo: "", legenda: "" });
   };
 
-  const handleRemoveCarouselImage = (id: string) => {
+  const handleUploadCarouselImage = async () => {
+    if (!carouselUpload.file) return;
+    const titulo = carouselUpload.titulo.trim();
+    if (!titulo) return;
+
+    try {
+      setCarouselUploading(true);
+      const file = await compressImageToMaxBytes(carouselUpload.file, { maxBytes: 1_000_000 });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("titulo", titulo);
+      if (carouselUpload.legenda.trim()) {
+        formData.append("legenda", carouselUpload.legenda.trim());
+      }
+
+      const response = await apiFetch(`/admin/config/home-carousel/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error("Falha ao fazer upload.");
+      }
+
+      const created = (await response.json()) as CarouselItemDto;
+      setConfiguracoes((prev) => ({
+        ...prev,
+        homeCarousel: [...prev.homeCarousel, created].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0)),
+      }));
+      setCarouselUpload({ file: null, titulo: "", legenda: "" });
+    } catch {
+      alert("Não foi possível fazer upload da imagem.");
+    } finally {
+      setCarouselUploading(false);
+    }
+  };
+
+  const handleRemoveCarouselImage = (id: number | undefined, index: number) => {
     setConfiguracoes({
       ...configuracoes,
       homeCarousel: configuracoes.homeCarousel
-        .filter((item) => item.id !== id)
+        .filter((item, idx) => (typeof id === "number" ? item.id !== id : idx !== index))
         .map((item, index) => ({ ...item, ordem: index + 1 }))
     });
   };
@@ -612,7 +829,7 @@ export const ConfiguracoesPage = () => {
               <div className="space-y-3">
                 {configuracoes.homeCarousel.map((item, index) => (
                   <div
-                    key={item.id}
+                    key={item.id ?? item.url ?? index}
                     className="flex items-center gap-4 border border-gray-100 rounded-xl p-3 shadow-sm bg-white"
                   >
                     <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
@@ -639,7 +856,7 @@ export const ConfiguracoesPage = () => {
                         <FiArrowDown />
                       </button>
                       <button
-                        onClick={() => handleRemoveCarouselImage(item.id)}
+                        onClick={() => handleRemoveCarouselImage(item.id, index)}
                         disabled={!editando}
                         className="w-10 h-10 rounded-lg border border-red-300 flex items-center justify-center text-red-500 disabled:opacity-40"
                       >
@@ -651,44 +868,116 @@ export const ConfiguracoesPage = () => {
               </div>
 
               <div className="border-t border-dashed border-gray-200 pt-4">
-                <CampoConfiguracao label="Nova imagem">
-                  <input
-                    type="text"
-                    placeholder="URL da imagem"
-                    value={carouselForm.url}
-                    onChange={(e) => setCarouselForm({ ...carouselForm, url: e.target.value })}
-                    disabled={!editando}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
-                  />
-                </CampoConfiguracao>
-                <CampoConfiguracao label="Título">
-                  <input
-                    type="text"
-                    placeholder="Título do banner"
-                    value={carouselForm.titulo}
-                    onChange={(e) => setCarouselForm({ ...carouselForm, titulo: e.target.value })}
-                    disabled={!editando}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
-                  />
-                </CampoConfiguracao>
-                <CampoConfiguracao label="Legenda (opcional)">
-                  <input
-                    type="text"
-                    placeholder="Frase de apoio ou chamada"
-                    value={carouselForm.legenda}
-                    onChange={(e) => setCarouselForm({ ...carouselForm, legenda: e.target.value })}
-                    disabled={!editando}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
-                  />
-                </CampoConfiguracao>
-                <button
-                  onClick={handleAddCarouselImage}
-                  disabled={!editando || !carouselForm.url.trim() || !carouselForm.titulo.trim()}
-                  className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:bg-gray-300 disabled:text-gray-500"
-                >
-                  <FiPlus />
-                  Adicionar imagem
-                </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-700">Adicionar por URL</p>
+                    <CampoConfiguracao label="URL da imagem">
+                      <input
+                        type="text"
+                        placeholder="https://..."
+                        value={carouselForm.url}
+                        onChange={(e) => setCarouselForm({ ...carouselForm, url: e.target.value })}
+                        disabled={!editando}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                      />
+                    </CampoConfiguracao>
+                    <CampoConfiguracao label="Título">
+                      <input
+                        type="text"
+                        placeholder="Título do banner"
+                        value={carouselForm.titulo}
+                        onChange={(e) => setCarouselForm({ ...carouselForm, titulo: e.target.value })}
+                        disabled={!editando}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                      />
+                    </CampoConfiguracao>
+                    <CampoConfiguracao label="Legenda (opcional)">
+                      <input
+                        type="text"
+                        placeholder="Frase de apoio ou chamada"
+                        value={carouselForm.legenda}
+                        onChange={(e) => setCarouselForm({ ...carouselForm, legenda: e.target.value })}
+                        disabled={!editando}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                      />
+                    </CampoConfiguracao>
+                    <button
+                      onClick={handleAddCarouselImage}
+                      disabled={!editando || !carouselForm.url.trim() || !carouselForm.titulo.trim()}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:bg-gray-300 disabled:text-gray-500"
+                    >
+                      <FiPlus />
+                      Adicionar (URL)
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <p className="text-sm font-semibold text-gray-700">Upload (Cloudinary)</p>
+                    <CampoConfiguracao label="Imagem">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 relative">
+                          <label className={`"relative flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl ${editando&&"hover:border-primary-500 hover:bg-primary-50/30"}  transition-all cursor-pointer group"`}>
+                            <FiImage className={`text-gray-400 ${editando&&"group-hover:text-primary-500"} transition-colors`} size={20} />
+                            <span  className={`text-sm text-gray-600 ${editando?"group-hover:text-primary-600":""} `}>
+                              {carouselUpload.file ? "Trocar imagem" : "Selecionar imagem"}
+                            </span>
+                            <input
+                              type="file"
+                              disabled={!editando}
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0] ?? null;
+                                e.target.value = "";
+                                setCarouselUpload((prev) => ({ ...prev, file }));
+                              }}
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                            />
+                          </label>
+                        </div>
+                        {carouselUpload.file&& (
+                          <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                            <img
+                              src={carouselUpload.file.name}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
+                      {carouselUpload.file && (
+                        <p className="text-xs text-gray-500 mt-1 truncate">{carouselUpload.file.name}</p>
+                      )}
+                    </CampoConfiguracao>
+                    <CampoConfiguracao label="Título">
+                      <input
+                        type="text"
+                        placeholder="Título do banner"
+                        value={carouselUpload.titulo}
+                        onChange={(e) => setCarouselUpload((prev) => ({ ...prev, titulo: e.target.value }))}
+                        disabled={!editando}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                      />
+                    </CampoConfiguracao>
+                    <CampoConfiguracao label="Legenda (opcional)">
+                      <input
+                        type="text"
+                        placeholder="Frase de apoio ou chamada"
+                        value={carouselUpload.legenda}
+                        onChange={(e) => setCarouselUpload((prev) => ({ ...prev, legenda: e.target.value }))}
+                        disabled={!editando}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-100 disabled:text-gray-500"
+                      />
+                    </CampoConfiguracao>
+                    <button
+                      onClick={handleUploadCarouselImage}
+                      disabled={!editando || carouselUploading || !carouselUpload.file || !carouselUpload.titulo.trim()}
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black disabled:bg-gray-300 disabled:text-gray-500"
+                    >
+                      <FiUpload />
+                      {carouselUploading ? "A comprimir..." : "Fazer upload"}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
               <CampoConfiguracao label="Permitir Carrosel no Home">
