@@ -19,11 +19,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.igreja.api.dto.PageResponse;
 import com.igreja.api.dto.midia.MidiaActividade;
 import com.igreja.api.dto.midia.MidiaActividadeV;
 import com.igreja.api.dto.midia.MidiaDetailDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
+import com.igreja.api.dto.midia.MidiaRelacionadoEdicaoItem;
+import com.igreja.api.dto.midia.MidiaRelacionadosDto;
+import com.igreja.api.dto.midia.MidiaViewRequest;
 import com.igreja.api.services.MidiaService;
 import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
@@ -57,7 +61,7 @@ public class MidiaController {
             adminAuditLogService.log(adminDetails.getUsername(), "Mídia criada",
                     "Novo vídeo (arquivo) publicado", resolveIp(request), AdminAuditType.SUCESSO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(midiaService.SelectDetail(result.getId()));
     }
 
     @PostMapping(value = "/admin/midia/audio",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -70,7 +74,7 @@ public class MidiaController {
             adminAuditLogService.log(adminDetails.getUsername(), "Mídia criada",
                     "Novo áudio publicado", resolveIp(request), AdminAuditType.SUCESSO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(midiaService.SelectDetail(result.getId()));
     }
 
     @GetMapping("/user/midia/video")
@@ -126,7 +130,7 @@ public class MidiaController {
             adminAuditLogService.log(adminDetails.getUsername(), "Mídia editada",
                     "Vídeo (arquivo) ID " + id + " atualizado", resolveIp(request), AdminAuditType.INFO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(midiaService.SelectDetail(result.getId()));
     }
 
     @PutMapping(value="/admin/midia/audio/{id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -140,7 +144,7 @@ public class MidiaController {
             adminAuditLogService.log(adminDetails.getUsername(), "Mídia editada",
                     "Áudio/Imagem ID " + id + " atualizado", resolveIp(request), AdminAuditType.INFO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(midiaService.SelectDetail(result.getId()));
     }
 
     @DeleteMapping("/admin/midia/{id}")
@@ -166,6 +170,42 @@ public class MidiaController {
     public ResponseEntity<?> SelectComentario(@PathVariable int id) throws IOException {
         MidiaDetailDto detail = midiaService.SelectDetail(id);
         return ResponseEntity.ok(detail);
+    }
+
+    @GetMapping(value = "/user/midia/{id}/relacionados")
+    public ResponseEntity<MidiaRelacionadosDto> relacionados(
+            @PathVariable int id,
+            @RequestParam(defaultValue = "8") int size) {
+        return ResponseEntity.ok(midiaService.relacionados(id, size));
+    }
+
+    @GetMapping(value = "/user/midia/{id}/relacionados-edicoes")
+    public ResponseEntity<PageResponse<MidiaRelacionadoEdicaoItem>> relacionadosEdicoes(
+            @PathVariable int id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(midiaService.relacionadosPorEdicoes(id, page, size));
+    }
+
+    @PostMapping(value = "/user/me/midia/{id}/view")
+    public ResponseEntity<?> registerMidiaView(
+            @PathVariable int id,
+            @RequestBody(required = false) MidiaViewRequest payload,
+            @AuthenticationPrincipal UserDetails viewer,
+            HttpServletRequest request) {
+        Integer watchedSeconds = payload == null ? null : payload.watchedSeconds();
+        return ResponseEntity.ok(midiaService.registerView(id, resolveIp(request), request.getHeader("User-Agent"), viewer, watchedSeconds));
+    }
+
+    // Alias sem "/me" para suportar contagem de view sem autenticação.
+    @PostMapping(value = "/user/midia/{id}/view")
+    public ResponseEntity<?> registerMidiaViewPublic(
+            @PathVariable int id,
+            @RequestBody(required = false) MidiaViewRequest payload,
+            @AuthenticationPrincipal UserDetails viewer,
+            HttpServletRequest request) {
+        Integer watchedSeconds = payload == null ? null : payload.watchedSeconds();
+        return ResponseEntity.ok(midiaService.registerView(id, resolveIp(request), request.getHeader("User-Agent"), viewer, watchedSeconds));
     }
 
     @PostMapping(value = "/admin/actividade/trailer")

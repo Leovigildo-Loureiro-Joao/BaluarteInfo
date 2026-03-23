@@ -2,9 +2,10 @@ package com.igreja.api.configuration;
 
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
-import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.quartz.CronScheduleBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,21 +13,36 @@ import com.igreja.api.jobs.GaleriaJob;
 import com.igreja.api.jobs.InscritosJob;
 import com.igreja.api.jobs.LembreteJob;
 import com.igreja.api.jobs.MensagemPendenteJob;
+import com.igreja.api.jobs.NotificacaoCleanupJob;
 import com.igreja.api.jobs.VistosJob;
 
 @Configuration
 public class QuartzConfig {
+
+    @Value("${app.jobs.galeria.cron:0 0 0/2 * * ?}")
+    private String galeriaCron;
+
+    @Value("${app.jobs.lembrete.cron:0 0 8 * * ?}")
+    private String lembreteCron;
+
+    @Value("${app.jobs.limiteInscritos.cron:0 0/10 * * * ?}")
+    private String limiteInscritosCron;
+
+    @Value("${app.jobs.vistos.cron:0 30 8 * * ?}")
+    private String vistosCron;
+
+    @Value("${app.jobs.mensagemPendentes.cron:0 0/2 * * * ?}")
+    private String mensagemPendentesCron;
+
+    @Value("${app.jobs.notificacaoCleanup.cron:0 15 3 * * ?}")
+    private String notificacaoCleanupCron;
     
     @Bean
     public Trigger notifyActividadeTrigger(){
-        SimpleScheduleBuilder scheduleBuilder=SimpleScheduleBuilder.simpleSchedule()
-        .withIntervalInSeconds(20)
-        .repeatForever();
-        
         return TriggerBuilder.newTrigger()
         .forJob(notifyActividadeDetail())
         .withIdentity("notifyActividadeTrigger")
-        .withSchedule(scheduleBuilder)
+        .withSchedule(CronScheduleBuilder.cronSchedule(galeriaCron))
         .build();
     }
 
@@ -41,14 +57,10 @@ public class QuartzConfig {
 
     @Bean
     public Trigger LembreteTrigger(){
-        SimpleScheduleBuilder scheduleBuilder=SimpleScheduleBuilder.simpleSchedule()
-        .withIntervalInSeconds(20)
-        .repeatForever();
-        
         return TriggerBuilder.newTrigger()
         .forJob(LembreteDetail())
         .withIdentity("LembreteTrigger")
-        .withSchedule(scheduleBuilder)
+        .withSchedule(CronScheduleBuilder.cronSchedule(lembreteCron))
         .build();
     }
 
@@ -62,14 +74,10 @@ public class QuartzConfig {
 
     @Bean
     public Trigger LimiteTrigger(){
-        SimpleScheduleBuilder scheduleBuilder=SimpleScheduleBuilder.simpleSchedule()
-        .withIntervalInSeconds(20)
-        .repeatForever();
-        
         return TriggerBuilder.newTrigger()
         .forJob(LimiteDetail())
         .withIdentity("LimiteTrigger")
-        .withSchedule(scheduleBuilder)
+        .withSchedule(CronScheduleBuilder.cronSchedule(limiteInscritosCron))
         .build();
     }
 
@@ -83,14 +91,10 @@ public class QuartzConfig {
 
     @Bean
     public Trigger VistosTrigger(){
-        SimpleScheduleBuilder scheduleBuilder=SimpleScheduleBuilder.simpleSchedule()
-        .withIntervalInSeconds(20)
-        .repeatForever();
-        
         return TriggerBuilder.newTrigger()
         .forJob(VistosDetail())
         .withIdentity("VistosTrigger")
-        .withSchedule(scheduleBuilder)
+        .withSchedule(CronScheduleBuilder.cronSchedule(vistosCron))
         .build();
     }
 
@@ -105,14 +109,10 @@ public class QuartzConfig {
 
     @Bean
     public Trigger MensagemPendenteTrigger(){
-        SimpleScheduleBuilder scheduleBuilder=SimpleScheduleBuilder.simpleSchedule()
-        .withIntervalInSeconds(20)
-        .repeatForever();
-        
         return TriggerBuilder.newTrigger()
         .forJob(MensagemPendenteDetail())
         .withIdentity("MensagemPendenteTrigger")
-        .withSchedule(scheduleBuilder)
+        .withSchedule(CronScheduleBuilder.cronSchedule(mensagemPendentesCron))
         .build();
     }
 
@@ -120,6 +120,23 @@ public class QuartzConfig {
     public JobDetail MensagemPendenteDetail(){
         return JobBuilder.newJob(MensagemPendenteJob.class)
         .withIdentity("MensagemPendenteDetail")
+        .storeDurably()
+        .build();
+    }
+
+    @Bean
+    public Trigger NotificacaoCleanupTrigger() {
+        return TriggerBuilder.newTrigger()
+        .forJob(NotificacaoCleanupDetail())
+        .withIdentity("NotificacaoCleanupTrigger")
+        .withSchedule(CronScheduleBuilder.cronSchedule(notificacaoCleanupCron))
+        .build();
+    }
+
+    @Bean
+    public JobDetail NotificacaoCleanupDetail() {
+        return JobBuilder.newJob(NotificacaoCleanupJob.class)
+        .withIdentity("NotificacaoCleanupDetail")
         .storeDurably()
         .build();
     }

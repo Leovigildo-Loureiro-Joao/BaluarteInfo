@@ -1001,6 +1001,7 @@ export const ConfiguracoesPage = () => {
           <SecaoConfiguracao titulo="Mensagens" icone={FiMail}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <CampoConfiguracao 
+
                 label="Dias para mensagens não lidas"
                 descricao="Tempo máximo que mensagens não lidas são mantidas em destaque"
               >
@@ -1021,7 +1022,7 @@ export const ConfiguracoesPage = () => {
                 />
               </CampoConfiguracao>
 
-              <CampoConfiguracao label="Reenviar Pendentes">
+              <CampoConfiguracao descricao="Reenviar mensagens " label="Reenviar Pendentes">
                 <ToggleSwitch
                   value={configuracoes.messages.actions.reenviarPendentes}
                   onChange={(value) => setConfiguracoes({

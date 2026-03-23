@@ -208,7 +208,8 @@ public class UserController {
         user.setStatus(UserStatus.PENDENTE);
         user.setDataCadastro(LocalDateTime.now());
         user.setPassword(passwordEncoder.encode(userDto.password()));
-        return ResponseEntity.ok(userService.save(user));
+        UserModel saved = userService.save(user);
+        return ResponseEntity.ok(userService.findByIdData(saved.getId()));
     }
 
     @PostMapping("/auth/logout")

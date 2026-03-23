@@ -16,9 +16,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.igreja.api.dto.error.ApiErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -110,6 +112,33 @@ public class GlobalExceptionHandler {
                 HttpStatus.PAYLOAD_TOO_LARGE,
                 "Ficheiro muito grande",
                 "O ficheiro enviado ultrapassa o limite permitido.",
+                request,
+                List.of());
+    }
+
+    /**
+     * Ajuda a diagnosticar loops de serialização (ex.: "Infinite recursion").
+     * Loga a chain/path que o Jackson estava a serializar.
+     */
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    public ResponseEntity<ApiErrorResponse> handleNotWritable(
+            HttpMessageNotWritableException exception,
+            HttpServletRequest request) {
+        Throwable cause = exception.getMostSpecificCause();
+        if (cause instanceof JsonMappingException mapping) {
+            log.error("Serialization error on {} {}: {} | path={}",
+                    request.getMethod(),
+                    request.getRequestURI(),
+                    safeMessage(mapping, mapping.getOriginalMessage()),
+                    mapping.getPathReference(),
+                    exception);
+        } else {
+            log.error("Serialization error on {} {}", request.getMethod(), request.getRequestURI(), exception);
+        }
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Erro interno",
+                "Falha ao gerar a resposta (erro de serialização).",
                 request,
                 List.of());
     }

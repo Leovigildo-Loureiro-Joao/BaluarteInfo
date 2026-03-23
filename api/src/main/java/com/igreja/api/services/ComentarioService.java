@@ -108,11 +108,11 @@ public class ComentarioService {
         return comentarioRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este comentario não existe na base dados"));
      }
 
-    public ComentarioModel edit(ComentarioDto dto,int id){
+    public ComentarioResult edit(ComentarioDto dto,int id){
         ComentarioModel comentario=findByid(id);
         BeanUtils.copyProperties(dto, comentario);
         comentario.setDataPublicacao(LocalDate.now());
-        return comentarioRepository.save(comentario);
+        return toResult(comentarioRepository.save(comentario));
     }
 
     public void delete(int id){

@@ -31,7 +31,7 @@ public class ConfiguracaoModel {
     private ConfigType type;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column
     private JsonNode value;
 
     private LocalDateTime editado;

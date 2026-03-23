@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.igreja.api.dto.mensage.MensagemDto;
 import com.igreja.api.enums.ConfigType;
@@ -29,6 +31,12 @@ import org.springframework.data.domain.Pageable;
 public class NotificacaoService {
 
     private static final int WARNING_MARGIN = 5;
+
+    @Value("${app.notificacoes.cleanup.enabled:true}")
+    private boolean cleanupEnabled;
+
+    @Value("${app.notificacoes.cleanup.read-retention-days:30}")
+    private int cleanupReadRetentionDays;
 
     private final NotificacaoRepository notificacaoRepository;
     private final ConfigService configService;
@@ -95,12 +103,14 @@ public class NotificacaoService {
 
     public void notifyActividadeGaleria() {
         actividadeService.AllData().forEach(t -> {
-            int comentarios = comentarioRepository.findByActividade(t).size();
+            if (t.getDataEvento() == null) return;
+            long comentarios = comentarioRepository.countByActividade(t);
             double limite = configService.numberValueOrDefault(ConfigType.ComentarioLimiteActividade, 50);
             if (comentarios >= limite && t.getDataEvento().isBefore(LocalDateTime.now())) {
-                String descricao = "A actividade " + t.getTema() + " já tem " + comentarios
+                String assunto = actividadeLabel(t);
+                String descricao = "A actividade " + assunto + " já tem " + comentarios
                         + " comentários e foi encerrada. Actualize a galeria para marcar os momentos.";
-                createNotificationIfAbsent(t.getTema(), descricao, NotificacaoType.GALERIA);
+                createNotificationIfAbsent("GALERIA:ACTIVIDADE:" + t.getId(), assunto, descricao, NotificacaoType.GALERIA);
             }
         });
     }
@@ -108,25 +118,29 @@ public class NotificacaoService {
     public void notifyActividadeLimiteInscritos() {
         double totalIncritos = configService.numberValueOrDefault(ConfigType.IncritosLimiteActividade, 100);
         actividadeService.AllData().forEach(t -> {
-            int inscritos = inscritosRepository.findByActividade(t).size();
+            if (t.getDataEvento() == null) return;
+            long inscritos = inscritosRepository.countByActividade(t);
             boolean closeToLimit = inscritos >= Math.max(1, totalIncritos - WARNING_MARGIN);
             boolean futureEvent = t.getDataEvento().isAfter(LocalDateTime.now());
             if (closeToLimit && futureEvent) {
-                String descricao = "A actividade " + t.getTema() + " já tem " + inscritos
+                String assunto = actividadeLabel(t);
+                String descricao = "A actividade " + assunto + " já tem " + inscritos
                         + " inscritos e está próxima do limite configurado.";
-                createNotificationIfAbsent(t.getTema(), descricao, NotificacaoType.LIMITE_INSCRITOS);
+                createNotificationIfAbsent("LIMITE_INSCRITOS:ACTIVIDADE:" + t.getId(), assunto, descricao, NotificacaoType.LIMITE_INSCRITOS);
             }
         });
     }
 
     public void notifyActividadeLembrete() {
         actividadeService.AllData().forEach(t -> {
+            if (t.getDataEvento() == null) return;
             long diferenca = ChronoUnit.DAYS.between(LocalDateTime.now(), t.getDataEvento());
-            String descricao = "A actividade " + t.getTema() + " vai acontecer em "
+            String assunto = actividadeLabel(t);
+            String descricao = "A actividade " + assunto + " vai acontecer em "
                     + t.getDataEvento().getDayOfMonth() + "/" + t.getDataEvento().getMonthValue() + "/"
                     + t.getDataEvento().getYear() + ".";
             if (diferenca >= 0 && diferenca <= 3) {
-                createNotificationIfAbsent(t.getTema(), descricao, NotificacaoType.LEMBRETE);
+                createNotificationIfAbsent("LEMBRETE:ACTIVIDADE:" + t.getId(), assunto, descricao, NotificacaoType.LEMBRETE);
             }
         });
     }
@@ -135,22 +149,20 @@ public class NotificacaoService {
         double limite = configService.numberValueOrDefault(ConfigType.VisitasLimite, 100);
 
         artigosRepository.findAll().forEach(artigo -> {
-            var vistos=vistosRepository.findByArtigo(artigo);
-            int totalVistos = vistos.size();
+            long totalVistos = vistosRepository.countByArtigo(artigo);
             if (totalVistos >= limite) {
                 String descricao = "O artigo " + artigo.getTitulo() + " atingiu " + totalVistos
                         + " visualizações e merece destaque na plataforma.";
-                createNotificationIfAbsent(artigo.getTitulo(), descricao, NotificacaoType.VISTOS);
+                createNotificationIfAbsent("VISTOS:ARTIGO:" + artigo.getId(), artigo.getTitulo(), descricao, NotificacaoType.VISTOS);
             }
         });
 
         midiaRepository.findAll().forEach(midia -> {
-             var vistos=vistosRepository.findByMidia(midia);
-            int totalVistos = vistos.size();
+            long totalVistos = vistosRepository.countByMidia(midia);
             if (totalVistos >= limite) {
                 String descricao = "A mídia " + midia.getTitulo() + " atingiu " + totalVistos
                         + " visualizações e merece destaque na plataforma.";
-                createNotificationIfAbsent(midia.getTitulo(), descricao, NotificacaoType.VISTOS);
+                createNotificationIfAbsent("VISTOS:MIDIA:" + midia.getId(), midia.getTitulo(), descricao, NotificacaoType.VISTOS);
             }
         });
     }
@@ -189,16 +201,53 @@ public class NotificacaoService {
         });
     }
 
-    private void createNotificationIfAbsent(String assunto, String descricao, NotificacaoType type) {
-        if (notificacaoRepository.findByDescricao(descricao).isEmpty()) {
-            NotificacaoModel notificacao = new NotificacaoModel();
-            notificacao.setAssunto(assunto);
-            notificacao.setDescricao(descricao);
-            notificacao.setDataNotificacao(LocalDateTime.now());
-            notificacao.setLido(false);
-            notificacao.setType(type);
-            notificacaoRepository.save(notificacao);
+    /** Remove notificações lidas mais antigas que o período de retenção (dias). */
+    public long cleanupReadNotifications(int retentionDays) {
+        int safeDays = Math.max(1, retentionDays);
+        LocalDateTime cutoff = LocalDateTime.now().minusDays(safeDays);
+        return notificacaoRepository.deleteByLidoIsTrueAndDataNotificacaoBefore(cutoff);
+    }
+
+    /** Executa cleanup baseado em properties (sem lançar exceção). */
+    public Optional<Long> cleanupConfigured() {
+        if (!cleanupEnabled) {
+            return Optional.empty();
         }
+        try {
+            return Optional.of(cleanupReadNotifications(cleanupReadRetentionDays));
+        } catch (Exception ignored) {
+            return Optional.empty();
+        }
+    }
+
+    private void createNotificationIfAbsent(String refKey, String assunto, String descricao, NotificacaoType type) {
+        if (refKey == null || refKey.isBlank()) {
+            return;
+        }
+        if (notificacaoRepository.existsByRefKey(refKey)) {
+            return;
+        }
+        NotificacaoModel notificacao = new NotificacaoModel();
+        notificacao.setRefKey(refKey);
+        notificacao.setAssunto(assunto);
+        notificacao.setDescricao(descricao);
+        notificacao.setDataNotificacao(LocalDateTime.now());
+        notificacao.setLido(false);
+        notificacao.setType(type);
+        notificacaoRepository.save(notificacao);
+    }
+
+    private String actividadeLabel(ActividadeModel actividade) {
+        if (actividade == null) return "";
+        String titulo = actividade.getTitulo();
+        if (titulo == null || titulo.isBlank()) {
+            titulo = actividade.getTema();
+        }
+        Integer edicao = actividade.getEdicao();
+        if (edicao != null && edicao > 0) {
+            return titulo + " (Edição " + edicao + ")";
+        }
+        return titulo;
     }
 
 }

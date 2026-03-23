@@ -86,7 +86,7 @@ const ModalArtigo = ({
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [previewInstruction, setPreviewInstruction] = useState("");
-  const [previewPages, setPreviewPages] = useState(5);
+  const [previewPages, setPreviewPages] = useState(8);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState("");
@@ -502,7 +502,7 @@ const ModalArtigo = ({
       <div className="bg-primary-50 rounded-xl p-6">
         <h3 className="text-xl font-bold text-gray-800 mb-1">Preview do conteúdo</h3>
         <p className="text-sm text-gray-600">
-          Gere uma prévia com o Gemini (até 5 páginas do PDF) e ajuste as instruções se o conteúdo vier mal
+          Gere uma prévia com o Gemini (até 8 páginas do PDF) e ajuste as instruções se o conteúdo vier mal
           estruturado.
         </p>
       </div>
@@ -516,7 +516,7 @@ const ModalArtigo = ({
               onChange={(e) => setPreviewPages(Number(e.target.value))}
               className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
             >
-              {[1, 2, 3, 4, 5].map((value) => (
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((value) => (
                 <option key={value} value={value}>
                   {value}
                 </option>

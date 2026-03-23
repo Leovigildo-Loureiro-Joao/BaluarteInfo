@@ -2,7 +2,9 @@ package com.igreja.api.services;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.igreja.api.dto.comentario.ComentarioResult;
@@ -32,6 +35,9 @@ import com.igreja.api.dto.midia.MidiaActividadeV;
 import com.igreja.api.dto.midia.MidiaDetailDto;
 import com.igreja.api.dto.midia.MidiaDto;
 import com.igreja.api.dto.midia.MidiaFile;
+import com.igreja.api.dto.midia.MidiaRelacionadoEdicaoItem;
+import com.igreja.api.dto.midia.MidiaRelacionadoItem;
+import com.igreja.api.dto.midia.MidiaRelacionadosDto;
 import com.igreja.api.dto.midia.MidiaSimple;
 import com.igreja.api.dto.PageResponse;
 import com.igreja.api.enums.AudioType;
@@ -49,6 +55,7 @@ import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.VistosRepository;
 import com.igreja.api.utils.AvatarUtils;
+import com.igreja.api.utils.SecurityRoles;
 
 @Service
 public class MidiaService {
@@ -209,7 +216,6 @@ public class MidiaService {
    }
 
     public MidiaDetailDto SelectDetail(int id) {
-        Visto(id);
         MidiaModel midia = Select(id);
         long visualizacoes = vistosRepository.countByMidia(midia);
         return new MidiaDetailDto(
@@ -225,6 +231,176 @@ public class MidiaService {
                 midia.getUrl(),
                 midia.getDataPublicacao(),
                 visualizacoes);
+    }
+
+    public MidiaRelacionadosDto relacionados(int id, int size) {
+        MidiaModel base = Select(id);
+        MidiaType type = base.getType();
+        if (type == null) {
+            return new MidiaRelacionadosDto(List.of(), List.of());
+        }
+
+        int limit = Math.max(1, Math.min(size, 24));
+        int pullSize = Math.max(12, limit * 4);
+
+        LinkedHashMap<Integer, MidiaModel> ranked = new LinkedHashMap<>();
+
+        if (base.getActividade() != null) {
+            midiaRepository
+                    .findByActividadeAndTypeAndIdNot(base.getActividade(), type, id, PageRequest.of(0, pullSize))
+                    .forEach(m -> ranked.putIfAbsent(m.getId(), m));
+        }
+
+        String autor = base.getAutor();
+        if (autor != null && !autor.isBlank()) {
+            midiaRepository
+                    .findByAutorIgnoreCaseAndTypeAndIdNotOrderByIdDesc(autor.trim(), type, id, PageRequest.of(0, pullSize))
+                    .forEach(m -> ranked.putIfAbsent(m.getId(), m));
+        }
+
+        if (MidiaType.AUDIO.equals(type) && base.getAudioType() != null) {
+            midiaRepository
+                    .findByAudioTypeAndIdNotOrderByIdDesc(base.getAudioType(), id, PageRequest.of(0, pullSize))
+                    .forEach(m -> ranked.putIfAbsent(m.getId(), m));
+        }
+
+        if (MidiaType.VIDEO.equals(type) && base.getVideoType() != null) {
+            midiaRepository
+                    .findByVideoTypeAndIdNotOrderByIdDesc(base.getVideoType(), id, PageRequest.of(0, pullSize))
+                    .forEach(m -> ranked.putIfAbsent(m.getId(), m));
+        }
+
+        midiaRepository
+                .findByTypeOrderByIdDesc(type, PageRequest.of(0, pullSize))
+                .forEach(m -> {
+                    if (m.getId() != id) ranked.putIfAbsent(m.getId(), m);
+                });
+
+        LocalDateTime now = LocalDateTime.now();
+        List<MidiaRelacionadoItem> passados = new ArrayList<>();
+        List<MidiaRelacionadoItem> atuais = new ArrayList<>();
+
+        for (MidiaModel candidate : ranked.values()) {
+            if (passados.size() >= limit && atuais.size() >= limit) break;
+
+            boolean isPastEvent = false;
+            if (candidate.getActividade() != null && candidate.getActividade().getDataEvento() != null) {
+                isPastEvent = candidate.getActividade().getDataEvento().isBefore(now);
+            }
+
+            String imagem = candidate.getImagem();
+            if ((imagem == null || imagem.isBlank()) && MidiaType.IMAGE.equals(candidate.getType())) {
+                imagem = candidate.getUrl();
+            }
+
+            MidiaRelacionadoItem item = new MidiaRelacionadoItem(
+                    candidate.getId(),
+                    candidate.getTitulo(),
+                    candidate.getAutor(),
+                    imagem,
+                    candidate.getTempo(),
+                    candidate.getType(),
+                    candidate.getAudioType(),
+                    candidate.getVideoType(),
+                    candidate.getUrl());
+
+            if (isPastEvent) {
+                if (passados.size() < limit) passados.add(item);
+            } else {
+                if (atuais.size() < limit) atuais.add(item);
+            }
+        }
+
+        return new MidiaRelacionadosDto(passados, atuais);
+    }
+
+    public PageResponse<MidiaRelacionadoEdicaoItem> relacionadosPorEdicoes(int id, int page, int size) {
+        MidiaModel base = Select(id);
+        if (base.getActividade() == null || base.getActividade().getTitulo() == null || base.getActividade().getTitulo().isBlank()) {
+            return new PageResponse<>(List.of(), page, size, 0, 0);
+        }
+        if (base.getType() == null) {
+            return new PageResponse<>(List.of(), page, size, 0, 0);
+        }
+
+        int safePage = Math.max(0, page);
+        int safeSize = Math.max(1, Math.min(size, 24));
+        var pageable = PageRequest.of(safePage, safeSize);
+
+        String titulo = base.getActividade().getTitulo().trim();
+        var result = midiaRepository.findRelacionadosPorEdicoes(titulo, base.getType(), id, pageable)
+                .map(candidate -> {
+                    String imagem = candidate.getImagem();
+                    if ((imagem == null || imagem.isBlank()) && MidiaType.IMAGE.equals(candidate.getType())) {
+                        imagem = candidate.getUrl();
+                    }
+                    Integer actividadeId = candidate.getActividade() == null ? null : candidate.getActividade().getId();
+                    Integer edicao = candidate.getActividade() == null ? null : candidate.getActividade().getEdicao();
+                    LocalDateTime dataEvento = candidate.getActividade() == null ? null : candidate.getActividade().getDataEvento();
+                    return new MidiaRelacionadoEdicaoItem(
+                            candidate.getId(),
+                            candidate.getTitulo(),
+                            candidate.getAutor(),
+                            imagem,
+                            candidate.getTempo(),
+                            candidate.getType(),
+                            candidate.getAudioType(),
+                            candidate.getVideoType(),
+                            candidate.getUrl(),
+                            actividadeId,
+                            edicao,
+                            dataEvento);
+                });
+
+        return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
+                result.getTotalElements(), result.getTotalPages());
+    }
+
+    public Map<String, Object> registerView(int id, String ip, String userAgent, UserDetails viewer, Integer watchedSeconds) {
+        if (SecurityRoles.isAdmin(viewer)) {
+            return Map.of("counted", false, "reason", "admin");
+        }
+        int seconds = watchedSeconds == null ? 0 : watchedSeconds;
+        if (seconds < 30) {
+            return Map.of("counted", false, "reason", "watched-seconds-too-low", "requiredSeconds", 30);
+        }
+        MidiaModel midia = Select(id);
+
+        String safeIp = ip == null ? "" : ip.trim();
+        if (!safeIp.isBlank()) {
+            LocalDateTime cutoff = LocalDateTime.now().minusMinutes(10);
+            if (vistosRepository.existsByMidiaAndIpAndDataAfter(midia, safeIp, cutoff)) {
+                return Map.of("counted", false, "reason", "duplicate", "windowMinutes", 10);
+            }
+        }
+
+        VistosModel vistos = new VistosModel();
+        vistos.setMidia(midia);
+        vistos.setIp(safeIp.isBlank() ? null : safeIp);
+        vistos.setUserAgent(normalizeUserAgent(userAgent));
+        vistos.setWatchedSeconds(seconds);
+        vistos.setViewerUsername(viewer == null ? null : safeTrim(viewer.getUsername(), 120));
+        vistosRepository.save(vistos);
+        return Map.of("counted", true);
+    }
+
+    private static String normalizeUserAgent(String value) {
+        String ua = value == null ? "" : value.trim();
+        if (ua.isBlank()) {
+            return null;
+        }
+        return safeTrim(ua, 300);
+    }
+
+    private static String safeTrim(String value, int max) {
+        if (value == null) {
+            return null;
+        }
+        String v = value.trim();
+        if (v.length() <= max) {
+            return v;
+        }
+        return v.substring(0, Math.max(0, max)).trim();
     }
 
     public MidiaModel Visto(int id)  {

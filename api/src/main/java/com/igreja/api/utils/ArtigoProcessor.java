@@ -23,8 +23,9 @@ public class ArtigoProcessor {
         // Divide em parágrafos e seções
         List<String> paragraphs = splitIntoParagraphs(cleanText);
         
-        // Constrói HTML estruturado
-        return buildStructuredHtml(titulo, descricao, paragraphs);
+        // Constrói HTML do corpo e aplica template único de estilo
+        String body = buildBodyHtml(paragraphs);
+        return ArtigoHtmlTheme.render(titulo, descricao, body);
     }
     
     private String cleanRawText(String text) {
@@ -130,29 +131,9 @@ public class ArtigoProcessor {
         return normalized;
     }
     
-    private String buildStructuredHtml(String titulo, String descricao, List<String> paragraphs) {
+    private String buildBodyHtml(List<String> paragraphs) {
         StringBuilder html = new StringBuilder();
-        
-        // Abre o container principal
-        html.append("""
-            <div class="artigo" style="max-width:800px; margin:0 auto; padding:30px; font-family:'Georgia', 'Times New Roman', serif; line-height:1.8; color:#333;">
-            """);
-        
-        // Título
-        html.append(String.format("""
-            <h1 style="color:#2c3e50; font-size:2.5rem; margin-bottom:10px; border-bottom:3px solid #4a6fa5; padding-bottom:15px;">%s</h1>
-            """, escapeHtml(titulo)));
-        
-        // Descrição/Subtítulo
-        if (descricao != null && !descricao.isEmpty()) {
-            html.append(String.format("""
-                <p style="color:#4a6fa5; font-size:1.3rem; margin-bottom:30px; font-style:italic;">%s</p>
-                """, escapeHtml(descricao)));
-        }
-        
-        // Corpo do artigo
-        boolean hasH2 = false;
-        int sectionCount = 0;
+        boolean hasSection = false;
         
         for (int i = 0; i < paragraphs.size(); i++) {
             String para = paragraphs.get(i);
@@ -160,8 +141,8 @@ public class ArtigoProcessor {
 
             Heading heading = parseMarkdownHeading(para);
             if (heading != null) {
-                if (hasH2) {
-                    html.append("<hr style=\"border:none; border-top:2px solid #eaeaea; margin:40px 0;\">\n");
+                if (hasSection) {
+                    html.append("<hr>\n");
                 }
                 String tag = switch (heading.level) {
                     case 1 -> "h2"; // h1 já é o título do artigo
@@ -169,37 +150,22 @@ public class ArtigoProcessor {
                     case 3 -> "h4";
                     default -> "h4";
                 };
-                String size = switch (tag) {
-                    case "h2" -> "1.8rem";
-                    case "h3" -> "1.5rem";
-                    default -> "1.25rem";
-                };
-                html.append(String.format("""
-                    <%s style="color:#34495e; font-size:%s; margin-top:40px; margin-bottom:20px;">%s</%s>
-                    """, tag, size, escapeHtml(heading.text), tag));
-                hasH2 = true;
-                sectionCount++;
+                html.append(String.format("<%s>%s</%s>\n", tag, escapeHtml(heading.text), tag));
+                hasSection = true;
                 continue;
             }
             
             // Detecta se é um título de capítulo/seção
             if (isChapterTitle(para)) {
-                if (hasH2) {
-                    html.append("<hr style=\"border:none; border-top:2px solid #eaeaea; margin:40px 0;\">\n");
+                if (hasSection) {
+                    html.append("<hr>\n");
                 }
-                html.append(String.format("""
-                    <h2 style="color:#34495e; font-size:1.8rem; margin-top:40px; margin-bottom:20px;">%s</h2>
-                    """, escapeHtml(para)));
-                hasH2 = true;
-                sectionCount++;
+                html.append(String.format("<h2>%s</h2>\n", escapeHtml(para)));
+                hasSection = true;
             }
             // Detecta se é um versículo bíblico
             else if (isBibleVerse(para)) {
-                html.append(String.format("""
-                    <blockquote style="background-color:#f8f9fa; border-left:5px solid #4a6fa5; padding:15px 20px; margin:20px 0; font-style:italic; color:#555;">
-                        %s
-                    </blockquote>
-                    """, formatBibleVerse(escapeHtml(para))));
+                html.append("<blockquote>").append(formatBibleVerse(escapeHtml(para))).append("</blockquote>\n");
             }
             // Detecta se é lista
             else if (isList(para)) {
@@ -207,28 +173,9 @@ public class ArtigoProcessor {
             }
             // Parágrafo normal
             else {
-                // Destaca a primeira letra do primeiro parágrafo
-                if (i == 0 && !hasH2) {
-                    String firstChar = escapeHtml(para.substring(0, 1));
-                    String restOfPara = escapeHtmlWithBreaks(para.substring(1));
-                    html.append(String.format("""
-                        <p style="margin-bottom:15px;">
-                            <span style="font-size:4rem; color:#4a6fa5; float:left; line-height:1; margin-right:8px;">%s</span>%s
-                        </p>
-                        """, firstChar, restOfPara));
-                } else {
-                    html.append(String.format("""
-                        <p style="margin-bottom:15px;">%s</p>
-                        """, escapeHtmlWithBreaks(para)));
-                }
+                html.append("<p>").append(escapeHtmlWithBreaks(para)).append("</p>\n");
             }
         }
-        
-        // Fecha o container
-        html.append("""
-            </div>
-            """);
-        
         return html.toString();
     }
     

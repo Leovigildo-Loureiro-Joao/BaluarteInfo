@@ -50,7 +50,7 @@ public class ArtigoController {
             adminAuditLogService.log(adminDetails.getUsername(), "Artigo publicado",
                     "Novo artigo publicado", resolveIp(request), AdminAuditType.SUCESSO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(artigoService.adminDetail(result.getId()));
     }
 
     @DeleteMapping(value = "/admin/artigo/delete/{id}")
@@ -77,7 +77,7 @@ public class ArtigoController {
             adminAuditLogService.log(adminDetails.getUsername(), "Artigo editado",
                     "Artigo ID " + id + " atualizado", resolveIp(request), AdminAuditType.INFO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(artigoService.adminDetail(result.getId()));
     }
 
     @GetMapping(value = "/user/artigo")
@@ -108,13 +108,14 @@ public class ArtigoController {
 
     @PutMapping("/admin/artigo/{id}/html")
     public ResponseEntity<?> RegenerateHtml(@PathVariable int id) throws Exception {
-        return ResponseEntity.ok(artigoService.regenerateHtml(id));
+        var updated = artigoService.regenerateHtml(id);
+        return ResponseEntity.ok(artigoService.adminDetail(updated.getId()));
     }
 
     @GetMapping("/admin/artigo/{id}/enhance/preview")
     public ResponseEntity<?> EnhancePreviewWithGemini(
             @PathVariable int id,
-            @RequestParam(defaultValue = "5") int pages,
+            @RequestParam(defaultValue = "8") int pages,
             @RequestParam(required = false) String instruction) throws Exception {
         return ResponseEntity.ok(artigoService.enhancePreviewWithGemini(id, pages, instruction));
     }
@@ -122,7 +123,7 @@ public class ArtigoController {
     @PostMapping(value = "/admin/artigo/enhance/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> EnhancePreviewFromUpload(@ModelAttribute @Valid ArtigoEnhancePreviewUploadDto payload)
             throws Exception {
-        int pages = payload.pages() == null ? 5 : payload.pages();
+        int pages = payload.pages() == null ? 8 : payload.pages();
         return ResponseEntity.ok(
                 artigoService.enhancePreviewWithGemini(payload.titulo(), payload.descricao(), payload.pdf(), pages,
                         payload.instruction()));

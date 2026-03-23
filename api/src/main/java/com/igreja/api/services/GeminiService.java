@@ -60,9 +60,9 @@ public class GeminiService {
         String safeText = extractedText == null ? "" : extractedText.trim();
 
         // Limita o tamanho do texto para evitar tokens excessivos
-        if (safeText.length() > 20000) {
-            safeText = safeText.substring(0, 20000);
-            log.info("Texto truncado para 20000 caracteres");
+        if (safeText.length() > 150000) {
+            safeText = safeText.substring(0, 150000);
+            log.info("Texto truncado para 60000 caracteres");
         }
 
         // Prompt mais simples - pede apenas texto estruturado
@@ -94,6 +94,14 @@ public class GeminiService {
             log.info("Enviando prompt para Gemini (modelo: {}, título: {})", model, safeTitulo);
             String response = callGemini(prompt);
             log.info("Resposta recebida do Gemini (tamanho: {} caracteres)", response.length());
+
+            // Se o Gemini devolver algo muito curto para um texto grande, é provável que tenha truncado/colapsado demais.
+            // Neste caso, cai para o processador local para preservar mais conteúdo.
+            if (safeText.length() > 6000 && (response == null || response.trim().length() < 1500)) {
+                log.warn("Resposta do Gemini curta demais para o input (inputLen={}, outputLen={}). Usando fallback local.",
+                        safeText.length(), response == null ? 0 : response.trim().length());
+                return artigoProcessor.processToHtml(safeTitulo, safeDescricao, safeText);
+            }
             
             // Processa a resposta para HTML bonito
             String processedHtml = artigoProcessor.processToHtml(safeTitulo, safeDescricao, response);
@@ -134,7 +142,7 @@ public class GeminiService {
                 "temperature", 0.3,  // Baixa temperatura para mais consistência
                 "topK", 40,
                 "topP", 0.95,
-                "maxOutputTokens", 4096,  // Aumentado para respostas mais longas
+                "maxOutputTokens", 8192,  // Respostas mais longas (útil para artigos maiores)
                 "stopSequences", List.of()
             )
         );
@@ -359,8 +367,8 @@ public class GeminiService {
         String safeText = plainText == null ? "" : plainText.trim();
         String safeInstruction = instruction == null ? "" : instruction.trim();
 
-        if (safeText.length() > 15000) {
-            safeText = safeText.substring(0, 15000);
+        if (safeText.length() > 45000) {
+            safeText = safeText.substring(0, 45000);
         }
 
         String instructionBlock = safeInstruction.isBlank()

@@ -65,6 +65,8 @@ public class SecurityConfig {
                 .requestMatchers("/public/inscritos/**").permitAll()
                 .requestMatchers("/public/mensagem/**").permitAll()
                 .requestMatchers("/public/sobre").permitAll()
+                // Views de mídia (contabiliza após 30s) não depende de autenticação no MVP.
+                .requestMatchers(HttpMethod.POST, "/user/midia/*/view", "/user/me/midia/*/view").permitAll()
                 .requestMatchers(HttpMethod.POST, "/user/me/download/**").permitAll()
                 .requestMatchers(HttpMethod.GET,
                         "/user/home/**",

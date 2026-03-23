@@ -29,6 +29,8 @@ public record ActividadeDto(
 
    @NotBlank String organizador,
 
+   Integer edicao,
+
    @NotNull Integer capacidade,
 
    @NotNull LocalDateTime dataEvento,

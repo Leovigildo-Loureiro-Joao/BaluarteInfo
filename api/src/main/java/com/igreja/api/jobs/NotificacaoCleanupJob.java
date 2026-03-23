@@ -11,8 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.igreja.api.services.NotificacaoService;
 
 @DisallowConcurrentExecution
-public class LembreteJob implements Job {
-    private static final Logger log = LoggerFactory.getLogger(LembreteJob.class);
+public class NotificacaoCleanupJob implements Job {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificacaoCleanupJob.class);
 
     @Autowired
     private NotificacaoService notificacaoService;
@@ -20,10 +21,11 @@ public class LembreteJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         try {
-            notificacaoService.notifyActividadeLembrete();
+            var cleaned = notificacaoService.cleanupConfigured();
+            cleaned.ifPresent(count -> log.info("Cleanup de notificações (job): {} removidas.", count));
         } catch (Exception e) {
-            log.error("Falha ao executar job de lembrete de actividade.", e);
-            throw new JobExecutionException("Falha ao executar job de lembrete.", e, false);
+            log.error("Falha no cleanup de notificações.", e);
         }
     }
 }
+

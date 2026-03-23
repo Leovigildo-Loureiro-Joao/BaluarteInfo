@@ -76,7 +76,8 @@ public class ActividadeModel extends StackPane{
 
     public ActividadeModel(ActividadeDtoSimple data,ActividadesController aController) {
         dados=data;
-        this.titulo=new Label(data.titulo());
+        String tituloText = data.edicao() == null ? data.titulo() : (data.titulo() + " (Edição " + data.edicao() + ")");
+        this.titulo=new Label(tituloText);
         this.tema=new Label(data.tema());
         this.tipoEvento=new Label(data.tipoEvento().name());
         this.organizador=new Label(data.organizador());

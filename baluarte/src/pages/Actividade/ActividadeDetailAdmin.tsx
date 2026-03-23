@@ -45,6 +45,9 @@ import {
   MidiaSimple,
   MidiaType,
   PageResponse,
+  ProgramacaoItemView,
+  ProgramacaoStatus,
+  ProgramacaoTipo,
   PublicoAlvoType,
 } from "../../types/api";
 
@@ -323,9 +326,31 @@ export const ActividadeDetails = () => {
   const [galeria, setGaleria] = useState<MidiaSimple[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [activeTab, setActiveTab] = useState<'info' | 'comentarios' | 'galeria'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'comentarios' | 'galeria' | 'programacao'>('info');
   const [showTraillerModal, setShowTraillerModal] = useState(false);
   const actividadeId = Number(id);
+
+  const [programacao, setProgramacao] = useState<ProgramacaoItemView[]>([]);
+  const [programacaoLoading, setProgramacaoLoading] = useState(false);
+  const [programacaoError, setProgramacaoError] = useState("");
+  const [showProgramacaoModal, setShowProgramacaoModal] = useState(false);
+  const [editingProgramacao, setEditingProgramacao] = useState<ProgramacaoItemView | null>(null);
+
+  type ProgramacaoForm = {
+    titulo: string;
+    tipo: ProgramacaoTipo;
+    inicio: string;
+    fim: string;
+    ordem: string;
+  };
+
+  const [programacaoForm, setProgramacaoForm] = useState<ProgramacaoForm>({
+    titulo: "",
+    tipo: ProgramacaoTipo.Sessao,
+    inicio: "",
+    fim: "",
+    ordem: "",
+  });
 
   useEffect(() => {
     let active = true;
@@ -382,6 +407,96 @@ export const ActividadeDetails = () => {
       active = false;
     };
   }, [actividadeId]);
+
+  const loadProgramacao = async () => {
+    if (!Number.isFinite(actividadeId)) return;
+    setProgramacaoError("");
+    setProgramacaoLoading(true);
+    try {
+      const res = await apiFetch(`/admin/actividade/${actividadeId}/programacao`);
+      if (!res.ok) throw new Error("Falha ao carregar programação.");
+      const payload = (await res.json()) as ProgramacaoItemView[];
+      setProgramacao(Array.isArray(payload) ? payload : []);
+    } catch {
+      setProgramacaoError("Não foi possível carregar a programação.");
+      setProgramacao([]);
+    } finally {
+      setProgramacaoLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab !== "programacao") return;
+    loadProgramacao();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, actividadeId]);
+
+  const openAddProgramacao = () => {
+    setEditingProgramacao(null);
+    const base = actividade?.dataEvento ? new Date(actividade.dataEvento) : null;
+    const localISO = base
+      ? new Date(base.getTime() - base.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+      : "";
+    setProgramacaoForm({
+      titulo: "",
+      tipo: ProgramacaoTipo.Sessao,
+      inicio: localISO,
+      fim: "",
+      ordem: "",
+    });
+    setShowProgramacaoModal(true);
+  };
+
+  const openEditProgramacao = (item: ProgramacaoItemView) => {
+    setEditingProgramacao(item);
+    const inicio = item.inicio ? new Date(item.inicio) : null;
+    const fim = item.fim ? new Date(item.fim) : null;
+    const toLocalInput = (d: Date | null) =>
+      d ? new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "";
+    setProgramacaoForm({
+      titulo: item.titulo ?? "",
+      tipo: item.tipo ?? ProgramacaoTipo.Sessao,
+      inicio: toLocalInput(inicio),
+      fim: toLocalInput(fim),
+      ordem: item.ordem == null ? "" : String(item.ordem),
+    });
+    setShowProgramacaoModal(true);
+  };
+
+  const submitProgramacao = async () => {
+    if (!Number.isFinite(actividadeId)) return;
+    const titulo = programacaoForm.titulo.trim();
+    if (!titulo) return;
+    if (!programacaoForm.inicio) return;
+
+    const payload = {
+      titulo,
+      tipo: programacaoForm.tipo,
+      inicio: new Date(programacaoForm.inicio).toISOString(),
+      fim: programacaoForm.fim ? new Date(programacaoForm.fim).toISOString() : null,
+      ordem: programacaoForm.ordem.trim() ? Number(programacaoForm.ordem) : null,
+    };
+
+    const isEdit = Boolean(editingProgramacao?.id);
+    const url = isEdit
+      ? `/admin/actividade/${actividadeId}/programacao/${editingProgramacao!.id}`
+      : `/admin/actividade/${actividadeId}/programacao`;
+    const method = isEdit ? "PUT" : "POST";
+
+    const res = await apiFetch(url, { method, body: payload });
+    if (!res.ok) return;
+    setShowProgramacaoModal(false);
+    setEditingProgramacao(null);
+    await loadProgramacao();
+  };
+
+  const deleteProgramacao = async (itemId: number) => {
+    if (!Number.isFinite(actividadeId)) return;
+    if (!window.confirm("Remover este item da programação?")) return;
+    const res = await apiFetch(`/admin/actividade/${actividadeId}/programacao/${itemId}`, { method: "DELETE" });
+    if (!res.ok) return;
+    await loadProgramacao();
+  };
 
   const reloadGaleria = async () => {
     if (!Number.isFinite(actividadeId)) return;
@@ -621,6 +736,17 @@ export const ActividadeDetails = () => {
               <GiPhotoCamera size={16} />
               Galeria ({galeria.length})
             </button>
+            <button
+              onClick={() => setActiveTab('programacao')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+                activeTab === 'programacao'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <FiClock size={16} />
+              Programação
+            </button>
           </nav>
         </div>
       </div>
@@ -788,6 +914,108 @@ export const ActividadeDetails = () => {
                 />
               </motion.div>
             )}
+
+            {activeTab === 'programacao' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-sm p-6"
+              >
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <h2 className="text-xl font-bold flex items-center gap-2">
+                    <FiClock className="text-primary-500" />
+                    Programação
+                  </h2>
+                  <button
+                    onClick={openAddProgramacao}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-primary-500 text-white rounded-lg text-sm hover:bg-primary-600"
+                  >
+                    <FiPlus size={16} />
+                    Adicionar item
+                  </button>
+                </div>
+
+                {programacaoError && (
+                  <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                    {programacaoError}
+                  </div>
+                )}
+
+                {programacaoLoading ? (
+                  <div className="text-sm text-gray-500 py-6">A carregar programação…</div>
+                ) : programacao.length === 0 ? (
+                  <div className="text-sm text-gray-500 py-6">Ainda não há itens de programação.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {programacao.map((item) => {
+                      const inicio = item.inicio ? new Date(item.inicio) : null;
+                      const fim = item.fim ? new Date(item.fim) : null;
+                      const statusLabel =
+                        item.status === ProgramacaoStatus.Done
+                          ? "Concluído"
+                          : item.status === ProgramacaoStatus.Ongoing
+                          ? "A decorrer"
+                          : "Por começar";
+                      const statusClass =
+                        item.status === ProgramacaoStatus.Done
+                          ? "bg-green-100 text-green-700"
+                          : item.status === ProgramacaoStatus.Ongoing
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-gray-100 text-gray-700";
+                      const tipoLabel = item.tipo === ProgramacaoTipo.Pausa ? "Pausa" : "Sessão";
+                      const tipoClass =
+                        item.tipo === ProgramacaoTipo.Pausa
+                          ? "bg-red-50 text-red-700 border border-red-100"
+                          : "bg-primary-50 text-primary-700 border border-primary-100";
+
+                      return (
+                        <div key={item.id} className="p-4 bg-gray-50 rounded-xl flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold text-gray-900 truncate">{item.titulo}</p>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${tipoClass}`}>{tipoLabel}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${statusClass}`}>{statusLabel}</span>
+                            </div>
+                            <div className="mt-2 text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
+                              <span>
+                                Início:{" "}
+                                {inicio
+                                  ? inicio.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })
+                                  : "--"}
+                              </span>
+                              <span>
+                                Fim:{" "}
+                                {fim ? fim.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--"}
+                              </span>
+                              {item.ordem != null && <span>Ordem: {item.ordem}</span>}
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openEditProgramacao(item)}
+                              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50"
+                            >
+                              <FiEdit2 size={14} className="inline-block mr-1" />
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteProgramacao(item.id)}
+                              className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-gray-200 hover:bg-gray-50 text-red-600"
+                            >
+                              <FiTrash2 size={14} className="inline-block mr-1" />
+                              Remover
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </motion.div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -868,7 +1096,136 @@ export const ActividadeDetails = () => {
             onSelect={handleAdicionarTrailler}
           />
         )}
+        {showProgramacaoModal && (
+          <ModalProgramacao
+            title={editingProgramacao ? "Editar item" : "Adicionar item"}
+            form={programacaoForm}
+            onChange={(next) => setProgramacaoForm((current) => ({ ...current, ...next }))}
+            onClose={() => {
+              setShowProgramacaoModal(false);
+              setEditingProgramacao(null);
+            }}
+            onSubmit={submitProgramacao}
+          />
+        )}
       </AnimatePresence>
     </div>
+  );
+};
+
+// Modal simples de Programação
+const ModalProgramacao = ({
+  title,
+  form,
+  onChange,
+  onClose,
+  onSubmit,
+}: {
+  title: string;
+  form: { titulo: string; tipo: ProgramacaoTipo; inicio: string; fim: string; ordem: string };
+  onChange: (next: Partial<{ titulo: string; tipo: ProgramacaoTipo; inicio: string; fim: string; ordem: string }>) => void;
+  onClose: () => void;
+  onSubmit: () => void;
+}) => {
+  const canSubmit = form.titulo.trim().length > 0 && Boolean(form.inicio);
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-white rounded-2xl shadow-2xl max-w-xl w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold">{title}</h3>
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+              <FiX size={20} />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+              <input
+                value={form.titulo}
+                onChange={(e) => onChange({ titulo: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                placeholder="Ex: Abertura / Louvor / Pausa / Mensagem..."
+              />
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                <select
+                  value={form.tipo}
+                  onChange={(e) => onChange({ tipo: e.target.value as ProgramacaoTipo })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                >
+                  <option value={ProgramacaoTipo.Sessao}>Sessão</option>
+                  <option value={ProgramacaoTipo.Pausa}>Pausa</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ordem (opcional)</label>
+                <input
+                  value={form.ordem}
+                  onChange={(e) => onChange({ ordem: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                  placeholder="Ex: 1"
+                />
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Início</label>
+                <input
+                  type="datetime-local"
+                  value={form.inicio}
+                  onChange={(e) => onChange({ inicio: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fim (opcional)</label>
+                <input
+                  type="datetime-local"
+                  value={form.fim}
+                  onChange={(e) => onChange({ fim: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:ring-primary-500/20 focus:border-primary-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={!canSubmit}
+              onClick={onSubmit}
+              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Guardar
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };

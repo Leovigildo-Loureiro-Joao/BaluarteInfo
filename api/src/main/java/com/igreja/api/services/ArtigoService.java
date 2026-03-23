@@ -48,6 +48,7 @@ import com.igreja.api.repositories.ArtigosRepository;
 import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.VistosRepository;
 import com.igreja.api.utils.AvatarUtils;
+import com.igreja.api.utils.ArtigoHtmlTheme;
 import com.igreja.api.utils.MarkdownLite;
 import com.igreja.api.utils.PdfUtils;
 import com.mchange.v2.beans.BeansUtils;
@@ -75,7 +76,7 @@ public class ArtigoService{
    @Autowired
    private GeminiService geminiService;
 
-   @Value("${app.artigo.preview-pages:5}")
+   @Value("${app.artigo.preview-pages:8}")
    private int artigoPreviewPages;
 
    @Value("${app.artigo.cover-placeholder-url:https://placehold.co/1000x600/{bg}/{fg}?text={text}}")
@@ -110,6 +111,15 @@ public class ArtigoService{
       return template.isBlank() ? ("https://placehold.co/1000x600/" + bg + "/" + fg + "?text=" + text) : template;
    }
 
+   private String renderFromMarkdown(String titulo, String descricao, String markdown) {
+      String body = MarkdownLite.toSafeHtml(markdown);
+      return ArtigoHtmlTheme.render(titulo, descricao, body);
+   }
+
+   private String renderFromPdfExtractedHtml(String titulo, String descricao, String extractedHtml) {
+      return ArtigoHtmlTheme.render(titulo, descricao, extractedHtml);
+   }
+
    public ArtigoModel save(ArtigoDtoRegister artigo) throws IOException, InterruptedException, ExecutionException, TimeoutException {
     cloudinaryService.generateUniqueName(artigo.pdf().getOriginalFilename());
 
@@ -124,7 +134,7 @@ public class ArtigoService{
     
     // Se o admin já gerou uma prévia (markdown) no frontend, usa exatamente esse conteúdo (sanitizado).
     if (artigo.markdown() != null && !artigo.markdown().isBlank()) {
-        artigosM.setConteudo(MarkdownLite.toSafeHtml(artigo.markdown()));
+        artigosM.setConteudo(renderFromMarkdown(artigo.titulo(), artigo.descricao(), artigo.markdown()));
     } else {
         // Extrair texto do PDF
         String extractedText = PdfUtils.extractText(artigo.pdf().getInputStream(), artigoPreviewPages);
@@ -140,7 +150,8 @@ public class ArtigoService{
         } catch (Exception e) {
             log.error("Erro ao gerar HTML com Gemini, usando fallback: {}", e.getMessage());
             // Fallback: extrair HTML básico do PDF
-            artigosM.setConteudo(PdfUtils.extractHtml(artigo.pdf().getInputStream(), artigoPreviewPages));
+            artigosM.setConteudo(renderFromPdfExtractedHtml(artigo.titulo(), artigo.descricao(),
+                  PdfUtils.extractHtml(artigo.pdf().getInputStream(), artigoPreviewPages)));
         }
     }
     
@@ -196,6 +207,12 @@ public class ArtigoService{
             .orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
    }
 
+   /** Detail sem registrar visualização (uso admin/rotas internas). */
+   public ArtigoDetailProjection adminDetail(int id) {
+      return artigoRepository.findDetailById(id)
+            .orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
+   }
+
    public ArtigoModel Visto(int id)  {
       ArtigoModel ArtigoModel=artigoRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Lamentamos mas este artigo não existe na base dados"));
       VistosModel vistos=new VistosModel();
@@ -224,11 +241,25 @@ public class ArtigoService{
 
    public boolean delete(int id) throws InternalError, IOException, InterruptedException, ExecutionException {
       ArtigoModel artigo= Select(id);
-      if (DeleteFiles(artigo.getPdf(), artigo.getImg())) {
-         artigoRepository.delete(artigo);   
+      try {
+         boolean deleted = DeleteFiles(artigo.getPdf(), artigo.getImg());
+         artigoRepository.delete(artigo);
+         if (!deleted) {
+            System.out.print("Arquino nao existente");
+         }
+         
          return true;
+      } catch (ResponseStatusException e) {
+         throw e;
+      } catch (Exception e) {
+         log.error("Falha ao apagar ficheiros do artigo (id={}, pdfUrl={}, imgUrl={})",
+               id,
+               artigo.getPdf(),
+               artigo.getImg(),
+               e);
+         throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+               "Falha ao apagar ficheiros na nuvem (Cloudinary).", e);
       }
-      throw new InternalError("A processo não foi realizado");
    }
 
    public ArtigoModel edit(int id,ArtigoDtoRegister artigo) throws InternalError, IOException, InterruptedException, ExecutionException, TimeoutException {
@@ -247,12 +278,13 @@ public class ArtigoService{
          // Troca o PDF e recalcula a prévia do HTML
          cloudinaryService.deleteFileIfCloudinaryAsync(artigoActual.getPdf()).join();
          artigoActual.setPdf(cloudinaryService.uploadFileAsync(artigo.pdf(), "raw"));
-         artigoActual.setConteudo(PdfUtils.extractHtml(artigo.pdf().getInputStream(), artigoPreviewPages));
+         artigoActual.setConteudo(renderFromPdfExtractedHtml(artigoActual.getTitulo(), artigoActual.getDescricao(),
+               PdfUtils.extractHtml(artigo.pdf().getInputStream(), artigoPreviewPages)));
       }
 
       // Se vier uma prévia (markdown), ela deve virar o conteúdo salvo (sanitizado).
       if (artigo.markdown() != null && !artigo.markdown().isBlank()) {
-         artigoActual.setConteudo(MarkdownLite.toSafeHtml(artigo.markdown()));
+         artigoActual.setConteudo(renderFromMarkdown(artigoActual.getTitulo(), artigoActual.getDescricao(), artigo.markdown()));
       }
 
       // Troca a capa apenas se o admin enviar uma imagem
@@ -295,7 +327,8 @@ public class ArtigoService{
 
       // Se o texto vier ruim (PDF escaneado), cai para o HTML básico extraído do PDF.
       if (extractedText == null || extractedText.isBlank() || extractedText.length() < 200) {
-         artigo.setConteudo(PdfUtils.extractHtmlFromUrl(pdfUrl, artigoPreviewPages));
+         artigo.setConteudo(renderFromPdfExtractedHtml(artigo.getTitulo(), artigo.getDescricao(),
+               PdfUtils.extractHtmlFromUrl(pdfUrl, artigoPreviewPages)));
          return artigoRepository.save(artigo);
       }
 
@@ -304,7 +337,8 @@ public class ArtigoService{
          artigo.setConteudo(geminiService.generateHtmlFromPdf(artigo.getTitulo(), artigo.getDescricao(), extractedText));
       } catch (Exception e) {
          log.warn("Falha ao regerar HTML com Gemini (artigoId={}): {}. Usando fallback do PDF.", id, e.getMessage());
-         artigo.setConteudo(PdfUtils.extractHtmlFromUrl(pdfUrl, artigoPreviewPages));
+         artigo.setConteudo(renderFromPdfExtractedHtml(artigo.getTitulo(), artigo.getDescricao(),
+               PdfUtils.extractHtmlFromUrl(pdfUrl, artigoPreviewPages)));
       }
       return artigoRepository.save(artigo);
    }
@@ -316,7 +350,7 @@ public class ArtigoService{
    }
 
    public ArtigoEnhancePreview enhancePreviewWithGemini(int id, int maxPages, String instruction) throws IOException {
-      int pages = Math.max(1, Math.min(maxPages, 5));
+      int pages = Math.max(1, Math.min(maxPages, 8));
       ArtigoModel artigo = Select(id);
 
       // Usa o PDF como fonte (limitado a 5 páginas) e deixa o Gemini reestruturar.
@@ -352,7 +386,7 @@ public class ArtigoService{
          if (logGeminiMarkdown) {
             log.info("Gemini markdown (id={}, len={}): {}", id, markdown == null ? 0 : markdown.length(), preview(markdown, 1200));
          }
-         String html = MarkdownLite.toSafeHtml(markdown);
+         String html = renderFromMarkdown(artigo.getTitulo(), artigo.getDescricao(), markdown);
          return new ArtigoEnhancePreview(markdown, html);
       } catch (Exception e) {
          log.warn("Falha ao reestruturar com Gemini (id={}): {}", id, e.getMessage());
@@ -367,7 +401,7 @@ public class ArtigoService{
          org.springframework.web.multipart.MultipartFile pdf,
          int maxPages,
          String instruction) throws IOException {
-      int pages = Math.max(1, Math.min(maxPages, 5));
+      int pages = Math.max(1, Math.min(maxPages, 8));
 
       String extractedHtml;
       try {
@@ -389,7 +423,7 @@ public class ArtigoService{
 
       try {
          String markdown = geminiService.rewriteToMarkdown(titulo, descricao, plainText, instruction);
-         String html = MarkdownLite.toSafeHtml(markdown);
+         String html = renderFromMarkdown(titulo, descricao, markdown);
          return new ArtigoEnhancePreview(markdown, html);
       } catch (Exception e) {
          log.warn("Falha ao reestruturar com Gemini (upload): {}", e.getMessage());
@@ -449,7 +483,8 @@ public class ArtigoService{
 
       for (ArtigoModel artigo : artigos) {
          try {
-            artigo.setConteudo(PdfUtils.extractHtmlFromUrl(artigo.getPdf(), artigoPreviewPages));
+            artigo.setConteudo(renderFromPdfExtractedHtml(artigo.getTitulo(), artigo.getDescricao(),
+                  PdfUtils.extractHtmlFromUrl(artigo.getPdf(), artigoPreviewPages)));
             updated++;
          } catch (IOException e) {
             // Ignora falhas pontuais para não abortar o processamento inteiro

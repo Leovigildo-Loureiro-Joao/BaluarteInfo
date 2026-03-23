@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.igreja.api.enums.NotificacaoType;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,6 +24,10 @@ public class NotificacaoModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    /** Chave estável para deduplicar notificações (ex.: "VISTOS:MIDIA:123"). */
+    @Column(nullable = true)
+    private String refKey;
 
     @NotBlank
     private String descricao;

@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.igreja.api.dto.actividade.ActividadeDto;
+import com.igreja.api.dto.actividade.ProgramacaoItemUpsertDto;
 import com.igreja.api.enums.ActividadeType;
 import com.igreja.api.enums.DuracaoActividade;
 import com.igreja.api.enums.PublicoAlvoType;
@@ -48,7 +50,7 @@ public class ActividadeController {
             adminAuditLogService.log(adminDetails.getUsername(), "Atividade criada",
                     "Nova atividade criada", resolveIp(request), AdminAuditType.SUCESSO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(actividadeService.detail(result.getId()));
     }
 
    
@@ -77,7 +79,7 @@ public class ActividadeController {
             adminAuditLogService.log(adminDetails.getUsername(), "Atividade editada",
                     "Atividade ID " + id + " atualizada", resolveIp(request), AdminAuditType.INFO);
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(actividadeService.detail(result.getId()));
     }
 
     @GetMapping(value = "/user/actividade")
@@ -104,12 +106,78 @@ public class ActividadeController {
 
     @GetMapping(value = "/user/actividade/{id}")
     public ResponseEntity<?> SelectArigo(@PathVariable int id) throws IOException {
-        return ResponseEntity.ok(actividadeService.Select(id));
+        return ResponseEntity.ok(actividadeService.detail(id));
+    }
+
+    @GetMapping(value = "/user/actividade/{id}/edicoes")
+    public ResponseEntity<?> edicoes(
+            @PathVariable int id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(actividadeService.edicoes(id, page, size));
+    }
+
+    @GetMapping(value = "/admin/actividade/{id}/edicoes")
+    public ResponseEntity<?> edicoesAdmin(
+            @PathVariable int id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(actividadeService.edicoes(id, page, size));
     }
 
     @GetMapping(value = "/admin/actividade/datas")
     public ResponseEntity<?> DatasMarcadas() throws IOException {
         return ResponseEntity.ok(actividadeService.AllDataActividade());
+    }
+
+    // ===== Programação (Admin) =====
+
+    @GetMapping(value = "/admin/actividade/{id}/programacao")
+    public ResponseEntity<?> programacao(@PathVariable int id) {
+        return ResponseEntity.ok(actividadeService.programacao(id));
+    }
+
+    @PostMapping(value = "/admin/actividade/{id}/programacao")
+    public ResponseEntity<?> addProgramacao(
+            @PathVariable int id,
+            @RequestBody @Valid ProgramacaoItemUpsertDto dto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) {
+        var result = actividadeService.addProgramacao(id, dto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Programação adicionada",
+                    "Atividade ID " + id + " programação: " + result.titulo(), resolveIp(request), AdminAuditType.INFO);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @PutMapping(value = "/admin/actividade/{id}/programacao/{itemId}")
+    public ResponseEntity<?> updateProgramacao(
+            @PathVariable int id,
+            @PathVariable int itemId,
+            @RequestBody @Valid ProgramacaoItemUpsertDto dto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) {
+        var result = actividadeService.updateProgramacao(id, itemId, dto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Programação atualizada",
+                    "Atividade ID " + id + " item " + itemId, resolveIp(request), AdminAuditType.INFO);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping(value = "/admin/actividade/{id}/programacao/{itemId}")
+    public ResponseEntity<?> deleteProgramacao(
+            @PathVariable int id,
+            @PathVariable int itemId,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) {
+        actividadeService.deleteProgramacao(id, itemId);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Programação removida",
+                    "Atividade ID " + id + " item " + itemId, resolveIp(request), AdminAuditType.ALERTA);
+        }
+        return ResponseEntity.ok(java.util.Map.of("deleted", true));
     }
 
     @GetMapping(value = "/admin/actividade/{id}/comentarios/{analise}")

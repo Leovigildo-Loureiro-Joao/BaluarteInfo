@@ -57,6 +57,10 @@ public class ActividadeModel {
     @NotBlank
     private String organizador;
 
+    /** Edição/versão da actividade para eventos recorrentes (1, 2, 3...). */
+    @Column(nullable = true)
+    private Integer edicao;
+
     private LocalDateTime dataPublicacao;
 
     private LocalDateTime dataEvento;

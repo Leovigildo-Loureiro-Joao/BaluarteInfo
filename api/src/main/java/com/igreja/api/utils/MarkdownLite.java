@@ -30,25 +30,25 @@ public class MarkdownLite {
             if (line.startsWith("### ")) {
                 flushList(html, currentList);
                 flushParagraph(html, currentParagraph);
-                html.append("<h3 class=\"text-primary font-bold\">")
+                html.append("<h3>")
                         .append(formatInline(line.substring(4)))
-                        .append("</h3>");
+                        .append("</h3>\n");
                 continue;
             }
             if (line.startsWith("## ")) {
                 flushList(html, currentList);
                 flushParagraph(html, currentParagraph);
-                html.append("<h2 class=\"text-primary font-bold\">")
+                html.append("<h2>")
                         .append(formatInline(line.substring(3)))
-                        .append("</h2>");
+                        .append("</h2>\n");
                 continue;
             }
             if (line.startsWith("# ")) {
                 flushList(html, currentList);
                 flushParagraph(html, currentParagraph);
-                html.append("<h1 class=\"text-primary font-bold\">")
+                html.append("<h2>")
                         .append(formatInline(line.substring(2)))
-                        .append("</h1>");
+                        .append("</h2>\n");
                 continue;
             }
 
@@ -63,7 +63,7 @@ public class MarkdownLite {
                 flushParagraph(html, currentParagraph);
                 html.append("<blockquote><p>")
                         .append(formatInline(line.substring(2)))
-                        .append("</p></blockquote>");
+                        .append("</p></blockquote>\n");
                 continue;
             }
 
@@ -82,7 +82,7 @@ public class MarkdownLite {
         }
         String joined = String.join(" ", paragraphLines).trim();
         if (!joined.isBlank()) {
-            html.append("<p>").append(formatInline(joined)).append("</p>");
+            html.append("<p>").append(formatInline(joined)).append("</p>\n");
         }
         paragraphLines.clear();
     }
@@ -91,14 +91,14 @@ public class MarkdownLite {
         if (items.isEmpty()) {
             return;
         }
-        html.append("<ul class=\"list-disc pl-6\">");
+        html.append("<ul>");
         for (String item : items) {
             String value = item == null ? "" : item.trim();
             if (!value.isBlank()) {
                 html.append("<li>").append(formatInline(value)).append("</li>");
             }
         }
-        html.append("</ul>");
+        html.append("</ul>\n");
         items.clear();
     }
 

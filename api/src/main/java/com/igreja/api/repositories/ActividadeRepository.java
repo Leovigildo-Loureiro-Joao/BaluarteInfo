@@ -2,6 +2,7 @@ package com.igreja.api.repositories;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ public interface ActividadeRepository extends JpaRepository<ActividadeModel,Inte
                 a.duracao as duracao,
                 a.publicoAlvo as publicoAlvo,
                 a.organizador as organizador,
+                a.edicao as edicao,
                 a.dataEvento as dataEvento,
                 a.dataPublicacao as dataPublicacao,
                 a.contactos as contactos,
@@ -55,6 +57,7 @@ public interface ActividadeRepository extends JpaRepository<ActividadeModel,Inte
                 a.duracao as duracao,
                 a.publicoAlvo as publicoAlvo,
                 a.organizador as organizador,
+                a.edicao as edicao,
                 a.dataEvento as dataEvento,
                 a.dataPublicacao as dataPublicacao,
                 a.contactos as contactos,
@@ -90,4 +93,72 @@ public interface ActividadeRepository extends JpaRepository<ActividadeModel,Inte
 
     @Query("Select dataEvento from ActividadeModel")
      List<LocalDateTime> DatasMarcadas();
+
+    @Query("""
+        SELECT COALESCE(MAX(a.edicao), 0)
+        FROM ActividadeModel a
+        WHERE LOWER(a.titulo) = LOWER(:titulo)
+    """)
+    Integer findMaxEdicaoByTitulo(@Param("titulo") String titulo);
+
+    @Query(
+        value = """
+            SELECT
+                a.id as id,
+                a.descricao as descricao,
+                a.tema as tema,
+                a.titulo as titulo,
+                a.endereco as endereco,
+                a.tipoEvento as tipoEvento,
+                a.duracao as duracao,
+                a.publicoAlvo as publicoAlvo,
+                a.organizador as organizador,
+                a.edicao as edicao,
+                a.dataEvento as dataEvento,
+                a.dataPublicacao as dataPublicacao,
+                a.contactos as contactos,
+                a.img as img,
+                a.capacidade as capacidade,
+                (SELECT COUNT(i) FROM InscritosModel i WHERE i.actividade = a) as inscritos
+            FROM ActividadeModel a
+            WHERE LOWER(a.titulo) = LOWER(:titulo)
+              AND a.id <> :id
+            ORDER BY COALESCE(a.edicao, 0) DESC, a.id DESC
+        """,
+        countQuery = """
+            SELECT COUNT(a)
+            FROM ActividadeModel a
+            WHERE LOWER(a.titulo) = LOWER(:titulo)
+              AND a.id <> :id
+        """
+    )
+    Page<ActividadeProjection> findEdicoesByTitulo(
+            @Param("titulo") String titulo,
+            @Param("id") int id,
+            Pageable pageable);
+
+    @Query(
+        value = """
+            SELECT
+                a.id as id,
+                a.descricao as descricao,
+                a.tema as tema,
+                a.titulo as titulo,
+                a.endereco as endereco,
+                a.tipoEvento as tipoEvento,
+                a.duracao as duracao,
+                a.publicoAlvo as publicoAlvo,
+                a.organizador as organizador,
+                a.edicao as edicao,
+                a.dataEvento as dataEvento,
+                a.dataPublicacao as dataPublicacao,
+                a.contactos as contactos,
+                a.img as img,
+                a.capacidade as capacidade,
+                (SELECT COUNT(i) FROM InscritosModel i WHERE i.actividade = a) as inscritos
+            FROM ActividadeModel a
+            WHERE a.id = :id
+        """
+    )
+    Optional<ActividadeProjection> findDetailById(@Param("id") int id);
 }

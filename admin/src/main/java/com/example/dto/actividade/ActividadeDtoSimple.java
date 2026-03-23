@@ -21,6 +21,7 @@ public record ActividadeDtoSimple(
     DuracaoActividade duracao,
     PublicoAlvoType publicoAlvo,
     String organizador,
+    Integer edicao,
     LocalDateTime dataEvento,
     LocalDateTime dataPublicacao,
     String contactos,

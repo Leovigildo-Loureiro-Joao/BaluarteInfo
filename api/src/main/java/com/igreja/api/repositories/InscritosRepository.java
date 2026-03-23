@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface InscritosRepository extends JpaRepository<InscritosModel, Long> {
     List<InscritosModel> findByActividade(ActividadeModel actividade);
+    long countByActividade(ActividadeModel actividade);
     Page<InscritosModel> findByActividade(ActividadeModel actividade, Pageable pageable);
     Page<InscritosModel> findByUser(UserModel user, Pageable pageable);
     Page<InscritosModel> findAll(Pageable pageable);

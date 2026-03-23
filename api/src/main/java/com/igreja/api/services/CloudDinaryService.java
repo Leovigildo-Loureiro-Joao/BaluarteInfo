@@ -23,6 +23,7 @@ import com.cloudinary.utils.ObjectUtils;
 
 @Service
 public class CloudDinaryService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(CloudDinaryService.class);
     private final Cloudinary cloudinary;
     private final ExecutorService uploadExecutor; // Pool dedicado para uploads
 
@@ -235,8 +236,19 @@ public class CloudDinaryService {
                 String publicId = extractPublicId(url);
                 String resourceType = detectResourceType(url);
                 Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("resource_type", resourceType));
-                return "ok".equals(result.get("result"));
+                Object value = result == null ? null : result.get("result");
+                String status = value == null ? "" : value.toString();
+
+                // "not found" pode acontecer quando o asset já foi removido/renomeado: trata como sucesso idempotente.
+                boolean success = "ok".equalsIgnoreCase(status) || "not found".equalsIgnoreCase(status);
+                if (!success) {
+                    log.warn("Cloudinary destroy falhou (resourceType={}, publicId={}, result={})", resourceType, publicId, status);
+                } else {
+                    log.debug("Cloudinary destroy ok (resourceType={}, publicId={}, result={})", resourceType, publicId, status);
+                }
+                return success;
             } catch (Exception e) {
+                log.warn("Falha ao excluir arquivo no Cloudinary (url={})", url, e);
                 throw new RuntimeException("Falha ao excluir arquivo", e);
             }
         }, uploadExecutor);
@@ -246,23 +258,63 @@ public class CloudDinaryService {
         if (url == null || url.isBlank()) {
             return CompletableFuture.completedFuture(true);
         }
-        // Placeholders externos ou URLs que não são do Cloudinary
-        if (!url.contains("/upload/")) {
+        // Placeholders externos ou URLs que não são do Cloudinary (ex.: Google/YouTube/etc.)
+        if (!isCloudinaryUrl(url)) {
             return CompletableFuture.completedFuture(true);
         }
         return deleteFileAsync(url);
     }
 
+    private static boolean isCloudinaryUrl(String url) {
+        if (url == null) {
+            return false;
+        }
+        String value = url.toLowerCase();
+        // Evita falsos positivos (ex.: endpoints de Google APIs com "/upload/")
+        boolean looksLikeCloudinaryHost = value.contains("res.cloudinary.com") || value.contains(".cloudinary.com");
+        return looksLikeCloudinaryHost && value.contains("/upload/");
+    }
+
     // Extração segura do public_id
     private String extractPublicId(String url) {
-
-        int uploadIndex = url.indexOf("upload/");
-        if (uploadIndex == -1) {
-            throw new IllegalArgumentException("URL do Cloudinary inválida");
+        if (url == null || url.isBlank()) {
+            throw new IllegalArgumentException("URL do Cloudinary vazia");
         }
-        String urlS =url.split("/")[url.split("/").length-1];
-        
-        return"upload/"+urlS.substring(0, urlS.lastIndexOf(".")); // Extrai o public_id corretamente
+
+        // Remove querystring/fragments
+        String clean = url.split("\\?")[0].split("#")[0];
+        int uploadIndex = clean.indexOf("/upload/");
+        int start;
+        if (uploadIndex != -1) {
+            start = uploadIndex + "/upload/".length();
+        } else {
+            // Alguns links podem vir como "...upload/..." (sem a barra anterior)
+            uploadIndex = clean.indexOf("upload/");
+            if (uploadIndex == -1) {
+                throw new IllegalArgumentException("URL do Cloudinary inválida (sem /upload/)");
+            }
+            start = uploadIndex + "upload/".length();
+        }
+
+        // Pega tudo após "/upload/" (ou "upload/")
+        String afterUpload = clean.substring(start);
+
+        // Remove versão "v1234567890/" se existir
+        afterUpload = afterUpload.replaceFirst("^v\\d+/", "");
+
+        // Remove extensão apenas do último segmento
+        int lastSlash = afterUpload.lastIndexOf('/');
+        String folder = lastSlash >= 0 ? afterUpload.substring(0, lastSlash + 1) : "";
+        String last = lastSlash >= 0 ? afterUpload.substring(lastSlash + 1) : afterUpload;
+        int lastDot = last.lastIndexOf('.');
+        if (lastDot > 0) {
+            last = last.substring(0, lastDot);
+        }
+        String publicId = (folder + last).trim();
+        if (publicId.isBlank()) {
+            throw new IllegalArgumentException("URL do Cloudinary inválida (public_id vazio)");
+        }
+        return publicId;
     }
 
     private String detectResourceType(String url) {

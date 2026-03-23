@@ -25,6 +25,8 @@ public interface ActividadeProjection{
 
     String getOrganizador();
 
+    Integer getEdicao();
+
     LocalDateTime getDataEvento();
 
     LocalDateTime getDataPublicacao();

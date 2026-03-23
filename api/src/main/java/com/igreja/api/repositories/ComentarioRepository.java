@@ -16,6 +16,7 @@ import java.util.List;
 
 public interface ComentarioRepository extends JpaRepository<ComentarioModel,Integer>{
     List<ComentarioModel> findByActividade(ActividadeModel actividade);
+    long countByActividade(ActividadeModel actividade);
     Page<ComentarioModel> findAllByOrderByDataPublicacaoDesc(Pageable pageable);
     Page<ComentarioModel> findAllByStatusOrderByDataPublicacaoDesc(ComentarioStatus status, Pageable pageable);
     Page<ComentarioModel> findByUserOrderByDataPublicacaoDesc(UserModel user, Pageable pageable);

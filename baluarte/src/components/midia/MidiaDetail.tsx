@@ -36,8 +36,8 @@ import {
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
 import { apiFetch } from "../../utils/api";
-import { getStoredUser } from "../../utils/auth";
-import type { ComentarioResult } from "../../types/api";
+import { getStoredUser, hasRole } from "../../utils/auth";
+import type { ComentarioResult, MidiaRelacionadoEdicaoItem, PageResponse } from "../../types/api";
 
 // Tipos de áudio para badge
 const audioTypeInfo: Record<string, { label: string, icon: any, color: string }> = {
@@ -52,7 +52,17 @@ const audioTypeInfo: Record<string, { label: string, icon: any, color: string }>
 };
 
 // Componente de Player de Vídeo Aprimorado
-const VideoPlayer = ({ src, thumbnail, title }: { src: string; thumbnail: string; title: string }) => {
+const VideoPlayer = ({
+  src,
+  thumbnail,
+  title,
+  onQualifiedView,
+}: {
+  src: string;
+  thumbnail: string;
+  title: string;
+  onQualifiedView?: (watchedSeconds: number) => void;
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -63,12 +73,23 @@ const VideoPlayer = ({ src, thumbnail, title }: { src: string; thumbnail: string
   const [showControls, setShowControls] = useState(true);
   const [isBuffering, setIsBuffering] = useState(false);
   const controlsTimeout = useRef<NodeJS.Timeout>();
+  const qualifiedViewSent = useRef(false);
+
+  useEffect(() => {
+    qualifiedViewSent.current = false;
+  }, [src]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const handleTimeUpdate = () => setCurrentTime(video.currentTime);
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime);
+      if (!qualifiedViewSent.current && video.currentTime >= 30) {
+        qualifiedViewSent.current = true;
+        onQualifiedView?.(Math.floor(video.currentTime));
+      }
+    };
     const handleDurationChange = () => setDuration(video.duration);
     const handleEnded = () => setIsPlaying(false);
     const handleWaiting = () => setIsBuffering(true);
@@ -278,7 +299,7 @@ const VideoPlayer = ({ src, thumbnail, title }: { src: string; thumbnail: string
 };
 
 // Componente de Player de Áudio Aprimorado
-const AudioPlayer = ({ src, title, author, type, thumbnail }: any) => {
+const AudioPlayer = ({ src, title, author, type, thumbnail, onQualifiedView }: any) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -286,12 +307,23 @@ const AudioPlayer = ({ src, title, author, type, thumbnail }: any) => {
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
+  const qualifiedViewSent = useRef(false);
+
+  useEffect(() => {
+    qualifiedViewSent.current = false;
+  }, [src]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+      if (!qualifiedViewSent.current && audio.currentTime >= 30) {
+        qualifiedViewSent.current = true;
+        onQualifiedView?.(Math.floor(audio.currentTime));
+      }
+    };
     const handleDurationChange = () => setDuration(audio.duration);
     const handleEnded = () => setIsPlaying(false);
     const handleWaiting = () => setIsBuffering(true);
@@ -620,6 +652,14 @@ export const MidiaDetalhe = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState('sobre');
   const [isSaved, setIsSaved] = useState(false);
+  const viewRequestInFlight = useRef(false);
+  const viewRegistered = useRef(false);
+
+  const [relacionadosEdicoes, setRelacionadosEdicoes] = useState<MidiaRelacionadoEdicaoItem[]>([]);
+  const [relacionadosEdicoesPage, setRelacionadosEdicoesPage] = useState(0);
+  const [relacionadosEdicoesTotalPages, setRelacionadosEdicoesTotalPages] = useState(0);
+  const [relacionadosEdicoesLoading, setRelacionadosEdicoesLoading] = useState(false);
+  const [relacionadosEdicoesError, setRelacionadosEdicoesError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -668,12 +708,109 @@ export const MidiaDetalhe = () => {
     };
   }, [id]);
 
+  useEffect(() => {
+    let active = true;
+
+    const loadRelacionadosEdicoes = async () => {
+      if (!id) return;
+      setRelacionadosEdicoes([]);
+      setRelacionadosEdicoesPage(0);
+      setRelacionadosEdicoesTotalPages(0);
+      setRelacionadosEdicoesError("");
+
+      try {
+        setRelacionadosEdicoesLoading(true);
+        const response = await apiFetch(`/user/midia/${id}/relacionados-edicoes?page=0&size=6`);
+        if (!response.ok) throw new Error("Falha ao carregar relacionados por edições.");
+        const payload = (await response.json()) as PageResponse<MidiaRelacionadoEdicaoItem>;
+        if (!active) return;
+        setRelacionadosEdicoes(payload.content || []);
+        setRelacionadosEdicoesPage(payload.page ?? 0);
+        setRelacionadosEdicoesTotalPages(payload.totalPages ?? 0);
+      } catch (err) {
+        if (!active) return;
+        setRelacionadosEdicoesError("Não foi possível carregar mídias de outras edições.");
+      } finally {
+        if (active) setRelacionadosEdicoesLoading(false);
+      }
+    };
+
+    loadRelacionadosEdicoes();
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  const carregarMaisRelacionadosEdicoes = async () => {
+    if (!id) return;
+    if (relacionadosEdicoesLoading) return;
+    const nextPage = relacionadosEdicoesPage + 1;
+    if (relacionadosEdicoesTotalPages && nextPage >= relacionadosEdicoesTotalPages) return;
+
+    try {
+      setRelacionadosEdicoesLoading(true);
+      const response = await apiFetch(`/user/midia/${id}/relacionados-edicoes?page=${nextPage}&size=6`);
+      if (!response.ok) throw new Error("Falha ao carregar mais relacionados.");
+      const payload = (await response.json()) as PageResponse<MidiaRelacionadoEdicaoItem>;
+      setRelacionadosEdicoes((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        const merged = [...prev];
+        for (const item of payload.content || []) {
+          if (!seen.has(item.id)) merged.push(item);
+        }
+        return merged;
+      });
+      setRelacionadosEdicoesPage(payload.page ?? nextPage);
+      setRelacionadosEdicoesTotalPages(payload.totalPages ?? relacionadosEdicoesTotalPages);
+    } finally {
+      setRelacionadosEdicoesLoading(false);
+    }
+  };
+
   const isImage = midia?.type === "IMAGE";
-  const tabs = isImage ? ['sobre'] : ['sobre', 'comentários', 'transcrição'];
+  const tabs = isImage ? ['sobre'] : ['sobre', 'comentários'];
 
   useEffect(() => {
     if (midia?.type === "IMAGE") setActiveTab("sobre");
   }, [midia?.type]);
+
+  const registerViewIfEligible = async (watchedSeconds: number) => {
+    const numericId = midia?.id ?? Number(id);
+    if (!numericId || Number.isNaN(numericId)) return;
+    if (viewRegistered.current || viewRequestInFlight.current) return;
+
+    if (hasRole('ADMIN')) return;
+
+    viewRequestInFlight.current = true;
+    try {
+      const response = await apiFetch(`/user/midia/${numericId}/view`, {
+        method: "POST",
+        body: { watchedSeconds },
+      });
+      if (!response.ok) return;
+      const payload = await response.json().catch(() => null);
+      if (payload?.counted) {
+        viewRegistered.current = true;
+      }
+    } finally {
+      viewRequestInFlight.current = false;
+    }
+  };
+
+  useEffect(() => {
+    viewRegistered.current = false;
+    viewRequestInFlight.current = false;
+
+    if (!midia?.id) return;
+    if (midia?.type !== "IMAGE") return;
+    if (hasRole('ADMIN')) return;
+
+    const timeout = setTimeout(() => {
+      registerViewIfEligible(30);
+    }, 30_000);
+
+    return () => clearTimeout(timeout);
+  }, [midia?.id, midia?.type]);
 
   if (loading) {
     return (
@@ -775,7 +912,12 @@ export const MidiaDetalhe = () => {
               animate={{ opacity: 1, y: 0 }}
             >
               {midia.type === "VIDEO" ? (
-                <VideoPlayer src={midia.url} thumbnail={midia.imagem} title={midia.titulo} />
+                <VideoPlayer
+                  src={midia.url}
+                  thumbnail={midia.imagem}
+                  title={midia.titulo}
+                  onQualifiedView={registerViewIfEligible}
+                />
               ) : midia.type === "AUDIO" ? (
                 <AudioPlayer
                   src={midia.url || "#"}
@@ -783,6 +925,7 @@ export const MidiaDetalhe = () => {
                   author={midia.autor || "Baluarte"}
                   type={midia.audioType}
                   thumbnail={midia.imagem}
+                  onQualifiedView={registerViewIfEligible}
                 />
               ) : (
                 <div className="bg-black rounded-2xl overflow-hidden">
@@ -888,15 +1031,6 @@ export const MidiaDetalhe = () => {
                 )}
 
                 {!isImage && activeTab === 'comentários' && <CommentSection midiaId={midia.id} />}
-
-
-                {!isImage && activeTab === 'transcrição' && (
-                  <div className="prose max-w-none">
-                    <p className="text-gray-700 leading-relaxed">
-                      Transcrição indisponível no momento.
-                    </p>
-                  </div>
-                )}
               </div>
             </motion.div>
           </div>
@@ -953,6 +1087,72 @@ export const MidiaDetalhe = () => {
                 </a>
               )}
             </div>
+
+            {(relacionadosEdicoesLoading || relacionadosEdicoesError || relacionadosEdicoes.length > 0) && (
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-lg">Outras edições</h3>
+                  <span className="text-xs text-gray-500">Mais recentes</span>
+                </div>
+
+                {relacionadosEdicoesError && (
+                  <p className="text-sm text-red-600">{relacionadosEdicoesError}</p>
+                )}
+
+                {!relacionadosEdicoesError && relacionadosEdicoes.length === 0 && relacionadosEdicoesLoading && (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                      <div key={idx} className="flex gap-3 animate-pulse">
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 bg-gray-200 rounded w-4/5" />
+                          <div className="h-3 bg-gray-200 rounded w-2/5" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!relacionadosEdicoesError && relacionadosEdicoes.length > 0 && (
+                  <div className="space-y-3">
+                    {relacionadosEdicoes.map((item) => (
+                      <Link
+                        key={item.id}
+                        to={`/midia/${item.id}`}
+                        className="flex gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                      >
+                        <img
+                          src={item.imagem || item.url}
+                          alt={item.titulo}
+                          className="w-12 h-12 rounded-lg object-cover bg-gray-100"
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-800 truncate">{item.titulo}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {item.edicao ? `Edição ${item.edicao}` : "Edição"}
+                            {item.dataEvento ? ` • ${new Date(item.dataEvento).toLocaleDateString("pt-BR")}` : ""}
+                          </p>
+                        </div>
+                        <FiChevronRight className="text-gray-400 mt-1" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {!relacionadosEdicoesError &&
+                  relacionadosEdicoes.length > 0 &&
+                  (relacionadosEdicoesTotalPages === 0 || relacionadosEdicoesPage + 1 < relacionadosEdicoesTotalPages) && (
+                    <button
+                      onClick={carregarMaisRelacionadosEdicoes}
+                      disabled={relacionadosEdicoesLoading}
+                      className="mt-4 w-full px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-60"
+                    >
+                      {relacionadosEdicoesLoading ? "Carregando..." : "Carregar mais"}
+                    </button>
+                  )}
+              </div>
+            )}
           </motion.aside>
         </div>
       </div>

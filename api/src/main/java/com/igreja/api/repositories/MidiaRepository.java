@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.igreja.api.dto.midia.GaleriaAdminItem;
+import com.igreja.api.enums.AudioType;
 import com.igreja.api.enums.MidiaType;
+import com.igreja.api.enums.VideoType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.MidiaModel;
 import com.igreja.api.projection.midia.AudioProjection;
@@ -40,6 +42,28 @@ public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
     List<MidiaModel> findByActividade(ActividadeModel actividade);
     Page<MidiaModel> findByActividade(ActividadeModel actividade, Pageable pageable);
     Page<MidiaModel> findByActividadeAndType(ActividadeModel actividade, MidiaType type, Pageable pageable);
+    Page<MidiaModel> findByActividadeAndTypeAndIdNot(ActividadeModel actividade, MidiaType type, int id, Pageable pageable);
+
+    Page<MidiaModel> findByTypeOrderByIdDesc(MidiaType type, Pageable pageable);
+    Page<MidiaModel> findByAutorIgnoreCaseAndTypeAndIdNotOrderByIdDesc(String autor, MidiaType type, int id, Pageable pageable);
+
+    Page<MidiaModel> findByAudioTypeAndIdNotOrderByIdDesc(AudioType audioType, int id, Pageable pageable);
+    Page<MidiaModel> findByVideoTypeAndIdNotOrderByIdDesc(VideoType videoType, int id, Pageable pageable);
+
+    @Query("""
+        SELECT m
+        FROM MidiaModel m
+        JOIN m.actividade a
+        WHERE LOWER(a.titulo) = LOWER(:titulo)
+          AND m.type = :type
+          AND m.id <> :midiaId
+        ORDER BY COALESCE(a.edicao, 0) DESC, a.dataEvento DESC, m.id DESC
+    """)
+    Page<MidiaModel> findRelacionadosPorEdicoes(
+            @Param("titulo") String titulo,
+            @Param("type") MidiaType type,
+            @Param("midiaId") int midiaId,
+            Pageable pageable);
 
     @Query(
         value = """

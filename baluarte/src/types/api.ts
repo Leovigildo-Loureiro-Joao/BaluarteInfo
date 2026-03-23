@@ -83,6 +83,27 @@ export enum DuracaoActividade {
   MultiplosDias = 'MULTIPLOS_DIAS'
 }
 
+export enum ProgramacaoTipo {
+  Sessao = 'SESSAO',
+  Pausa = 'PAUSA'
+}
+
+export enum ProgramacaoStatus {
+  Upcoming = 'UPCOMING',
+  Ongoing = 'ONGOING',
+  Done = 'DONE'
+}
+
+export interface ProgramacaoItemView {
+  id: number;
+  titulo: string;
+  inicio: string;
+  fim?: string | null;
+  tipo: ProgramacaoTipo;
+  ordem?: number | null;
+  status: ProgramacaoStatus;
+}
+
 export enum FileStatus {
   ENVIADO = 'ENVIADO',
   PENDENTE = 'PENDENTE'
@@ -190,6 +211,7 @@ export interface ActividadeDto {
   publicoAlvo: PublicoAlvoType;
   duracao: DuracaoActividade;
   organizador: string;
+  edicao?: number | null;
   capacidade: number;
   dataEvento: string;
   contactos: string;
@@ -206,6 +228,7 @@ export interface ActividadeSummary {
   duracao: DuracaoActividade;
   publicoAlvo: PublicoAlvoType;
   organizador: string;
+  edicao?: number | null;
   dataEvento: string;
   dataPublicacao: string;
   contactos: string;
@@ -512,6 +535,29 @@ export interface MidiaProjection {
   videoType?: VideoType | null;
   url: string;
   visualizacoes?: number;
+}
+
+export interface MidiaRelacionadoItem {
+  id: number;
+  titulo: string;
+  autor?: string | null;
+  imagem?: string | null;
+  tempo?: string | null;
+  type: MidiaType;
+  audioType?: AudioType | null;
+  videoType?: VideoType | null;
+  url: string;
+}
+
+export interface MidiaRelacionadoEdicaoItem extends MidiaRelacionadoItem {
+  actividadeId?: number | null;
+  edicao?: number | null;
+  dataEvento?: string | null;
+}
+
+export interface MidiaRelacionadosDto {
+  eventosPassados: MidiaRelacionadoItem[];
+  eventosAtuais: MidiaRelacionadoItem[];
 }
 
 export interface NewlesterDto {
