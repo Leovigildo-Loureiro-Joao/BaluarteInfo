@@ -72,6 +72,7 @@ public class SecurityConfig {
                         "/user/home/**",
                         "/user/actividade",
                         "/user/actividade/*",
+                        "/user/actividade/*/programacao",
                         "/user/actividade/*/comentarios",
                         "/user/actividade/*/inscritos",
                         "/user/actividade/galeria/*",

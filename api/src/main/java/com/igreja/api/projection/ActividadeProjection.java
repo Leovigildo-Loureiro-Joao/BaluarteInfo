@@ -25,6 +25,9 @@ public interface ActividadeProjection{
 
     String getOrganizador();
 
+    /** Lista simples de palestrantes (separados por nova linha). */
+    String getPalestrantes();
+
     Integer getEdicao();
 
     LocalDateTime getDataEvento();

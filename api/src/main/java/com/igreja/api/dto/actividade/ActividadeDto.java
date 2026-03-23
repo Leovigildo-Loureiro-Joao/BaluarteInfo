@@ -29,6 +29,9 @@ public record ActividadeDto(
 
    @NotBlank String organizador,
 
+   /** Lista simples de palestrantes (separados por nova linha) para o MVP. */
+   String palestrantes,
+
    Integer edicao,
 
    @NotNull Integer capacidade,

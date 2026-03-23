@@ -57,6 +57,10 @@ public class ActividadeModel {
     @NotBlank
     private String organizador;
 
+    /** Lista simples de palestrantes (separados por nova linha) para o MVP. */
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String palestrantes;
+
     /** Edição/versão da actividade para eventos recorrentes (1, 2, 3...). */
     @Column(nullable = true)
     private Integer edicao;

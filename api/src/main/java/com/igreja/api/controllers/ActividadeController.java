@@ -109,6 +109,11 @@ public class ActividadeController {
         return ResponseEntity.ok(actividadeService.detail(id));
     }
 
+    @GetMapping(value = "/user/actividade/{id}/programacao")
+    public ResponseEntity<?> programacaoUser(@PathVariable int id) {
+        return ResponseEntity.ok(actividadeService.programacao(id));
+    }
+
     @GetMapping(value = "/user/actividade/{id}/edicoes")
     public ResponseEntity<?> edicoes(
             @PathVariable int id,
