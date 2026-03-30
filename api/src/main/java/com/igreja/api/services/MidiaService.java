@@ -532,6 +532,7 @@ public class MidiaService {
         List<ComentarioResult> comentarios=new ArrayList<>();
         MidiaModel artigo=Select(id);
         for (ComentarioModel comentario : artigo.getComentarios()) {
+            if (comentario.getParent() != null) continue;
             UserModel user=comentario.getUser();
             int likes = (int) comentarioLikeRepository.countByComentario(comentario);
             comentarios.add(new ComentarioResult(

@@ -72,7 +72,17 @@ export enum ConfigType {
   MensagemReenviarPendentes = 'MensagemReenviarPendentes',
   InscricaoQrEnabled = 'InscricaoQrEnabled',
   InscricaoQrAutoDisable = 'InscricaoQrAutoDisable',
-  InscricaoQrExpiresHours = 'InscricaoQrExpiresHours'
+  InscricaoQrExpiresHours = 'InscricaoQrExpiresHours',
+
+  ContactTelefone = 'ContactTelefone',
+  ContactWhatsapp = 'ContactWhatsapp',
+  ContactEmail = 'ContactEmail',
+  ContactEndereco = 'ContactEndereco',
+  ContactFacebookUrl = 'ContactFacebookUrl',
+  ContactInstagramUrl = 'ContactInstagramUrl',
+  ContactYoutubeUrl = 'ContactYoutubeUrl',
+  ContactTwitterUrl = 'ContactTwitterUrl',
+  ContactHorariosCulto = 'ContactHorariosCulto'
 }
 
 export enum DuracaoActividade {
@@ -161,12 +171,94 @@ export enum StatusMensage {
   Pendente = 'PENDENTE'
 }
 
+export enum UserContentType {
+  Artigo = 'ARTIGO',
+  Midia = 'MIDIA'
+}
+
 export interface PageResponse<T> {
   content: T[];
   page: number;
   size: number;
   totalElements: number;
   totalPages: number;
+}
+
+export interface ValueStat {
+  value: number;
+  tot: number;
+}
+
+export interface AdminDashboardStats {
+  membros: ValueStat;
+  actividades: ValueStat;
+  inscritos: ValueStat;
+  comentarios: ValueStat;
+  visitas: ValueStat;
+  newlester: ValueStat;
+}
+
+export interface DashboardVisitasPoint {
+  mes: string;
+  visitas: number;
+  usuarios: number;
+}
+
+export interface DashboardConteudoSlice {
+  nome: string;
+  valor: number;
+  cor: string;
+}
+
+export interface DashboardEngajamentoPoint {
+  dia: string;
+  comentarios: number;
+  curtidas: number;
+  compartilhamentos: number;
+}
+
+export interface DashboardCrescimentoPoint {
+  mes: string;
+  membros: number;
+}
+
+export interface AdminDashboardCharts {
+  visitas: DashboardVisitasPoint[];
+  conteudo: DashboardConteudoSlice[];
+  engajamento: DashboardEngajamentoPoint[];
+  crescimento: DashboardCrescimentoPoint[];
+}
+
+export enum AdminAuditType {
+  INFO = 'INFO',
+  SUCESSO = 'SUCESSO',
+  ALERTA = 'ALERTA',
+  ERRO = 'ERRO'
+}
+
+export interface AdminAuditLogDto {
+  id: number;
+  acao: string;
+  detalhes: string | null;
+  ip: string | null;
+  data: string;
+  tipo: AdminAuditType;
+}
+
+export interface AdminProfileDto {
+  id: number;
+  nome: string;
+  email: string;
+  telefone?: string | null;
+  cargo: string;
+  avatar: string;
+  dataCadastro?: string | null;
+  ultimoAcesso?: string | null;
+  doisFatores: boolean;
+  cidade?: string | null;
+  estado?: string | null;
+  dataNascimento?: string | null;
+  roles?: string | null;
 }
 
 export interface ArtigoDto {
@@ -211,6 +303,7 @@ export interface ActividadeDto {
   publicoAlvo: PublicoAlvoType;
   duracao: DuracaoActividade;
   organizador: string;
+  palestrantes?: string | null;
   edicao?: number | null;
   capacidade: number;
   dataEvento: string;
@@ -228,6 +321,7 @@ export interface ActividadeSummary {
   duracao: DuracaoActividade;
   publicoAlvo: PublicoAlvoType;
   organizador: string;
+  palestrantes?: string | null;
   edicao?: number | null;
   dataEvento: string;
   dataPublicacao: string;
@@ -266,8 +360,14 @@ export interface ComentarioAdminData {
   descricao: string;
   dataPublicacao?: string;
   likes: number;
+  parentId?: number | null;
   status: ComentarioStatus;
   denuncias: number;
+  respostas?: number;
+}
+
+export interface ComentarioRespostaDto {
+  descricao: string;
 }
 
 export interface ComentarioStatusDto {
@@ -402,6 +502,29 @@ export interface SobreBotao {
   link: string;
 }
 
+export interface SalvacaoDto {
+  imagemCapaUrl: string;
+  titulo: string;
+  conteudoMarkdown: string;
+  conteudoHtml: string;
+  videoUrl: string;
+  oracao: string;
+  botao: SalvacaoBotaoDto;
+  feed: SalvacaoFeedDto;
+}
+
+export interface SalvacaoBotaoDto {
+  texto: string;
+  link: string;
+}
+
+export interface SalvacaoFeedDto {
+  artigoTipo: ArtigoType | null;
+  audioTipo: AudioType | null;
+  videoTipo: VideoType | null;
+  limit: number;
+}
+
 export interface InscritosDto {
   idUser: number;
   idActividade: number;
@@ -518,8 +641,21 @@ export interface VideoProjection {
   id: number;
   descricao: string;
   titulo: string;
+  autor?: string | null;
   url: string;
   videoType?: VideoType | null;
+  visualizacoes?: number;
+}
+
+export interface AudioProjection {
+  id: number;
+  titulo: string;
+  descricao: string;
+  imagem?: string | null;
+  tempo?: string | null;
+  autor?: string | null;
+  audioType?: AudioType | null;
+  url: string;
   visualizacoes?: number;
 }
 
@@ -596,6 +732,25 @@ export interface AdminConfigDto {
     }[];
   };
   homeCarousel: CarouselItemDto[];
+}
+
+export interface ContactHorarioCulto {
+  dia: string;
+  horarios: string[];
+}
+
+export interface PublicContactConfigDto {
+  telefone: string;
+  whatsapp: string;
+  email: string;
+  endereco: string;
+  socials: {
+    facebook: string;
+    instagram: string;
+    youtube: string;
+    twitter: string;
+  };
+  horariosCulto: ContactHorarioCulto[];
 }
 
 export interface CarouselItemDto {
@@ -685,6 +840,23 @@ export enum UserStatus {
   ATIVO = 'ATIVO',
   INATIVO = 'INATIVO',
   BLOQUEADO = 'BLOQUEADO'
+}
+
+export interface UserDownloadDto {
+  id: number;
+  tipo: UserContentType;
+  data: string;
+  artigoId?: number | null;
+  artigoTitulo?: string | null;
+  artigoImagem?: string | null;
+  artigoPdf?: string | null;
+  midiaId?: number | null;
+  midiaTitulo?: string | null;
+  midiaImagem?: string | null;
+  midiaType?: MidiaType | null;
+  audioType?: AudioType | null;
+  videoType?: VideoType | null;
+  midiaUrl?: string | null;
 }
 
 export interface AuthResponse {

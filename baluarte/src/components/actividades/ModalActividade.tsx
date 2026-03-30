@@ -19,6 +19,7 @@ type ActividadeSummary = {
   dataEvento: string;
   endereco: string;
   organizador: string;
+  palestrantes?: string | null;
   contactos: string;
   capacidade?: number;
   img?: string;
@@ -38,9 +39,10 @@ type ModalActividadeProps = {
     hora: string;
     endereco: string;
     organizador: string;
+    palestrantes?: string;
     contactos: string;
     capacidade: number;
-    imgFile: File;
+    imgFile?: File;
   }) => Promise<SaveResult>;
 };
 
@@ -127,6 +129,7 @@ const ModalActividade = ({
     hora: defaultDateTime.hora,
     endereco: actividade?.endereco || "",
     organizador: actividade?.organizador || "",
+    palestrantes: actividade?.palestrantes || "",
     contactos: actividade?.contactos || "",
     capacidade: actividade?.capacidade ? String(actividade.capacidade) : "",
     imgFile: undefined as File | undefined,
@@ -193,7 +196,7 @@ const ModalActividade = ({
       if (isSaving) return;
 
       // Último passo - validar imagem e salvar
-      if (!formData.imgFile) {
+      if (!formData.imgFile && !formData.imgPreview) {
         setError("Selecione uma imagem para continuar.");
         return;
       }
@@ -218,6 +221,7 @@ const ModalActividade = ({
           hora: formData.hora,
           endereco: formData.endereco,
           organizador: formData.organizador,
+          palestrantes: formData.palestrantes?.trim() ? formData.palestrantes : undefined,
           contactos: formData.contactos,
           capacidade: Number(formData.capacidade),
           imgFile: formData.imgFile
@@ -431,7 +435,7 @@ const ModalActividade = ({
     >
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Organizador/Responsável *
+          Moderador/Responsável *
         </label>
         <input
           type="text"
@@ -440,6 +444,19 @@ const ModalActividade = ({
           onChange={(e) => setFormData({ ...formData, organizador: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
           placeholder="Ex: Pr. Antônio Silva"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Palestrantes (opcional)
+        </label>
+        <textarea
+          value={formData.palestrantes}
+          onChange={(e) => setFormData({ ...formData, palestrantes: e.target.value })}
+          rows={3}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+          placeholder={"Um por linha\nEx:\nPr. Antônio Silva\nPra. Maria Oliveira"}
         />
       </div>
 
@@ -518,13 +535,15 @@ const ModalActividade = ({
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">Quase lá!</h3>
         <p className="text-gray-600 mb-4">
-          Adicione uma imagem para finalizar a criação da actividade.
+          {isEditing
+            ? "Troque a imagem de capa se necessário (opcional)."
+            : "Adicione uma imagem para finalizar a criação da actividade."}
         </p>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Imagem da Actividade *
+          Imagem da Actividade {isEditing ? "" : "*"}
         </label>
         <div className="flex items-center gap-4">
           <div className="flex-1">
@@ -536,7 +555,7 @@ const ModalActividade = ({
               <input
                 type="file"
                 accept="image/*"
-                required
+                required={!isEditing && !formData.imgPreview}
                 onChange={(e) => handleFileChange(e.target.files?.[0])}
                 className="absolute inset-0 opacity-0 cursor-pointer"
               />
@@ -686,7 +705,7 @@ const ModalActividade = ({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-4 sm:my-8 max-h-[90vh] overflow-y-auto text-sm"
+        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-4 sm:my-8  text-sm"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 sm:p-6 space-y-6">
@@ -762,7 +781,7 @@ const ModalActividade = ({
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 max-h-[55vh] overflow-y-auto">
             <div className="grid md:grid-cols-2 gap-6">
               {/* Formulário */}
               <div className="md:col-span-1">

@@ -41,6 +41,7 @@ import com.igreja.api.models.ProgramacaoActividadeModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.projection.ActividadeProjection;
 import com.igreja.api.repositories.ActividadeRepository;
+import com.igreja.api.repositories.ActividadeFavoritoRepository;
 import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.InscritosRepository;
@@ -76,6 +77,12 @@ public class ActividadeService {
     @Autowired
     private CloudDinaryService upload;
 
+    @Autowired
+    private ActividadeFavoritoRepository favoritoRepository;
+
+    @Autowired
+    private UserService userService;
+
      public ActividadeModel save(ActividadeDto actividade) throws IOException, InterruptedException, ExecutionException, TimeoutException {
         if (actividade.dataEvento().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("A data do evento não pode ser no passado");
@@ -105,7 +112,7 @@ public class ActividadeService {
         } else {
             actividadeActual.setEdicao(previousEdicao);
         }
-        if (!actividade.img().isEmpty()) {
+        if (actividade.img() != null && !actividade.img().isEmpty()) {
             if (deleteCloudIfPresent(actividadeActual.getImg())) {
                 actividadeActual.setImg(upload.uploadFileAsync(actividade.img(),"image"));
             }
@@ -120,6 +127,41 @@ public class ActividadeService {
    public ActividadeProjection detail(int id) {
       return actividadeRepository.findDetailById(id)
             .orElseThrow(() -> new NoSuchElementException("Lamentamos mas este actividade não existe na base dados"));
+   }
+
+   @Transactional
+   public boolean favorite(int actividadeId, String userEmail) {
+      ActividadeModel actividade = Select(actividadeId);
+      UserModel user = userService.loadUserByEmail(userEmail);
+      if (favoritoRepository.existsByActividadeAndUser(actividade, user)) {
+         return true;
+      }
+      com.igreja.api.models.ActividadeFavoritoModel fav = new com.igreja.api.models.ActividadeFavoritoModel();
+      fav.setActividade(actividade);
+      fav.setUser(user);
+      favoritoRepository.save(fav);
+      return true;
+   }
+
+   @Transactional
+   public boolean unfavorite(int actividadeId, String userEmail) {
+      ActividadeModel actividade = Select(actividadeId);
+      UserModel user = userService.loadUserByEmail(userEmail);
+      favoritoRepository.deleteByActividadeAndUser(actividade, user);
+      return false;
+   }
+
+   public boolean isFavorito(int actividadeId, String userEmail) {
+      ActividadeModel actividade = Select(actividadeId);
+      UserModel user = userService.loadUserByEmail(userEmail);
+      return favoritoRepository.existsByActividadeAndUser(actividade, user);
+   }
+
+   public PageResponse<ActividadeProjection> favoritosByUser(String email, int page, int size) {
+      UserModel user = userService.loadUserByEmail(email);
+      Pageable pageable = PageRequest.of(page, size);
+      Page<ActividadeProjection> result = favoritoRepository.pageFavoritosByUserId(user.getId(), pageable);
+      return new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
    }
 
    public List<ProgramacaoItemView> programacao(int actividadeId) {
@@ -238,6 +280,7 @@ public class ActividadeService {
       List<ComentarioResult> comentarios=new ArrayList<>();
       ActividadeModel artigo=Select(id);
       for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
+        if (comentario.getParent() != null) continue;
       
         UserModel user=comentario.getUser();
         int likes = (int) comentarioLikeRepository.countByComentario(comentario);
@@ -258,7 +301,8 @@ public class ActividadeService {
      public List<ComentarioResult> ComentariosAllAnalisados(int id,boolean analise) {
       List<ComentarioResult> comentarios=new ArrayList<>();
       ActividadeModel artigo=Select(id);
-      for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
+     for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
+        if (comentario.getParent() != null) continue;
         if (comentario.isAnalise()==analise) {
             UserModel user=comentario.getUser();
             int likes = (int) comentarioLikeRepository.countByComentario(comentario);

@@ -15,6 +15,7 @@ import java.util.List;
 import com.igreja.api.dto.config.AdminConfigDto;
 import com.igreja.api.dto.config.CarouselItemDto;
 import com.igreja.api.dto.config.ConfiguracaoDto;
+import com.igreja.api.dto.config.PublicContactConfigDto;
 import com.igreja.api.services.CloudDinaryService;
 import com.igreja.api.services.ConfigService;
 import com.igreja.api.services.AdminAuditLogService;
@@ -73,6 +74,11 @@ public class ConfigController {
     @GetMapping("/admin/config/app")
     public ResponseEntity<?> appConfig() {
         return ResponseEntity.ok(cpConfigService.adminConfig());
+    }
+
+    @GetMapping("/public/contacto-config")
+    public ResponseEntity<PublicContactConfigDto> publicContactConfig() {
+        return ResponseEntity.ok(cpConfigService.publicContactConfig());
     }
 
     @PutMapping("/admin/config/app")

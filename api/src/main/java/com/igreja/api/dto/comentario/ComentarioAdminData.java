@@ -17,6 +17,8 @@ public record ComentarioAdminData(
         String descricao,
         LocalDate dataPublicacao,
         int likes,
+        Integer parentId,
         ComentarioStatus status,
-        int denuncias) {
+        int denuncias,
+        int respostas) {
 }

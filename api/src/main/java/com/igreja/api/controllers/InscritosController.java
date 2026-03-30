@@ -1,5 +1,8 @@
 package com.igreja.api.controllers;
 
+import java.time.DateTimeException;
+import java.util.NoSuchElementException;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +14,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 
 import com.igreja.api.dto.PageResponse;
 import com.igreja.api.dto.inscrito.InscritosDto;
@@ -36,25 +42,71 @@ public class InscritosController {
 
     @PostMapping("/user/inscritos/{idActividade}")
     public ResponseEntity<?> Register(@PathVariable(name = "idActividade") @Valid int id) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .body(inscritosService.save(new InscritosDto(userRepository.findByEmail(authentication.getName()).get().getId(), id)));
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(inscritosService.save(
+                            new InscritosDto(userRepository.findByEmail(authentication.getName()).get().getId(), id)));
+        } catch (DateTimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(e.getMessage());
+        }
     }
 
     @PostMapping("/public/inscritos/{idActividade}")
     public ResponseEntity<?> RegisterPublic(
             @PathVariable(name = "idActividade") @Valid int id,
             @RequestBody @Valid InscritosPublicDto inscritosDto) throws Exception {
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .body(inscritosService.savePublic(id, inscritosDto));
+        try {
+            var result = inscritosService.savePublicWithId(id, inscritosDto);
+            return ResponseEntity.ok()
+                    .header("X-Inscricao-Id", String.valueOf(result.id()))
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(result.qrPng());
+        } catch (DateTimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/public/inscritos/{inscricaoId}/pdf")
+    public ResponseEntity<?> fichaPdfPublic(
+            @PathVariable(name = "inscricaoId") long inscricaoId,
+            @RequestParam(name = "email") String email) {
+        try {
+            byte[] pdf = inscritosService.fichaPdfPublic(inscricaoId, email);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"ficha-inscricao.pdf\"")
+                    .body(pdf);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Falha ao gerar PDF.", e);
+        }
     }
 
 
     @PostMapping("/user/inscritos/auntenticar")
     public ResponseEntity<?> Autenticar(@RequestBody @Valid JSONObject inscritosDto) {
-        return ResponseEntity.ok().body(inscritosService.MarcarPresenca(inscritosDto));
+        try {
+            return ResponseEntity.ok().body(inscritosService.MarcarPresenca(inscritosDto));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(e.getMessage());
+        } catch (DateTimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Falha ao validar o QR Code.");
+        }
     }
 
     @GetMapping("/admin/inscritos")

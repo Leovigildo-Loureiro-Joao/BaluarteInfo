@@ -20,7 +20,9 @@ import {
   FiBarChart2,
   FiMessageCircle,
   FiHelpCircle,
-  FiStar
+  FiStar,
+  FiBell,
+  FiHeart
 } from 'react-icons/fi';
 import { 
   GiCross, 
@@ -34,7 +36,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { icone } from '../../assets/Assets';
 import { apiFetch } from '../../utils/api.js';
-import { clearAuthSession } from '../../utils/auth.js';
+import { clearAuthSession, getStoredUser } from '../../utils/auth.js';
+import type { AdminProfileDto, NotificacaoRecord, PageResponse, ViewCountResponse } from '../../types/api';
 
 interface NavigationItem {
   name: string;
@@ -60,34 +63,110 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
   const [showUserMenu, setShowUserMenu] = useState<boolean>(false);
   const [showHelpMenu, setShowHelpMenu] = useState<boolean>(false);
   
-  // Mock user data (depois virá do contexto)
+  const [profile, setProfile] = useState<AdminProfileDto | null>(null);
+  const [badges, setBadges] = useState({
+    notificacoes: 0,
+    mensagens: 0,
+    comentarios: 0,
+    usuarios: 0,
+  });
+  const storedUser = getStoredUser();
   const user = {
-    email: "admin@igrejabaluarte.com",
-    name: "Admin Baluarte",
-    role: "admin" as const,
-    avatar: null
+    email: profile?.email || storedUser?.email || "admin@igrejabaluarte.com",
+    name: profile?.nome || storedUser?.nome || "Admin",
+    role:
+      (profile?.roles || storedUser?.roles || "").toString().toUpperCase().includes("ADMIN")
+        ? ("admin" as const)
+        : ("editor" as const),
+    avatar: profile?.avatar || storedUser?.img || null,
   };
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch("/admin/profile");
+        if (!res.ok) return;
+        const payload = (await res.json()) as AdminProfileDto;
+        if (!active) return;
+        setProfile(payload);
+      } catch {
+        // ignore (fallback to stored user)
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+
+    const loadBadges = async () => {
+      try {
+        const [notifRes, msgRes, comRes, pendingUsersRes] = await Promise.all([
+          apiFetch("/admin/notificacao?page=0&size=1", { signal: controller.signal }),
+          apiFetch("/admin/mensagem/all?page=0&size=1&lido=false", { signal: controller.signal }),
+          apiFetch("/admin/comentario?page=0&size=1&analise=false", { signal: controller.signal }),
+          apiFetch("/admin/user/pending/count", { signal: controller.signal }),
+        ]);
+
+        if (!active) return;
+
+        const notifTotal = notifRes.ok
+          ? (((await notifRes.json()) as PageResponse<NotificacaoRecord>).totalElements ?? 0)
+          : 0;
+        const msgTotal = msgRes.ok ? (((await msgRes.json()) as PageResponse<unknown>).totalElements ?? 0) : 0;
+        const comTotal = comRes.ok ? (((await comRes.json()) as PageResponse<unknown>).totalElements ?? 0) : 0;
+        const pendingUsers = pendingUsersRes.ok
+          ? Number(((await pendingUsersRes.json()) as ViewCountResponse).total ?? 0)
+          : 0;
+
+        setBadges({
+          notificacoes: Number.isFinite(notifTotal) ? notifTotal : 0,
+          mensagens: Number.isFinite(msgTotal) ? msgTotal : 0,
+          comentarios: Number.isFinite(comTotal) ? comTotal : 0,
+          usuarios: pendingUsers,
+        });
+      } catch {
+        if (!active) return;
+        setBadges({ notificacoes: 0, mensagens: 0, comentarios: 0, usuarios: 0 });
+      }
+    };
+
+    loadBadges();
+    const interval = setInterval(loadBadges, 60_000);
+    return () => {
+      active = false;
+      controller.abort();
+      clearInterval(interval);
+    };
+  }, []);
 
   // Menu principal
   const mainNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: FiHome },
-    { name: 'Artigos', href: '/admin/artigos', icon: FiFileText, badge: 3 },
-    { name: 'Vídeos', href: '/admin/videos', icon: FiVideo, badge: 2 },
+    { name: 'Notificações', href: '/admin/notificacoes', icon: FiBell, badge: badges.notificacoes },
+    { name: 'Artigos', href: '/admin/artigos', icon: FiFileText },
+    { name: 'Vídeos', href: '/admin/videos', icon: FiVideo },
     { name: 'Áudios', href: '/admin/audios', icon: FiHeadphones },
     { name: 'Galeria', href: '/admin/galeria', icon: FiImage },
     { name: 'Actividades', href: '/admin/actividades', icon: FiCalendar },
-    { name: 'Mensagens', href: '/admin/mensagens', icon: FiMail, badge: 5 },
+    { name: 'Mensagens', href: '/admin/mensagens', icon: FiMail, badge: badges.mensagens },
   ];
 
   const managementNavigation: NavigationItem[] = [
-    { name: 'Usuários', href: '/admin/usuarios', icon: FiUsers, roles: ['admin'] },
+    { name: 'Usuários', href: '/admin/usuarios', icon: FiUsers, roles: ['admin'], badge: badges.usuarios },
     { name: 'Editar Sobre', href: '/admin/sobre', icon: FiUsers, roles: ['admin'] },
-    { name: 'Comentários', href: '/admin/comentarios', icon: FiMessageCircle, badge: 12 },
+    { name: 'Salvação', href: '/admin/salvacao', icon: FiHeart, roles: ['admin'] },
+    { name: 'Comentários', href: '/admin/comentarios', icon: FiMessageCircle, badge: badges.comentarios },
     { name: 'Inscrições', href: '/admin/inscricoes', icon: GiArchiveRegister },
   ];
 
   const configNavigation: NavigationItem[] = [
     { name: 'Configurações', href: '/admin/configuracoes', icon: FiSettings },
+    { name: 'Audit Logs', href: '/admin/audit', icon: FiBarChart2 },
     { name: 'Ajuda', href: '/admin/ajuda', icon: FiHelpCircle },
   ];
 
@@ -276,9 +355,9 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
                     {!isDesktopCollapsed && (
                       <>
                         <span className="flex-1 text-sm font-medium">{item.name}</span>
-                        {item.badge && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-primary text-white rounded-full">
-                            {item.badge}
+                        {(item.badge ?? 0) > 0 && (
+                          <span className="min-w-5 h-5 px-1 text-[11px] font-bold bg-red-500 text-white rounded-full flex items-center justify-center">
+                            {item.badge! > 99 ? "99+" : item.badge}
                           </span>
                         )}
                       </>
@@ -288,8 +367,15 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
                     {isDesktopCollapsed && (
                       <div className="absolute left-full ml-2 px-2 py-1 bg-white text-gray-900 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border border-gray-200 shadow-lg">
                         {item.name}
-                        {item.badge && ` (${item.badge})`}
+                        {(item.badge ?? 0) > 0 && ` (${item.badge})`}
                       </div>
+                    )}
+
+                    {/* Badge quando collapsed */}
+                    {isDesktopCollapsed && (item.badge ?? 0) > 0 && (
+                      <span className="absolute top-1.5 right-1.5 min-w-5 h-5 px-1 text-[11px] font-bold bg-red-500 text-white rounded-full flex items-center justify-center">
+                        {item.badge! > 99 ? "99+" : item.badge}
+                      </span>
                     )}
                   </motion.div>
                 )}
@@ -326,9 +412,9 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
                     {!isDesktopCollapsed && (
                       <>
                         <span className="flex-1 text-sm font-medium">{item.name}</span>
-                        {item.badge && (
-                          <span className="px-2 py-0.5 text-xs font-medium bg-primary text-white rounded-full">
-                            {item.badge}
+                        {(item.badge ?? 0) > 0 && (
+                          <span className="min-w-5 h-5 px-1 text-[11px] font-bold bg-red-500 text-white rounded-full flex items-center justify-center">
+                            {item.badge! > 99 ? "99+" : item.badge}
                           </span>
                         )}
                       </>
@@ -337,7 +423,15 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
                     {isDesktopCollapsed && (
                       <div className="absolute left-full ml-2 px-2 py-1 bg-white text-gray-900 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border border-gray-200 shadow-lg">
                         {item.name}
+                        {(item.badge ?? 0) > 0 && ` (${item.badge})`}
                       </div>
+                    )}
+
+                    {/* Badge quando collapsed */}
+                    {isDesktopCollapsed && (item.badge ?? 0) > 0 && (
+                      <span className="absolute top-1.5 right-1.5 min-w-5 h-5 px-1 text-[11px] font-bold bg-red-500 text-white rounded-full flex items-center justify-center">
+                        {item.badge! > 99 ? "99+" : item.badge}
+                      </span>
                     )}
                   </motion.div>
                 )}
@@ -378,8 +472,12 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
                     {isDesktopCollapsed && (
                       <div className="absolute left-full ml-2 px-2 py-1 bg-white text-gray-900 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 border border-gray-200 shadow-lg">
                         {item.name}
+                        
                       </div>
+
+                      
                     )}
+                    
                   </motion.div>
                 )}
               </NavLink>
@@ -429,7 +527,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileMenuOpen, onCloseMobileMenu, is
                       <button 
                         onClick={() => {
                           setShowUserMenu(false);
-                          navigate('/admin/perfil/1');
+                          navigate('/admin/profile');
                         }}
                         className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg flex items-center gap-2 transition-colors"
                       >

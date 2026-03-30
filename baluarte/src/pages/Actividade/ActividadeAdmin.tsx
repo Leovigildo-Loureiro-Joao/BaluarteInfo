@@ -317,9 +317,10 @@ export const ActividadesPageAdmin = () => {
     hora: string;
     endereco: string;
     organizador: string;
+    palestrantes?: string;
     contactos: string;
     capacidade: number;
-    imgFile: File;
+    imgFile?: File;
   }): Promise<{ ok: true } | { ok: false; message?: string }> => {
     const isEditing = Boolean(editingActividade);
     const tempId = `creating-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -340,10 +341,20 @@ export const ActividadesPageAdmin = () => {
       formData.append("duracao", novaActividade.duracao);
       formData.append("endereco", novaActividade.endereco);
       formData.append("organizador", novaActividade.organizador);
+      if (novaActividade.palestrantes?.trim()) {
+        formData.append("palestrantes", novaActividade.palestrantes);
+      }
       formData.append("contactos", novaActividade.contactos);
       formData.append("capacidade", String(novaActividade.capacidade));
       formData.append("dataEvento", makeDateTime(novaActividade.data, novaActividade.hora));
-      formData.append("img", novaActividade.imgFile);
+      if (!isEditing) {
+        if (!novaActividade.imgFile) {
+          throw new Error("Imagem obrigatória para criar actividade.");
+        }
+        formData.append("img", novaActividade.imgFile);
+      } else if (novaActividade.imgFile) {
+        formData.append("img", novaActividade.imgFile);
+      }
 
       const endpoint = isEditing
         ? `/admin/actividade/${editingActividade?.id}`
@@ -388,7 +399,7 @@ export const ActividadesPageAdmin = () => {
       }
 
       setReloadToken((prev) => prev + 1);
-      setEditingActividade(undefined);
+      setEditingActividade(null);
       setActionError("");
       return { ok: true };
     } catch (err) {
@@ -524,7 +535,7 @@ export const ActividadesPageAdmin = () => {
 
             <button
               onClick={() => {
-                setEditingActividade(undefined);
+                setEditingActividade(null);
                 setShowModal(true);
               }}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors shadow-lg shadow-primary-500/20"
@@ -648,7 +659,7 @@ export const ActividadesPageAdmin = () => {
             ) : (
               <button
                 onClick={() => {
-                  setEditingActividade(undefined);
+                  setEditingActividade(null);
                   setShowModal(true);
                 }}
                 className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
@@ -691,11 +702,9 @@ export const ActividadesPageAdmin = () => {
             actividade={editingActividade}
             onClose={() => {
               setShowModal(false);
-              setEditingActividade(undefined);
+              setEditingActividade(null);
             }}
-            onSave={(payload) => {
-              handleSave(payload);
-            }}
+            onSave={(payload) => handleSave(payload)}
           />
         )}
       </AnimatePresence>

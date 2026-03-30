@@ -9,8 +9,9 @@ import { MidiaPage } from './pages/Midia/Midia.js'
 import { MidiaDetalhe } from './components/midia/MidiaDetail.js'
 import { ArtigosPage } from './pages/Artigos/Artigos.js'
 import { ArtigoDetalhe } from './pages/Artigos/ArtigosDetails.js'
-import { ContactoPage } from './pages/Contacto.js'
+import { ContactoPage } from './pages/Contacto'
 import { SalvacaoPage } from './pages/Salvacao/Salvacao.js'
+import { SalvacaoEditAdminPage } from './pages/Salvacao/SalvacaoEditAdmin.js'
 import Login from './pages/Auth/Login.jsx'
 import Register from './pages/Auth/Register.jsx'
 import { DashboardPage } from './pages/Admin/Dashboard.js'
@@ -27,9 +28,12 @@ import { ComentariosPage } from './pages/Comentarios/Comentarios.js'
 import { InscricoesPage } from './pages/Inscricao/Inscricao.js'
 import { ConfiguracoesPage } from './pages/Configuracoes/Configuracoes.js'
 import { AjudaPage } from './pages/Admin/Ajuda.js'
+import { AuditLogsPage } from './pages/Admin/AuditLogs.js'
+import { NotificacoesPage } from './pages/Admin/Notificacoes.js'
 import RequireAdmin from './components/auth/RequireAdmin.jsx'
 import { SobrePage } from './pages/Sobre/Sobre.js'
 import { ConteudoSobrePage } from './pages/Sobre/SobreEditAdmin.js'
+import { PerfilAdminPage } from './pages/Perfil/PerfilAdmin.js'
 
 function App() {
   return (
@@ -48,6 +52,7 @@ function App() {
           <Route path="artigos/:id" element={<ArtigoDetalhe />} />
           <Route path="salvacao" element={<SalvacaoPage />} />
           <Route path="contacto" element={<ContactoPage />} />
+          
         </Route>
         <Route path="/auth" element={<AuthLayout />}>
           <Route index element={<Login />} />
@@ -68,6 +73,7 @@ function App() {
           <Route path="videos" element={<VideosPage />} />
           <Route path="audios" element={<AudiosPage />} />
           <Route path="sobre" element={<ConteudoSobrePage />} />
+          <Route path="salvacao" element={<SalvacaoEditAdminPage />} />
           <Route path="galeria" element={<GaleriaPage />} />
           <Route path="mensagens" element={<MensagensPage />} />
           <Route path="actividades" element={<ActividadesPageAdmin />} />
@@ -75,9 +81,12 @@ function App() {
           <Route path="comentarios" element={<ComentariosPage />} />
           <Route path="configuracoes" element={<ConfiguracoesPage />} />
           <Route path="ajuda" element={<AjudaPage />} />
+          <Route path="audit" element={<AuditLogsPage />} />
+          <Route path="notificacoes" element={<NotificacoesPage />} />
           <Route path="inscricoes" element={<InscricoesPage />} />
           <Route path="actividades/:id" element={<ActividadeDetails />} />
           <Route path="perfil/:userID" element={<PerfilPage />} />
+          <Route path="profile" element={<PerfilAdminPage />} />
         </Route>
       </Routes>
     </Router>

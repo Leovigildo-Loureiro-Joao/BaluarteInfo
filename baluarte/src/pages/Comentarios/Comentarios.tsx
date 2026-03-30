@@ -1,5 +1,5 @@
 // src/pages/Admin/ComentariosPage.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiMessageSquare,
@@ -9,491 +9,104 @@ import {
   FiEye,
   FiEyeOff,
   FiSearch,
-  FiFilter,
-  FiUser,
-  FiCalendar,
   FiClock,
   FiMoreVertical,
   FiAlertCircle,
   FiFlag,
   FiRefreshCw,
-  FiBookOpen,
-  FiVideo,
-  FiHeadphones,
-  FiCalendar as FiCalendarIcon
+  FiVideo
 } from "react-icons/fi";
 import { 
-  GiMicrophone, 
   GiPartyPopper 
 } from "react-icons/gi";
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { LiaBibleSolid } from "react-icons/lia";
+import { ComentarioAdminData, ComentarioStatus, ComentarioType, PageResponse } from "../../types/api";
+import { apiFetch } from "../../utils/api.js";
+import { ModalComentarioDetalhe } from "../../components/comentarios/ComentarioEditar.js";
+import { ComentarioCard } from "../../components/comentarios/ComentarioCard.js";
 
-// Tipos de seções
-enum SecaoTipo {
-  ARTIGO = 'ARTIGO',
-  MIDIA = 'MIDIA',
-  ACTIVIDADE = 'ACTIVIDADE'
-}
 
-// Interface do comentário
-interface Comentario {
-  id: string;
-  secaoTipo: SecaoTipo;
-  secaoId: string;
-  secaoTitulo: string;
-  usuarioNome: string;
-  usuarioEmail: string;
-  usuarioAvatar?: string;
-  texto: string;
-  data: string;
-  likes: number;
-  status: 'ativo' | 'oculto' | 'denunciado';
-  denuncias?: number;
-  respostas?: number;
-}
-
-// Dados mockados
-const comentariosMock: Comentario[] = [
-  {
-    id: '1',
-    secaoTipo: SecaoTipo.ARTIGO,
-    secaoId: 'art1',
-    secaoTitulo: 'A Soberania de Deus em Tempos de Crise',
-    usuarioNome: 'João Silva',
-    usuarioEmail: 'joao.silva@email.com',
-    usuarioAvatar: 'https://i.pravatar.cc/150?img=1',
-    texto: 'Excelente artigo! Me ajudou muito em minhas reflexões matinais. Deus abençoe.',
-    data: '2024-03-12T10:30:00',
-    likes: 12,
-    status: 'ativo',
-    respostas: 2
-  },
-  {
-    id: '2',
-    secaoTipo: SecaoTipo.ARTIGO,
-    secaoId: 'art1',
-    secaoTitulo: 'A Soberania de Deus em Tempos de Crise',
-    usuarioNome: 'Maria Oliveira',
-    usuarioEmail: 'maria.oliveira@email.com',
-    usuarioAvatar: 'https://i.pravatar.cc/150?img=2',
-    texto: 'Compartilhei com meu grupo de estudos. Palavra poderosa!',
-    data: '2024-03-11T15:45:00',
-    likes: 8,
-    status: 'ativo'
-  },
-  {
-    id: '3',
-    secaoTipo: SecaoTipo.MIDIA,
-    secaoId: 'vid1',
-    secaoTitulo: 'Culto de Domingo - A Vitória é Certa',
-    usuarioNome: 'Pedro Santos',
-    usuarioEmail: 'pedro.santos@email.com',
-    usuarioAvatar: 'https://i.pravatar.cc/150?img=3',
-    texto: 'Esse vídeo mudou minha semana! Glória a Deus!',
-    data: '2024-03-10T20:15:00',
-    likes: 23,
-    status: 'ativo',
-    respostas: 1
-  },
-  {
-    id: '4',
-    secaoTipo: SecaoTipo.ACTIVIDADE,
-    secaoId: 'atv1',
-    secaoTitulo: 'Conferência de Jovens',
-    usuarioNome: 'Ana Carolina',
-    usuarioEmail: 'ana.carolina@email.com',
-    usuarioAvatar: 'https://i.pravatar.cc/150?img=4',
-    texto: 'Mal posso esperar por esse evento! Vai ser incrível!',
-    data: '2024-03-09T09:20:00',
-    likes: 15,
-    status: 'ativo'
-  },
-  {
-    id: '5',
-    secaoTipo: SecaoTipo.ARTIGO,
-    secaoId: 'art2',
-    secaoTitulo: 'O Poder da Oração Intercessória',
-    usuarioNome: 'Lucas Mendes',
-    usuarioEmail: 'lucas.mendes@email.com',
-    usuarioAvatar: 'https://i.pravatar.cc/150?img=5',
-    texto: 'Texto com informações erradas sobre o tema. Não recomendo.',
-    data: '2024-03-08T14:30:00',
-    likes: 2,
-    status: 'denunciado',
-    denuncias: 3
-  },
-  {
-    id: '6',
-    secaoTipo: SecaoTipo.MIDIA,
-    secaoId: 'aud1',
-    secaoTitulo: 'Podcast: Juventude e Fé',
-    usuarioNome: 'Carla Souza',
-    usuarioEmail: 'carla.souza@email.com',
-    usuarioAvatar: 'https://i.pravatar.cc/150?img=6',
-    texto: 'Conteúdo impróprio para a igreja. Deveriam revisar.',
-    data: '2024-03-07T22:10:00',
-    likes: 1,
-    status: 'denunciado',
-    denuncias: 5
-  },
-  {
-    id: '7',
-    secaoTipo: SecaoTipo.MIDIA,
-    secaoId: 'vid2',
-    secaoTitulo: 'Estudo Bíblico - Romanos 8',
-    usuarioNome: 'Roberto Alves',
-    usuarioEmail: 'roberto.alves@email.com',
-    texto: 'Comentário removido por violar as diretrizes.',
-    data: '2024-03-06T11:40:00',
-    likes: 0,
-    status: 'oculto'
-  }
-];
-
-// Modal de Detalhes do Comentário
-const ModalComentarioDetalhe = ({ 
-  comentario, 
-  onClose, 
-  onOcultar,
-  onExcluir,
-  onMarcarResolvido,
-  pending
-}: { 
-  comentario: Comentario; 
-  onClose: () => void; 
-  onOcultar: (id: string) => void;
-  onExcluir: (id: string) => void;
-  onMarcarResolvido: (id: string) => void;
-  pending?: boolean;
-}) => {
-  const getSecaoIcon = (tipo: SecaoTipo) => {
-    switch(tipo) {
-      case SecaoTipo.ARTIGO: return <LiaBibleSolid className="text-blue-500" size={20} />;
-      case SecaoTipo.MIDIA: return <FiVideo className="text-green-500" size={20} />;
-      case SecaoTipo.ACTIVIDADE: return <GiPartyPopper className="text-purple-500" size={20} />;
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <FiMessageSquare className="text-primary-500" />
-              Detalhes do Comentário
-            </h2>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-              <FiX size={20} />
-            </button>
-          </div>
-
-          {/* Seção de origem */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-6 flex items-center gap-3">
-            {getSecaoIcon(comentario.secaoTipo)}
-            <div>
-              <p className="text-sm text-gray-500">Publicado em:</p>
-              <p className="font-medium">{comentario.secaoTitulo}</p>
-            </div>
-            <span className={`ml-auto text-xs px-3 py-1 rounded-full ${
-              comentario.status === 'ativo' ? 'bg-green-100 text-green-600' :
-              comentario.status === 'oculto' ? 'bg-gray-100 text-gray-600' :
-              'bg-red-100 text-red-600'
-            }`}>
-              {comentario.status === 'ativo' ? 'Ativo' :
-               comentario.status === 'oculto' ? 'Oculto' :
-               'Denunciado'}
-            </span>
-          </div>
-
-          {/* Autor */}
-          <div className="flex items-center gap-3 mb-6">
-            <img
-              src={comentario.usuarioAvatar || 'https://via.placeholder.com/50'}
-              alt={comentario.usuarioNome}
-              className="w-12 h-12 rounded-full"
-            />
-            <div>
-              <h3 className="font-semibold">{comentario.usuarioNome}</h3>
-              <p className="text-sm text-gray-500">{comentario.usuarioEmail}</p>
-              <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                <FiClock size={12} />
-                {formatDistanceToNow(new Date(comentario.data), { addSuffix: true, locale: ptBR })}
-              </p>
-            </div>
-          </div>
-
-          {/* Comentário */}
-          <div className="bg-gray-50 rounded-xl p-4 mb-6">
-            <p className="text-gray-700">{comentario.texto}</p>
-          </div>
-
-          {/* Estatísticas */}
-          <div className="flex gap-4 mb-6">
-            <div className="flex items-center gap-1 text-sm text-gray-500">
-              <FiMessageSquare size={16} />
-              {comentario.respostas || 0} respostas
-            </div>
-            <div className="flex items-center gap-1 text-sm text-gray-500">
-              <FiAlertCircle size={16} />
-              {comentario.likes} likes
-            </div>
-            {comentario.denuncias && (
-              <div className="flex items-center gap-1 text-sm text-red-500">
-                <FiFlag size={16} />
-                {comentario.denuncias} denúncias
-              </div>
-            )}
-          </div>
-
-          {/* Ações */}
-          <div className="flex gap-3 pt-4 border-t">
-            {comentario.status === 'ativo' && (
-              <button
-                onClick={() => {
-                  onOcultar(comentario.id);
-                  onClose();
-                }}
-                disabled={pending}
-                className={`flex-1 px-4 py-3 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 flex items-center justify-center gap-2 ${
-                  pending ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-              >
-                {pending ? <FiRefreshCw size={18} className="animate-spin" /> : <FiEyeOff size={18} />}
-                {pending ? "A processar…" : "Ocultar Comentário"}
-              </button>
-            )}
-
-            {comentario.status === 'denunciado' && (
-              <button
-                onClick={() => {
-                  onMarcarResolvido(comentario.id);
-                  onClose();
-                }}
-                disabled={pending}
-                className={`flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center justify-center gap-2 ${
-                  pending ? "opacity-60 cursor-not-allowed" : ""
-                }`}
-              >
-                {pending ? <FiRefreshCw size={18} className="animate-spin" /> : <FiCheck size={18} />}
-                {pending ? "A processar…" : "Marcar como Resolvido"}
-              </button>
-            )}
-
-            <button
-              onClick={() => {
-                if (window.confirm('Tem certeza que deseja excluir este comentário?')) {
-                  onExcluir(comentario.id);
-                  onClose();
-                }
-              }}
-              disabled={pending}
-              className={`flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center justify-center gap-2 ${
-                pending ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-            >
-              {pending ? <FiRefreshCw size={18} className="animate-spin" /> : <FiTrash2 size={18} />}
-              {pending ? "A processar…" : "Excluir Permanentemente"}
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// Card de Comentário
-const ComentarioCard = ({ 
-  comentario, 
-  onVerDetalhe,
-  onOcultar,
-  onExcluir,
-  pending
-}: { 
-  comentario: Comentario; 
-  onVerDetalhe: (comentario: Comentario) => void;
-  onOcultar: (id: string) => void;
-  onExcluir: (id: string) => void;
-  pending?: boolean;
-}) => {
-  const [showOptions, setShowOptions] = useState(false);
-
-  const getSecaoIcon = (tipo: SecaoTipo) => {
-    switch(tipo) {
-      case SecaoTipo.ARTIGO: return <LiaBibleSolid className="text-blue-500" size={14} />;
-      case SecaoTipo.MIDIA: return <FiVideo className="text-green-500" size={14} />;
-      case SecaoTipo.ACTIVIDADE: return <GiPartyPopper className="text-purple-500" size={14} />;
-    }
-  };
-
-  const getSecaoLabel = (tipo: SecaoTipo) => {
-    switch(tipo) {
-      case SecaoTipo.ARTIGO: return 'Artigo';
-      case SecaoTipo.MIDIA: return 'Mídia';
-      case SecaoTipo.ACTIVIDADE: return 'Actividade';
-    }
-  };
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className={`bg-white rounded-xl p-5 border-l-4 ${
-        comentario.status === 'denunciado' ? 'border-l-red-500' :
-        comentario.status === 'oculto' ? 'border-l-gray-500' :
-        'border-l-green-500'
-      } shadow-sm hover:shadow-md transition-shadow relative`}
-    >
-      {pending && (
-        <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-10">
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-sm border border-gray-200 text-sm font-medium text-gray-700">
-            <FiRefreshCw className="animate-spin" />
-            A processar…
-          </div>
-        </div>
-      )}
-      <div className="flex items-start gap-3">
-        <img
-          src={comentario.usuarioAvatar || 'https://via.placeholder.com/40'}
-          alt={comentario.usuarioNome}
-          className="w-10 h-10 rounded-full"
-        />
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-sm">{comentario.usuarioNome}</span>
-                <span className="text-xs text-gray-400">•</span>
-                <span className="text-xs text-gray-500">
-                  {formatDistanceToNow(new Date(comentario.data), { addSuffix: true, locale: ptBR })}
-                </span>
-              </div>
-
-              <p className="text-gray-700 text-sm mb-2 line-clamp-2">
-                {comentario.texto}
-              </p>
-
-              <div className="flex items-center gap-3 text-xs text-gray-500">
-                <span className="flex items-center gap-1">
-                  {getSecaoIcon(comentario.secaoTipo)}
-                  {getSecaoLabel(comentario.secaoTipo)} • {comentario.secaoTitulo}
-                </span>
-                {comentario.respostas && (
-                  <span>💬 {comentario.respostas} respostas</span>
-                )}
-                {comentario.denuncias && (
-                  <span className="text-red-500 flex items-center gap-1">
-                    <FiFlag size={12} />
-                    {comentario.denuncias} denúncias
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setShowOptions(!showOptions)}
-                disabled={pending}
-                className={`p-1 hover:bg-gray-100 rounded-lg transition-colors ${
-                  pending ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                <FiMoreVertical size={16} className="text-gray-500" />
-              </button>
-
-              <AnimatePresence>
-                {showOptions && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 top-8 bg-white rounded-lg shadow-xl border border-gray-200 py-1 w-40 z-10"
-                  >
-                    <button
-                      onClick={() => {
-                        onVerDetalhe(comentario);
-                        setShowOptions(false);
-                      }}
-                      disabled={pending}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <FiEye size={14} />
-                      Ver detalhes
-                    </button>
-                    {comentario.status === 'ativo' && (
-                      <button
-                        onClick={() => {
-                          onOcultar(comentario.id);
-                          setShowOptions(false);
-                        }}
-                        disabled={pending}
-                        className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center gap-2"
-                      >
-                        <FiEyeOff size={14} />
-                        Ocultar
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        if (window.confirm('Excluir este comentário?')) {
-                          onExcluir(comentario.id);
-                        }
-                        setShowOptions(false);
-                      }}
-                      disabled={pending}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                    >
-                      <FiTrash2 size={14} />
-                      Excluir
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-// Componente Principal
 export const ComentariosPage = () => {
-  const [comentarios, setComentarios] = useState<Comentario[]>(comentariosMock);
+  const [comentarios, setComentarios] = useState<ComentarioAdminData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterSecao, setFilterSecao] = useState<SecaoTipo | 'todas'>('todas');
+  const [filterSecao, setFilterSecao] = useState<ComentarioType | 'todas'>('todas');
   const [filterStatus, setFilterStatus] = useState<'todos' | 'ativo' | 'denunciado' | 'oculto'>('todos');
-  const [selectedComentario, setSelectedComentario] = useState<Comentario | null>(null);
+  const [selectedComentario, setSelectedComentario] = useState<ComentarioAdminData | null>(null);
   const [showDetalheModal, setShowDetalheModal] = useState(false);
-  const [pendingComentarioIds, setPendingComentarioIds] = useState<string[]>([]);
+  const [pendingComentarioIds, setPendingComentarioIds] = useState<number[]>([]);
+  const [actionError, setActionError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [page, setPage] = useState(0);
+  const [size] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
+  const [reloadToken, setReloadToken] = useState(0);
+
+  useEffect(() => {
+    setPage(0);
+  }, [filterStatus]);
+
+  const apiParams = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("size", String(size));
+
+    if (filterStatus === "ativo") {
+      params.set("status", ComentarioStatus.ATIVO);
+    } else if (filterStatus === "denunciado") {
+      params.set("status", ComentarioStatus.DENUNCIADO);
+    } else if (filterStatus === "oculto") {
+      params.set("status", ComentarioStatus.OCULTO);
+    }
+
+    return params.toString();
+  }, [filterStatus, page, size]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const res = await apiFetch(`/admin/comentario?${apiParams}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar comentários.");
+        const payload = (await res.json()) as PageResponse<ComentarioAdminData>;
+        setComentarios(payload.content ?? []);
+        setTotalPages(payload.totalPages ?? 0);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setComentarios([]);
+        setTotalPages(0);
+        setLoadError(err instanceof Error ? err.message : "Não foi possível carregar comentários.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [apiParams, reloadToken]);
+
 
   // Estatísticas
   const stats = {
     total: comentarios.length,
-    ativos: comentarios.filter(c => c.status === 'ativo').length,
-    denunciados: comentarios.filter(c => c.status === 'denunciado').length,
-    ocultos: comentarios.filter(c => c.status === 'oculto').length,
-    artigos: comentarios.filter(c => c.secaoTipo === SecaoTipo.ARTIGO).length,
-    midia: comentarios.filter(c => c.secaoTipo === SecaoTipo.MIDIA).length,
-    atividades: comentarios.filter(c => c.secaoTipo === SecaoTipo.ACTIVIDADE).length
+    ativos: comentarios.filter(c => c.status === ComentarioStatus.ATIVO).length,
+    denunciados: comentarios.filter(c => c.status === ComentarioStatus.DENUNCIADO).length,
+    ocultos: comentarios.filter(c => c.status === ComentarioStatus.OCULTO).length,
+    artigos: comentarios.filter(c => c.seccao === ComentarioType.Artigo).length,
+    midia: comentarios.filter(c => c.seccao === ComentarioType.Midia).length,
+    actividades: comentarios.filter(c => c.seccao === ComentarioType.Actividade).length
   };
+
+  const selectedStatusEnum =
+    filterStatus === "ativo"
+      ? ComentarioStatus.ATIVO
+      : filterStatus === "denunciado"
+        ? ComentarioStatus.DENUNCIADO
+        : filterStatus === "oculto"
+          ? ComentarioStatus.OCULTO
+          : null;
 
   // Filtrar comentários
   const filteredComentarios = comentarios.filter(c => {
@@ -501,53 +114,89 @@ export const ComentariosPage = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       const matches = 
-        c.texto.toLowerCase().includes(term) ||
+        c.descricao.toLowerCase().includes(term) ||
         c.usuarioNome.toLowerCase().includes(term) ||
-        c.secaoTitulo.toLowerCase().includes(term);
+        c.seccaoTitulo.toLowerCase().includes(term);
       if (!matches) return false;
     }
 
     // Filtro por seção
-    if (filterSecao !== 'todas' && c.secaoTipo !== filterSecao) return false;
+    if (filterSecao !== 'todas' && c.seccao !== filterSecao) return false;
 
     // Filtro por status
-    if (filterStatus !== 'todos' && c.status !== filterStatus) return false;
+    if (selectedStatusEnum && c.status !== selectedStatusEnum) return false;
 
     return true;
   });
 
-  const startPending = (id: string) => {
+  const startPending = (id: number) => {
     setPendingComentarioIds((current) => (current.includes(id) ? current : [id, ...current]));
   };
 
-  const stopPending = (id: string) => {
+  const stopPending = (id: number) => {
     setPendingComentarioIds((current) => current.filter((pid) => pid !== id));
   };
 
-  const handleOcultar = async (id: string) => {
+  const handleOcultar = async (id: number) => {
     if (pendingComentarioIds.includes(id)) return;
     startPending(id);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setComentarios((current) => current.map((c) => (c.id === id ? { ...c, status: "oculto" } : c)));
-    stopPending(id);
+    setActionError("");
+    try {
+      const res = await apiFetch(`/admin/comentario/${id}/status`, {
+        method: "PUT",
+        body: { status: ComentarioStatus.OCULTO },
+      });
+      if (!res.ok) throw new Error("Falha ao ocultar comentário.");
+      const updated = (await res.json().catch(() => null)) as ComentarioAdminData | null;
+      if (updated?.id) {
+        setComentarios((current) => current.map((c) => (c.id === id ? updated : c)));
+      } else {
+        setReloadToken((v) => v + 1);
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Não foi possível ocultar o comentário.");
+    } finally {
+      stopPending(id);
+    }
   };
 
-  const handleExcluir = async (id: string) => {
+  const handleExcluir = async (id: number) => {
     if (pendingComentarioIds.includes(id)) return;
     startPending(id);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setComentarios((current) => current.filter((c) => c.id !== id));
-    stopPending(id);
+    setActionError("");
+    try {
+      const res = await apiFetch(`/user/comentario/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Falha ao excluir comentário.");
+      setComentarios((current) => current.filter((c) => c.id !== id));
+      setReloadToken((v) => v + 1);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Não foi possível excluir o comentário.");
+    } finally {
+      stopPending(id);
+    }
   };
 
-  const handleMarcarResolvido = async (id: string) => {
+  const handleMarcarResolvido = async (id: number) => {
     if (pendingComentarioIds.includes(id)) return;
     startPending(id);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setComentarios((current) =>
-      current.map((c) => (c.id === id ? { ...c, status: "ativo", denuncias: 0 } : c))
-    );
-    stopPending(id);
+    setActionError("");
+    try {
+      const res = await apiFetch(`/admin/comentario/${id}/status`, {
+        method: "PUT",
+        body: { status: ComentarioStatus.ATIVO },
+      });
+      if (!res.ok) throw new Error("Falha ao atualizar status do comentário.");
+      const updated = (await res.json().catch(() => null)) as ComentarioAdminData | null;
+      if (updated?.id) {
+        setComentarios((current) => current.map((c) => (c.id === id ? updated : c)));
+      } else {
+        setReloadToken((v) => v + 1);
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Não foi possível marcar como resolvido.");
+    } finally {
+      stopPending(id);
+    }
   };
 
   return (
@@ -569,6 +218,28 @@ export const ComentariosPage = () => {
             Gerencie todos os comentários de artigos, mídias e atividades
           </p>
         </div>
+
+        {(loadError || actionError) && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 flex items-start justify-between gap-4">
+            <div className="text-sm">
+              <p className="font-semibold">Aconteceu um erro</p>
+              <p className="mt-1">{actionError || loadError}</p>
+            </div>
+            <button
+              onClick={() => setReloadToken((v) => v + 1)}
+              className="shrink-0 px-4 py-2 bg-white border border-red-200 rounded-lg hover:bg-red-100 text-sm flex items-center gap-2"
+            >
+              <FiRefreshCw size={14} />
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {loading && comentarios.length === 0 && (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
 
         {/* Cards de Estatísticas */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -608,13 +279,13 @@ export const ComentariosPage = () => {
             {/* Filtro por seção */}
             <select
               value={filterSecao}
-              onChange={(e) => setFilterSecao(e.target.value as SecaoTipo | 'todas')}
+              onChange={(e) => setFilterSecao(e.target.value as ComentarioType | 'todas')}
               className="px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 min-w-[150px]"
             >
               <option value="todas">Todas seções</option>
-              <option value={SecaoTipo.ARTIGO}>Artigos</option>
-              <option value={SecaoTipo.MIDIA}>Mídia</option>
-              <option value={SecaoTipo.ACTIVIDADE}>Actividades</option>
+              <option value={ComentarioType.Artigo}>Artigos</option>
+              <option value={ComentarioType.Midia}>Mídia</option>
+              <option value={ComentarioType.Actividade}>Actividades</option>
             </select>
 
             {/* Filtro por status */}
@@ -685,10 +356,53 @@ export const ComentariosPage = () => {
                     setShowDetalheModal(true);
                   }}
                   onOcultar={handleOcultar}
+                  onMarcarResolvido={handleMarcarResolvido}
                   onExcluir={handleExcluir}
                 />
               ))}
             </AnimatePresence>
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={loading || page <= 0}
+                className={`px-4 py-2 rounded-lg border border-gray-200 text-sm ${
+                  loading || page <= 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                }`}
+              >
+                Anterior
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={loading || page >= totalPages - 1}
+                className={`px-4 py-2 rounded-lg border border-gray-200 text-sm ${
+                  loading || page >= totalPages - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                }`}
+              >
+                Próxima
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm text-gray-600">
+              <span>
+                Página <span className="font-semibold">{page + 1}</span> de{" "}
+                <span className="font-semibold">{totalPages}</span>
+              </span>
+              <button
+                onClick={() => setReloadToken((v) => v + 1)}
+                disabled={loading}
+                className={`px-4 py-2 rounded-lg bg-white border border-gray-200 text-sm flex items-center gap-2 ${
+                  loading ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                }`}
+              >
+                <FiRefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                Atualizar
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -706,6 +420,7 @@ export const ComentariosPage = () => {
             onOcultar={handleOcultar}
             onExcluir={handleExcluir}
             onMarcarResolvido={handleMarcarResolvido}
+            onRefreshList={() => setReloadToken((v) => v + 1)}
           />
         )}
       </AnimatePresence>

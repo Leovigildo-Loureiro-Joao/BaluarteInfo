@@ -1,5 +1,5 @@
 // src/pages/Admin/InscricoesPage.tsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiSearch,
@@ -31,122 +31,12 @@ import {
 import QRCode from 'qrcode';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { LiaQrcodeSolid } from "react-icons/lia";
+import { apiFetch } from "../../utils/api.js";
+import { StatusIncritos } from "../../types/api";
+import type { ActividadeSummary, InscritosData, PageResponse } from "../../types/api";
 
-// Tipos
-enum TipoActividade {
-  Culto = 'Culto',
-  Evento = 'Evento',
-  Escola = 'Escola',
-  Jovens = 'Jovens',
-  Familia = 'Família',
-  Louvor = 'Louvor',
-  Oracao = 'Oração'
-}
-
-enum StatusInscricao {
-  CONFIRMADA = 'CONFIRMADA',
-  PENDENTE = 'PENDENTE',
-  CANCELADA = 'CANCELADA',
-  COMPARECEU = 'COMPARECEU'
-}
-
-interface Inscricao {
-  id: string;
-  actividadeId: string;
-  actividadeTitulo: string;
-  actividadeTipo: TipoActividade;
-  actividadeData: string;
-  usuarioId: string;
-  usuarioNome: string;
-  usuarioEmail: string;
-  usuarioTelefone: string;
-  dataInscricao: string;
-  status: StatusInscricao;
-  qrCode?: string;
-  checkin?: string;
-  acompanhantes?: number;
-}
-
-interface Actividade {
-  id: string;
-  titulo: string;
-  tipo: TipoActividade;
-  data: string;
-  capacidade: number;
-  inscritos: number;
-}
-
-// Dados mockados
-const actividadesMock: Actividade[] = [
-  {
-    id: '1',
-    titulo: 'Conferência de Jovens',
-    tipo: TipoActividade.Jovens,
-    data: '2024-03-22',
-    capacidade: 300,
-    inscritos: 156
-  },
-  {
-    id: '2',
-    titulo: 'Culto de Celebração',
-    tipo: TipoActividade.Culto,
-    data: '2024-03-17',
-    capacidade: 200,
-    inscritos: 189
-  },
-  {
-    id: '3',
-    titulo: 'Escola Bíblica',
-    tipo: TipoActividade.Escola,
-    data: '2024-03-20',
-    capacidade: 50,
-    inscritos: 42
-  }
-];
-
-const inscricoesMock: Inscricao[] = [
-  {
-    id: 'i1',
-    actividadeId: '1',
-    actividadeTitulo: 'Conferência de Jovens',
-    actividadeTipo: TipoActividade.Jovens,
-    actividadeData: '2024-03-22',
-    usuarioId: 'u1',
-    usuarioNome: 'João Silva',
-    usuarioEmail: 'joao@email.com',
-    usuarioTelefone: '(11) 99999-9999',
-    dataInscricao: '2024-03-10T14:30:00',
-    status: StatusInscricao.CONFIRMADA,
-    acompanhantes: 2
-  },
-  {
-    id: 'i2',
-    actividadeId: '1',
-    actividadeTitulo: 'Conferência de Jovens',
-    actividadeTipo: TipoActividade.Jovens,
-    actividadeData: '2024-03-22',
-    usuarioId: 'u2',
-    usuarioNome: 'Maria Oliveira',
-    usuarioEmail: 'maria@email.com',
-    usuarioTelefone: '(11) 98888-8888',
-    dataInscricao: '2024-03-11T09:15:00',
-    status: StatusInscricao.PENDENTE
-  },
-  {
-    id: 'i3',
-    actividadeId: '2',
-    actividadeTitulo: 'Culto de Celebração',
-    actividadeTipo: TipoActividade.Culto,
-    actividadeData: '2024-03-17',
-    usuarioId: 'u3',
-    usuarioNome: 'Pedro Santos',
-    usuarioEmail: 'pedro@email.com',
-    usuarioTelefone: '(11) 97777-7777',
-    dataInscricao: '2024-03-09T20:10:00',
-    status: StatusInscricao.CONFIRMADA,
-    checkin: '2024-03-17T18:45:00'
-  }
-];
+type Inscricao = InscritosData;
+type Actividade = Pick<ActividadeSummary, "id" | "titulo" | "capacidade" | "inscritos" | "dataEvento">;
 
 // Componente de Leitor QR Code
 const LeitorQRCode = ({ onScan, onClose }: { onScan: (data: string) => void; onClose: () => void }) => {
@@ -233,10 +123,9 @@ const GerarQRCode = ({ inscricao, onClose }: { inscricao: Inscricao; onClose: ()
   useEffect(() => {
     // Dados a serem codificados no QR
     const qrData = JSON.stringify({
-      id: inscricao.id,
-      usuario: inscricao.usuarioNome,
-      actividade: inscricao.actividadeTitulo,
-      data: inscricao.actividadeData
+      Id: inscricao.id,
+      eventoId: inscricao.actividadeId,
+      dataEvento: inscricao.actividadeData
     });
 
     QRCode.toDataURL(qrData, { width: 300 }, (err, url) => {
@@ -310,16 +199,12 @@ const ModalInscricaoDetalhe = ({
   inscricao, 
   onClose, 
   onGerarQR,
-  onConfirmar,
-  onCancelar,
   onCheckin
 }: { 
   inscricao: Inscricao; 
   onClose: () => void; 
   onGerarQR: (inscricao: Inscricao) => void;
-  onConfirmar: (id: string) => void;
-  onCancelar: (id: string) => void;
-  onCheckin: (id: string) => void;
+  onCheckin: (inscricao: Inscricao) => void;
 }) => {
   return (
     <motion.div
@@ -347,10 +232,9 @@ const ModalInscricaoDetalhe = ({
           {/* Status */}
           <div className="mb-6">
             <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
-              inscricao.status === StatusInscricao.CONFIRMADA ? 'bg-green-100 text-green-600' :
-              inscricao.status === StatusInscricao.PENDENTE ? 'bg-yellow-100 text-yellow-600' :
-              inscricao.status === StatusInscricao.CANCELADA ? 'bg-red-100 text-red-600' :
-              'bg-blue-100 text-blue-600'
+              inscricao.status === StatusIncritos.Presente ? 'bg-green-100 text-green-600' :
+              inscricao.status === StatusIncritos.Pendente ? 'bg-yellow-100 text-yellow-600' :
+              'bg-gray-100 text-gray-600'
             }`}>
               {inscricao.status}
             </span>
@@ -383,16 +267,10 @@ const ModalInscricaoDetalhe = ({
               <FiCalendar size={16} className="text-primary-500" />
               <span>Inscrito em: {new Date(inscricao.dataInscricao).toLocaleDateString('pt-BR')}</span>
             </div>
-            {inscricao.acompanhantes && (
-              <div className="flex items-center gap-3 text-gray-600">
-                <FiUser size={16} className="text-primary-500" />
-                <span>Acompanhantes: {inscricao.acompanhantes}</span>
-              </div>
-            )}
-            {inscricao.checkin && (
+            {inscricao.dataCheckin && (
               <div className="flex items-center gap-3 text-green-600">
                 <FiCheckCircle size={16} />
-                <span>Check-in: {new Date(inscricao.checkin).toLocaleString('pt-BR')}</span>
+                <span>Check-in: {new Date(inscricao.dataCheckin).toLocaleString('pt-BR')}</span>
               </div>
             )}
           </div>
@@ -410,23 +288,10 @@ const ModalInscricaoDetalhe = ({
               Gerar QR Code
             </button>
 
-            {inscricao.status === StatusInscricao.PENDENTE && (
+            {inscricao.status !== StatusIncritos.Presente && !inscricao.dataCheckin && (
               <button
                 onClick={() => {
-                  onConfirmar(inscricao.id);
-                  onClose();
-                }}
-                className="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 flex items-center justify-center gap-2"
-              >
-                <FiCheckCircle size={18} />
-                Confirmar
-              </button>
-            )}
-
-            {inscricao.status === StatusInscricao.CONFIRMADA && !inscricao.checkin && (
-              <button
-                onClick={() => {
-                  onCheckin(inscricao.id);
+                  onCheckin(inscricao);
                   onClose();
                 }}
                 className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 flex items-center justify-center gap-2"
@@ -435,19 +300,6 @@ const ModalInscricaoDetalhe = ({
                 Fazer Check-in
               </button>
             )}
-
-            <button
-              onClick={() => {
-                if (window.confirm('Cancelar esta inscrição?')) {
-                  onCancelar(inscricao.id);
-                  onClose();
-                }
-              }}
-              className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center justify-center gap-2"
-            >
-              <FiXCircle size={18} />
-              Cancelar
-            </button>
           </div>
         </div>
       </motion.div>
@@ -478,10 +330,9 @@ const InscricaoCard = ({
           <div className="flex items-center gap-2 mb-2">
             <h3 className="font-semibold">{inscricao.usuarioNome}</h3>
             <span className={`text-xs px-2 py-1 rounded-full ${
-              inscricao.status === StatusInscricao.CONFIRMADA ? 'bg-green-100 text-green-600' :
-              inscricao.status === StatusInscricao.PENDENTE ? 'bg-yellow-100 text-yellow-600' :
-              inscricao.status === StatusInscricao.CANCELADA ? 'bg-red-100 text-red-600' :
-              'bg-blue-100 text-blue-600'
+              inscricao.status === StatusIncritos.Presente ? 'bg-green-100 text-green-600' :
+              inscricao.status === StatusIncritos.Pendente ? 'bg-yellow-100 text-yellow-600' :
+              'bg-gray-100 text-gray-600'
             }`}>
               {inscricao.status}
             </span>
@@ -498,15 +349,9 @@ const InscricaoCard = ({
               <FiMail size={12} />
               {inscricao.usuarioEmail}
             </span>
-            {inscricao.acompanhantes && (
-              <span className="flex items-center gap-1">
-                <FiUser size={12} />
-                +{inscricao.acompanhantes}
-              </span>
-            )}
           </div>
 
-          {inscricao.checkin && (
+          {inscricao.dataCheckin && (
             <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
               <FiCheckCircle size={12} />
               Check-in realizado
@@ -537,22 +382,93 @@ const InscricaoCard = ({
 
 // Componente Principal
 export const InscricoesPage = () => {
-  const [inscricoes, setInscricoes] = useState<Inscricao[]>(inscricoesMock);
-  const [actividades] = useState<Actividade[]>(actividadesMock);
+  const [inscricoes, setInscricoes] = useState<InscritosData[]>([]);
+  const [actividades, setActividades] = useState<Actividade[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedActividade, setSelectedActividade] = useState<string>('todas');
-  const [selectedStatus, setSelectedStatus] = useState<string>('todos');
+  const [selectedStatus, setSelectedStatus] = useState<'todos' | StatusIncritos>('todos');
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showQRGenerator, setShowQRGenerator] = useState(false);
   const [selectedInscricao, setSelectedInscricao] = useState<Inscricao | null>(null);
   const [showDetalheModal, setShowDetalheModal] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [page, setPage] = useState(0);
+  const [size] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
+  const [reloadToken, setReloadToken] = useState(0);
+
+  const apiParams = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("size", String(size));
+    params.set(
+      "actividadeId",
+      selectedActividade === "todas" ? "0" : String(Number(selectedActividade))
+    );
+    return params.toString();
+  }, [page, selectedActividade, size]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [selectedActividade]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const params = new URLSearchParams();
+        params.set("page", "0");
+        params.set("size", "200");
+        const res = await apiFetch(`/admin/actividade?${params.toString()}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar actividades.");
+        const payload = (await res.json()) as PageResponse<ActividadeSummary>;
+        const next = (payload.content ?? []).map((act) => ({
+          id: act.id,
+          titulo: act.titulo,
+          capacidade: act.capacidade,
+          inscritos: act.inscritos,
+          dataEvento: act.dataEvento,
+        }));
+        setActividades(next);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setActividades([]);
+      }
+    })();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const res = await apiFetch(`/admin/inscritos?${apiParams}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar inscritos.");
+        const payload = (await res.json()) as PageResponse<Inscricao>;
+        setInscricoes(payload.content ?? []);
+        setTotalPages(payload.totalPages ?? 0);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setInscricoes([]);
+        setTotalPages(0);
+        setLoadError(err instanceof Error ? err.message : "Não foi possível carregar inscritos.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [apiParams, reloadToken]);
 
   // Estatísticas
   const stats = {
     total: inscricoes.length,
-    confirmadas: inscricoes.filter(i => i.status === StatusInscricao.CONFIRMADA).length,
-    pendentes: inscricoes.filter(i => i.status === StatusInscricao.PENDENTE).length,
-    compareceram: inscricoes.filter(i => i.checkin).length
+    presentes: inscricoes.filter(i => i.status === StatusIncritos.Presente || Boolean(i.dataCheckin)).length,
+    pendentes: inscricoes.filter(i => i.status === StatusIncritos.Pendente && !i.dataCheckin).length,
+    ausentes: inscricoes.filter(i => i.status === StatusIncritos.Ausente).length
   };
 
   // Filtrar inscrições
@@ -566,45 +482,47 @@ export const InscricoesPage = () => {
       if (!matches) return false;
     }
 
-    if (selectedActividade !== 'todas' && i.actividadeId !== selectedActividade) return false;
     if (selectedStatus !== 'todos' && i.status !== selectedStatus) return false;
 
     return true;
   });
 
-  const handleScanQR = (data: string) => {
+  const marcarPresenca = async (payload: unknown) => {
+    setActionError("");
     try {
-      const qrData = JSON.parse(data);
-      const inscricao = inscricoes.find(i => i.id === qrData.id);
-      
-      if (inscricao) {
-        setSelectedInscricao(inscricao);
-        setShowDetalheModal(true);
-      } else {
-        alert('Inscrição não encontrada!');
+      const res = await apiFetch("/user/inscritos/auntenticar", { method: "POST", body: payload });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Falha ao marcar presença.");
       }
-    } catch {
-      alert('QR Code inválido!');
+      setReloadToken((t) => t + 1);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Falha ao marcar presença.");
     }
+  };
+
+  const handleScanQR = async (data: string) => {
     setShowQRScanner(false);
+    let qrPayload: any;
+    try {
+      qrPayload = JSON.parse(data);
+    } catch {
+      setActionError("QR Code inválido.");
+      return;
+    }
+    if (!qrPayload || typeof qrPayload !== "object" || typeof qrPayload.Id === "undefined") {
+      setActionError("QR Code inválido.");
+      return;
+    }
+    await marcarPresenca(qrPayload);
   };
 
-  const handleConfirmar = (id: string) => {
-    setInscricoes(inscricoes.map(i => 
-      i.id === id ? { ...i, status: StatusInscricao.CONFIRMADA } : i
-    ));
-  };
-
-  const handleCancelar = (id: string) => {
-    setInscricoes(inscricoes.map(i => 
-      i.id === id ? { ...i, status: StatusInscricao.CANCELADA } : i
-    ));
-  };
-
-  const handleCheckin = (id: string) => {
-    setInscricoes(inscricoes.map(i => 
-      i.id === id ? { ...i, status: StatusInscricao.COMPARECEU, checkin: new Date().toISOString() } : i
-    ));
+  const handleCheckin = async (inscricao: Inscricao) => {
+    await marcarPresenca({
+      Id: inscricao.id,
+      dataEvento: inscricao.actividadeData,
+      eventoId: inscricao.actividadeId,
+    });
   };
 
   return (
@@ -637,6 +555,25 @@ export const InscricoesPage = () => {
           </button>
         </div>
 
+        {(loadError || actionError || loading) && (
+          <div className="mb-6 bg-white border border-gray-200 rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-3 justify-between">
+            <div className="text-sm">
+              {loading && <span className="text-gray-500">Carregando...</span>}
+              {!loading && loadError && <span className="text-red-600">{loadError}</span>}
+              {!loading && !loadError && actionError && <span className="text-red-600">{actionError}</span>}
+            </div>
+            <button
+              onClick={() => setReloadToken((t) => t + 1)}
+              disabled={loading}
+              className={`px-4 py-2 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              Atualizar
+            </button>
+          </div>
+        )}
+
         {/* Cards de Estatísticas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-l-primary-500">
@@ -644,16 +581,16 @@ export const InscricoesPage = () => {
             <p className="text-2xl font-bold">{stats.total}</p>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-l-green-500">
-            <p className="text-sm text-gray-500">Confirmadas</p>
-            <p className="text-2xl font-bold text-green-600">{stats.confirmadas}</p>
+            <p className="text-sm text-gray-500">Presentes</p>
+            <p className="text-2xl font-bold text-green-600">{stats.presentes}</p>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-l-yellow-500">
             <p className="text-sm text-gray-500">Pendentes</p>
             <p className="text-2xl font-bold text-yellow-600">{stats.pendentes}</p>
           </div>
-          <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-l-blue-500">
-            <p className="text-sm text-gray-500">Check-ins</p>
-            <p className="text-2xl font-bold text-blue-600">{stats.compareceram}</p>
+          <div className="bg-white rounded-xl shadow-sm p-4 border-l-4 border-l-gray-400">
+            <p className="text-sm text-gray-500">Ausentes</p>
+            <p className="text-2xl font-bold text-gray-700">{stats.ausentes}</p>
           </div>
         </div>
 
@@ -681,7 +618,7 @@ export const InscricoesPage = () => {
               <option value="todas">Todas atividades</option>
               {actividades.map(act => (
                 <option key={act.id} value={act.id}>
-                  {act.titulo} ({act.inscritos}/{act.capacidade})
+                  {act.titulo} ({act.inscritos ?? 0}/{act.capacidade ?? "-"})
                 </option>
               ))}
             </select>
@@ -689,14 +626,13 @@ export const InscricoesPage = () => {
             {/* Filtro por status */}
             <select
               value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              onChange={(e) => setSelectedStatus(e.target.value as 'todos' | StatusIncritos)}
               className="px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 min-w-[150px]"
             >
               <option value="todos">Todos status</option>
-              <option value={StatusInscricao.CONFIRMADA}>Confirmadas</option>
-              <option value={StatusInscricao.PENDENTE}>Pendentes</option>
-              <option value={StatusInscricao.CANCELADA}>Canceladas</option>
-              <option value={StatusInscricao.COMPARECEU}>Compareceram</option>
+              <option value={StatusIncritos.Pendente}>Pendentes</option>
+              <option value={StatusIncritos.Presente}>Presentes</option>
+              <option value={StatusIncritos.Ausente}>Ausentes</option>
             </select>
           </div>
 
@@ -737,6 +673,33 @@ export const InscricoesPage = () => {
             </AnimatePresence>
           </div>
         )}
+
+        {totalPages > 1 && (
+          <div className="mt-6 bg-white rounded-xl shadow-sm p-4 flex items-center justify-between">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={loading || page <= 0}
+              className={`px-4 py-2 rounded-lg border border-gray-200 ${
+                loading || page <= 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+              }`}
+            >
+              Anterior
+            </button>
+            <div className="text-sm text-gray-600">
+              Página <span className="font-semibold">{page + 1}</span> de{" "}
+              <span className="font-semibold">{totalPages}</span>
+            </div>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={loading || page >= totalPages - 1}
+              className={`px-4 py-2 rounded-lg border border-gray-200 ${
+                loading || page >= totalPages - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+              }`}
+            >
+              Próxima
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Modais */}
@@ -769,8 +732,6 @@ export const InscricoesPage = () => {
               setSelectedInscricao(i);
               setShowQRGenerator(true);
             }}
-            onConfirmar={handleConfirmar}
-            onCancelar={handleCancelar}
             onCheckin={handleCheckin}
           />
         )}

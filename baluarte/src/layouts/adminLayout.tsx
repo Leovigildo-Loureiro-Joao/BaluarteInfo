@@ -73,7 +73,20 @@ useEffect(() => {
           isDarkMode={isDarkMode}
           onOpenMobileMenu={openMobileMenu}
         />
-        <main className="flex-1 overflow-auto p-3 sm:p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <main
+          className="flex-1 overflow-auto p-3 sm:p-6 bg-gray-50 dark:bg-gray-950 transition-colors duration-200 text-gray-900 dark:text-gray-100
+          dark:[&_.bg-white]:bg-gray-900
+          dark:[&_.bg-gray-50]:bg-gray-900/60
+          dark:[&_.bg-gray-100]:bg-gray-800
+          dark:[&_.text-gray-900]:text-gray-100
+          dark:[&_.text-gray-800]:text-gray-100
+          dark:[&_.text-gray-700]:text-gray-200
+          dark:[&_.text-gray-600]:text-gray-300
+          dark:[&_.text-gray-500]:text-gray-400
+          dark:[&_.text-gray-400]:text-gray-400
+          dark:[&_.border-gray-200]:border-gray-700
+          dark:[&_.border-gray-100]:border-gray-800"
+        >
            <Outlet />
         </main>
       </div>

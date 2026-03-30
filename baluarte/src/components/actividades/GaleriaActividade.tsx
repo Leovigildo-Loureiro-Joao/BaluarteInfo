@@ -1,130 +1,133 @@
 // src/components/actividades/GaleriaActividade.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiPlay, FiX, FiChevronLeft, FiChevronRight, FiImage, FiVideo } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiImage, FiPlay, FiVideo, FiX } from "react-icons/fi";
+import { apiFetch } from "../../utils/api";
+import { MidiaSimple, PageResponse } from "../../types/api";
 
-interface MediaItem {
+type MediaType = "VIDEO" | "IMAGE";
+
+type MediaItem = {
   id: number;
-  type: 'VIDEO' | 'IMAGE';
+  type: MediaType;
   url: string;
-  thumbnail?: string;
   titulo: string;
-  descricao?: string;
-  duracao?: string;
-}
+  thumbnail?: string;
+};
 
 interface GaleriaActividadeProps {
   activityId: number;
 }
 
+const isYoutubeId = (value: string) => /^[\\w-]{11}$/.test(value);
+const youtubeThumb = (idOrUrl: string) => (isYoutubeId(idOrUrl) ? `https://img.youtube.com/vi/${idOrUrl}/hqdefault.jpg` : "");
+
 export const GaleriaActividade = ({ activityId }: GaleriaActividadeProps) => {
-  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
-  const [activeTab, setActiveTab] = useState<'todas' | 'videos' | 'imagens'>('todas');
+  const [activeTab, setActiveTab] = useState<"todas" | "videos" | "imagens">("todas");
+  const [items, setItems] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [selected, setSelected] = useState<MediaItem | null>(null);
 
-  // Dados mockados - aqui viriam da API com base no activityId
-  const mediaItems: MediaItem[] = [
-    {
-      id: 1,
-      type: 'VIDEO',
-      url: 'https://example.com/video1.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Conferência de Jovens 2024 - Trailler',
-      descricao: 'Um pequeno vídeo mostrando o que você vai encontrar na conferência',
-      duracao: '1:30'
-    },
-    {
-      id: 2,
-      type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Momento de Louvor',
-      descricao: 'Jovens adorando durante a conferência do ano passado'
-    },
-    {
-      id: 3,
-      type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Palestra com Pr. Antônio',
-      descricao: 'Momento da mensagem principal'
-    },
-    {
-      id: 4,
-      type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Grupo de Jovens',
-      descricao: 'Todos reunidos após o culto'
-    },
-    {
-      id: 5,
-      type: 'VIDEO',
-      url: 'https://example.com/video2.mp4',
-      thumbnail: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Mensagem completa - Pr. João',
-      descricao: 'Sermão da noite de abertura',
-      duracao: '45:20'
-    },
-    {
-      id: 6,
-      type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1473177104440-ffee2f376098?auto=format&fit=crop&w=800&q=80',
-      titulo: 'Momento de Oração',
-      descricao: 'Jovens intercedendo'
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [galeriaRes, traillerRes] = await Promise.all([
+          apiFetch(`/user/actividade/galeria/${activityId}?page=0&size=50`),
+          apiFetch(`/user/actividade/trailler/${activityId}?page=0&size=50`),
+        ]);
+
+        const galeriaPayload = galeriaRes.ok ? ((await galeriaRes.json()) as PageResponse<MidiaSimple>) : null;
+        const traillerPayload = traillerRes.ok ? ((await traillerRes.json()) as PageResponse<MidiaSimple>) : null;
+
+        const imagens: MediaItem[] = (galeriaPayload?.content ?? []).map((m) => ({
+          id: m.id,
+          type: "IMAGE",
+          url: m.url,
+          titulo: m.titulo ?? "Imagem",
+        }));
+
+        const videos: MediaItem[] = (traillerPayload?.content ?? []).map((m) => ({
+          id: m.id,
+          type: "VIDEO",
+          url: m.url,
+          titulo: m.titulo ?? "Vídeo",
+          thumbnail: youtubeThumb(m.url),
+        }));
+
+        if (!active) return;
+        setItems([...videos, ...imagens]);
+      } catch {
+        if (!active) return;
+        setError("Não foi possível carregar a galeria.");
+        setItems([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    if (Number.isFinite(activityId) && activityId > 0) {
+      load();
     }
-  ];
 
-  const filteredMedia = mediaItems.filter(item => {
-    if (activeTab === 'videos') return item.type === 'VIDEO';
-    if (activeTab === 'imagens') return item.type === 'IMAGE';
-    return true;
-  });
+    return () => {
+      active = false;
+    };
+  }, [activityId]);
 
-  const videos = mediaItems.filter(item => item.type === 'VIDEO');
-  const imagens = mediaItems.filter(item => item.type === 'IMAGE');
+  const filtered = useMemo(() => {
+    if (activeTab === "videos") return items.filter((i) => i.type === "VIDEO");
+    if (activeTab === "imagens") return items.filter((i) => i.type === "IMAGE");
+    return items;
+  }, [items, activeTab]);
 
-  const openMedia = (item: MediaItem) => setSelectedMedia(item);
-  const closeMedia = () => setSelectedMedia(null);
+  const videos = useMemo(() => items.filter((i) => i.type === "VIDEO"), [items]);
+  const imagens = useMemo(() => items.filter((i) => i.type === "IMAGE"), [items]);
 
-  const nextMedia = () => {
-    if (!selectedMedia) return;
-    const currentIndex = filteredMedia.findIndex(item => item.id === selectedMedia.id);
-    const nextIndex = (currentIndex + 1) % filteredMedia.length;
-    setSelectedMedia(filteredMedia[nextIndex]);
+  const close = () => setSelected(null);
+  const next = () => {
+    if (!selected || filtered.length === 0) return;
+    const idx = filtered.findIndex((i) => i.id === selected.id);
+    const nextIdx = (idx + 1) % filtered.length;
+    setSelected(filtered[nextIdx]);
   };
-
-  const prevMedia = () => {
-    if (!selectedMedia) return;
-    const currentIndex = filteredMedia.findIndex(item => item.id === selectedMedia.id);
-    const prevIndex = (currentIndex - 1 + filteredMedia.length) % filteredMedia.length;
-    setSelectedMedia(filteredMedia[prevIndex]);
+  const prev = () => {
+    if (!selected || filtered.length === 0) return;
+    const idx = filtered.findIndex((i) => i.id === selected.id);
+    const prevIdx = (idx - 1 + filtered.length) % filtered.length;
+    setSelected(filtered[prevIdx]);
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
-      {/* Cabeçalho com abas */}
+    <div >
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-2xl font-bold">Galeria</h3>
-        
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
           <button
-            onClick={() => setActiveTab('todas')}
+            onClick={() => setActiveTab("todas")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              activeTab === 'todas' ? 'bg-primary text-white' : 'text-gray-600 hover:text-primary'
+              activeTab === "todas" ? "bg-primary text-white" : "text-gray-600 hover:text-primary"
             }`}
           >
-            Todas ({mediaItems.length})
+            Todas ({items.length})
           </button>
           <button
-            onClick={() => setActiveTab('videos')}
+            onClick={() => setActiveTab("videos")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
-              activeTab === 'videos' ? 'bg-primary text-white' : 'text-gray-600 hover:text-primary'
+              activeTab === "videos" ? "bg-primary text-white" : "text-gray-600 hover:text-primary"
             }`}
           >
             <FiVideo size={14} />
             Vídeos ({videos.length})
           </button>
           <button
-            onClick={() => setActiveTab('imagens')}
+            onClick={() => setActiveTab("imagens")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 ${
-              activeTab === 'imagens' ? 'bg-primary text-white' : 'text-gray-600 hover:text-primary'
+              activeTab === "imagens" ? "bg-primary text-white" : "text-gray-600 hover:text-primary"
             }`}
           >
             <FiImage size={14} />
@@ -133,152 +136,112 @@ export const GaleriaActividade = ({ activityId }: GaleriaActividadeProps) => {
         </div>
       </div>
 
-      {/* Trailler em destaque (se houver) */}
-      {videos.length > 0 && activeTab === 'todas' && (
-        <div className="mb-8">
-          <h4 className="font-semibold mb-3 flex items-center gap-2">
-            <FiPlay className="text-primary" />
-            Vídeo Trailler
-          </h4>
-          <div 
-            className="relative aspect-video rounded-xl overflow-hidden cursor-pointer group"
-            onClick={() => openMedia(videos[0])}
-          >
-            <img
-              src={videos[0].thumbnail}
-              alt={videos[0].titulo}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-                <FiPlay className="text-white text-2xl ml-1" />
+      {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-4">{error}</div>}
+      {loading ? (
+        <div className="text-sm text-gray-500 py-10 text-center">A carregar…</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-sm text-gray-500 py-10 text-center">Sem itens na galeria.</div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filtered.map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.03 }}
+              className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+              onClick={() => setSelected(item)}
+            >
+              <img
+                src={item.type === "VIDEO" ? item.thumbnail || "https://placehold.co/600x600?text=Video" : item.url}
+                alt={item.titulo}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-2 left-2 right-2">
+                  <p className="text-white text-sm font-medium line-clamp-2">{item.titulo}</p>
+                </div>
               </div>
-            </div>
-            <div className="absolute bottom-4 left-4 right-4">
-              <h5 className="text-white font-semibold">{videos[0].titulo}</h5>
-              <p className="text-white/80 text-sm">{videos[0].descricao}</p>
-            </div>
-            {videos[0].duracao && (
-              <span className="absolute top-4 right-4 bg-black/80 text-white px-2 py-1 rounded text-sm">
-                {videos[0].duracao}
-              </span>
-            )}
-          </div>
+
+              <div className="absolute top-2 right-2 bg-black/70 text-white p-1 rounded">
+                {item.type === "VIDEO" ? <FiVideo size={14} /> : <FiImage size={14} />}
+              </div>
+
+              {item.type === "VIDEO" && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <FiPlay className="text-white text-xl ml-0.5" />
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
         </div>
       )}
 
-      {/* Grid de mídia */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filteredMedia.map((item, index) => (
-          <motion.div
-            key={item.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.05 }}
-            className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
-            onClick={() => openMedia(item)}
-          >
-            <img
-              src={item.type === 'VIDEO' ? item.thumbnail : item.url}
-              alt={item.titulo}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            />
-            
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="absolute bottom-2 left-2 right-2">
-                <p className="text-white text-sm font-medium line-clamp-2">
-                  {item.titulo}
-                </p>
-              </div>
-            </div>
-
-            {/* Badge de tipo */}
-            <div className="absolute top-2 right-2 bg-black/70 text-white p-1 rounded">
-              {item.type === 'VIDEO' ? <FiVideo size={14} /> : <FiImage size={14} />}
-            </div>
-
-            {/* Badge de duração (para vídeos) */}
-            {item.type === 'VIDEO' && item.duracao && (
-              <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                {item.duracao}
-              </div>
-            )}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Lightbox/Modal para visualização */}
       <AnimatePresence>
-        {selectedMedia && (
+        {selected && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
-            onClick={closeMedia}
+            onClick={close}
           >
-            {/* Botão fechar */}
-            <button
-              onClick={closeMedia}
-              className="absolute top-6 right-6 text-white hover:text-primary transition-colors z-10"
-            >
+            <button onClick={close} className="absolute top-6 right-6 text-white hover:text-primary transition-colors z-10">
               <FiX size={30} />
             </button>
+            {filtered.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prev();
+                  }}
+                  className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors"
+                >
+                  <FiChevronLeft size={50} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    next();
+                  }}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors"
+                >
+                  <FiChevronRight size={50} />
+                </button>
+              </>
+            )}
 
-            {/* Navegação */}
-            <button
-              onClick={(e) => { e.stopPropagation(); prevMedia(); }}
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors"
-            >
-              <FiChevronLeft size={50} />
-            </button>
-
-            <button
-              onClick={(e) => { e.stopPropagation(); nextMedia(); }}
-              className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-primary transition-colors"
-            >
-              <FiChevronRight size={50} />
-            </button>
-
-            {/* Conteúdo */}
             <motion.div
-              key={selectedMedia.id}
-              initial={{ opacity: 0, scale: 0.8 }}
+              key={selected.id}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               className="max-w-6xl max-h-[80vh] px-4"
               onClick={(e) => e.stopPropagation()}
             >
-              {selectedMedia.type === 'VIDEO' ? (
-                <div className="relative aspect-video">
-                  <video
-                    src={selectedMedia.url}
-                    poster={selectedMedia.thumbnail}
-                    controls
-                    autoPlay
-                    className="w-full h-full rounded-lg"
-                  />
+              {selected.type === "VIDEO" ? (
+                <div className="w-[min(1000px,90vw)] aspect-video bg-black rounded-xl overflow-hidden">
+                  {isYoutubeId(selected.url) ? (
+                    <iframe
+                      title={selected.titulo}
+                      src={`https://www.youtube.com/embed/${selected.url}`}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video src={selected.url} className="w-full h-full" controls />
+                  )}
                 </div>
               ) : (
-                <img
-                  src={selectedMedia.url}
-                  alt={selectedMedia.titulo}
-                  className="max-w-full max-h-[70vh] mx-auto rounded-lg"
-                />
+                <img src={selected.url} alt={selected.titulo} className="max-h-[80vh] max-w-[90vw] rounded-xl" />
               )}
-
-              {/* Info da mídia */}
-              <div className="text-white text-center mt-4">
-                <h3 className="text-xl font-bold mb-2">{selectedMedia.titulo}</h3>
-                {selectedMedia.descricao && (
-                  <p className="text-gray-300">{selectedMedia.descricao}</p>
-                )}
-              </div>
-
-              {/* Contador */}
-              <div className="absolute top-6 left-6 text-white bg-black/50 px-3 py-1 rounded-lg">
-                {filteredMedia.findIndex(item => item.id === selectedMedia.id) + 1} / {filteredMedia.length}
+              <div className="text-center text-white mt-4">
+                <p className="font-medium">{selected.titulo}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -287,3 +250,4 @@ export const GaleriaActividade = ({ activityId }: GaleriaActividadeProps) => {
     </div>
   );
 };
+

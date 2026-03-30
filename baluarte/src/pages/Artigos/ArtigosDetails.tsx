@@ -22,7 +22,7 @@ import {
 } from "react-icons/gi";
 import { LiaCrossSolid } from "react-icons/lia";
 import { apiFetch } from "../../utils/api.js";
-import { getStoredUser } from "../../utils/auth.js";
+import { getAuthToken, getStoredUser } from "../../utils/auth.js";
 import rectangleImage from "../../assets/rectangle.jpg";
 
 const PREVIEW_PAGES = 3;
@@ -173,6 +173,16 @@ export const ArtigoDetalhe = () => {
   const [artigo, setArtigo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const registerDownload = async (artigoId: number) => {
+    if (!artigoId || Number.isNaN(artigoId)) return;
+    if (!getAuthToken()) return;
+    try {
+      await apiFetch(`/user/me/download/artigo/${artigoId}`, { method: "POST" });
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -345,7 +355,10 @@ export const ArtigoDetalhe = () => {
                   <button
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     onClick={() => {
-                      if (artigo.pdf) window.open(artigo.pdf, "_blank", "noreferrer");
+                      if (artigo.pdf) {
+                        registerDownload(artigo.id);
+                        window.open(artigo.pdf, "_blank", "noreferrer");
+                      }
                     }}
                     aria-label="Baixar PDF"
                     title="Baixar PDF"
@@ -459,6 +472,7 @@ export const ArtigoDetalhe = () => {
               {artigo.pdf ? (
                 <a
                   href={artigo.pdf}
+                  onClick={() => registerDownload(artigo.id)}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full bg-white text-primary py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"

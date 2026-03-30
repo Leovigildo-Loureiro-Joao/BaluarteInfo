@@ -178,28 +178,6 @@
 
     <build>
         <plugins>
-            <!-- Plugin GraalVM -->
-            <plugin>
-                <groupId>org.graalvm.buildtools</groupId>
-                <artifactId>native-maven-plugin</artifactId>
-                <version>0.10.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <imageName>igreja-api</imageName>
-                    <buildArgs>
-                        <buildArg>--no-fallback</buildArg>
-                        <buildArg>--install-exit-handlers</buildArg>
-                        <buildArg>--report-unsupported-elements-at-runtime</buildArg>
-                    </buildArgs>
-                </configuration>
-            </plugin>
-
             <!-- Spring Boot Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -239,6 +217,22 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
+                        <version>0.10.1</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <imageName>igreja-api</imageName>
+                            <buildArgs>
+                                <buildArg>--no-fallback</buildArg>
+                                <buildArg>--install-exit-handlers</buildArg>
+                                <buildArg>--report-unsupported-elements-at-runtime</buildArg>
+                            </buildArgs>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

@@ -56,6 +56,13 @@ public class ComentarioModel {
     /** Observação interna (visível apenas para administradores) */
     private String notaInterna;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private ComentarioModel parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ComentarioModel> respostas = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private ComentarioStatus status = ComentarioStatus.ATIVO;
 

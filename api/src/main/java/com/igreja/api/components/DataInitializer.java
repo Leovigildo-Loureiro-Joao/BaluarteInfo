@@ -35,9 +35,8 @@ public class DataInitializer implements CommandLineRunner{
             admin.setDataCadastro(LocalDateTime.now());
             admin.setDataAprovacao(LocalDateTime.now());
             userRepository.save(admin);
-            configService.StartUse(); 
-
         }
+        configService.ensureDefaults();
     }
 
 

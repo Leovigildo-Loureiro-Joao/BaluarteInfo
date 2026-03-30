@@ -18,6 +18,8 @@ import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.projection.ActividadeProjection;
 
 public interface ActividadeRepository extends JpaRepository<ActividadeModel,Integer>{
+
+    long countByDataPublicacaoBetween(LocalDateTime start, LocalDateTime end);
     
      @Query(
         value = """

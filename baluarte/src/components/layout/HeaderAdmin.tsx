@@ -353,7 +353,7 @@ return (
 
           {/* Componente de Notificações */}
           <div className="relative">
-            <NotificacoesBellInteligente userRole={(localStorage.getItem("user_role") as 'aluno' | 'teacher' | 'admin' | 'manager') ||"admin"} />
+            <NotificacoesBellInteligente />
           </div>
         </div>
       </div>

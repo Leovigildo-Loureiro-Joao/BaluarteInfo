@@ -17,7 +17,7 @@ import { MidiaPage } from './pages/Midia/Midia.js';
 import { MidiaDetalhe } from './components/midia/MidiaDetail.js';
 import { ActividadeDetalhe } from './pages/Actividade/ActividadeDetail.js';
 import { SalvacaoPage } from './pages/Salvacao/Salvacao.js';
-import { ContactoPage } from './pages/Contacto.js';
+import { ContactoPage } from './pages/Contacto';
 import App from './App.jsx';
 
 

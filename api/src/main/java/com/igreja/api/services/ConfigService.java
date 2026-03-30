@@ -2,11 +2,16 @@ package com.igreja.api.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.TextStyle;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
@@ -14,14 +19,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.igreja.api.dto.comentario.ComentarioDto;
 import com.igreja.api.dto.config.AdminConfigDto;
 import com.igreja.api.dto.config.CarouselItemDto;
 import com.igreja.api.dto.config.ConfiguracaoDto;
+import com.igreja.api.dto.config.PublicContactConfigDto;
+import com.igreja.api.dto.estaticas.AdminDashboardStatsDto;
 import com.igreja.api.dto.estaticas.Value;
 import com.igreja.api.dto.home.StatisticCardDto;
 import com.igreja.api.enums.ConfigType;
+import com.igreja.api.enums.MidiaType;
 import com.igreja.api.enums.NotificacaoType;
 import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ActividadeTipoConfigModel;
@@ -30,10 +40,14 @@ import com.igreja.api.models.ConfiguracaoModel;
 import com.igreja.api.models.UserModel;
 import com.igreja.api.repositories.ActividadeRepository;
 import com.igreja.api.repositories.ActividadeTipoConfigRepository;
+import com.igreja.api.repositories.ArtigosRepository;
+import com.igreja.api.repositories.ComentarioLikeRepository;
 import com.igreja.api.repositories.ComentarioRepository;
 import com.igreja.api.repositories.ConfiguracaoRepository;
 import com.igreja.api.repositories.InscritosRepository;
+import com.igreja.api.repositories.MidiaRepository;
 import com.igreja.api.repositories.NewlesterRepository;
+import com.igreja.api.repositories.UserDownloadRepository;
 import com.igreja.api.repositories.UserRepository;
 import com.igreja.api.repositories.VistosRepository;
 import com.igreja.api.services.CarouselItemService;
@@ -43,6 +57,12 @@ public class ConfigService {
     
     @Autowired
     private ConfiguracaoRepository configurationRepository;
+
+    @Autowired
+    private ArtigosRepository artigosRepository;
+
+    @Autowired
+    private MidiaRepository midiaRepository;
     
     @Autowired
     private UserRepository userRepository;
@@ -61,6 +81,12 @@ public class ConfigService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private ComentarioLikeRepository comentarioLikeRepository;
+
+    @Autowired
+    private UserDownloadRepository userDownloadRepository;
 
     @Autowired
     private CarouselItemService carouselItemService;
@@ -92,24 +118,63 @@ public class ConfigService {
         return configurationRepository.save(config);
     }
 
-    public void StartUse(){
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.ActividadeLimite));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(50), ConfigType.ComentarioLimiteActividade));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.IncritosLimiteActividade));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(50), ConfigType.MembrosLimite));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.VisitasLimite));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(100), ConfigType.NewlesterLimite));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(15), ConfigType.HistoriaAnos));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(500), ConfigType.MembrosTotais));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(30), ConfigType.MinisteriosTotais));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.HomeStatsVisible));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.HomeCarouselVisible));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(300000), ConfigType.DashboardRefreshIntervalMs));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(7), ConfigType.MensagemUnreadDays));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.MensagemReenviarPendentes));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.InscricaoQrEnabled));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(1), ConfigType.InscricaoQrAutoDisable));
-        save(new ConfiguracaoDto(JsonNodeFactory.instance.numberNode(6), ConfigType.InscricaoQrExpiresHours));
+    public void StartUse() {
+        ensureDefaults();
+    }
+
+    public void ensureDefaults() {
+        ensureConfig(ConfigType.ActividadeLimite, JsonNodeFactory.instance.numberNode(100));
+        ensureConfig(ConfigType.ComentarioLimiteActividade, JsonNodeFactory.instance.numberNode(50));
+        ensureConfig(ConfigType.IncritosLimiteActividade, JsonNodeFactory.instance.numberNode(100));
+        ensureConfig(ConfigType.MembrosLimite, JsonNodeFactory.instance.numberNode(50));
+        ensureConfig(ConfigType.VisitasLimite, JsonNodeFactory.instance.numberNode(100));
+        ensureConfig(ConfigType.NewlesterLimite, JsonNodeFactory.instance.numberNode(100));
+        ensureConfig(ConfigType.HistoriaAnos, JsonNodeFactory.instance.numberNode(15));
+        ensureConfig(ConfigType.MembrosTotais, JsonNodeFactory.instance.numberNode(500));
+        ensureConfig(ConfigType.MinisteriosTotais, JsonNodeFactory.instance.numberNode(30));
+        ensureConfig(ConfigType.HomeStatsVisible, JsonNodeFactory.instance.numberNode(1));
+        ensureConfig(ConfigType.HomeCarouselVisible, JsonNodeFactory.instance.numberNode(1));
+        ensureConfig(ConfigType.DashboardRefreshIntervalMs, JsonNodeFactory.instance.numberNode(300000));
+        ensureConfig(ConfigType.MensagemUnreadDays, JsonNodeFactory.instance.numberNode(7));
+        ensureConfig(ConfigType.MensagemReenviarPendentes, JsonNodeFactory.instance.numberNode(1));
+        ensureConfig(ConfigType.InscricaoQrEnabled, JsonNodeFactory.instance.numberNode(1));
+        ensureConfig(ConfigType.InscricaoQrAutoDisable, JsonNodeFactory.instance.numberNode(1));
+        ensureConfig(ConfigType.InscricaoQrExpiresHours, JsonNodeFactory.instance.numberNode(6));
+
+        ensureConfig(ConfigType.ContactTelefone, JsonNodeFactory.instance.textNode("(244) 955-383-237"));
+        ensureConfig(ConfigType.ContactWhatsapp, JsonNodeFactory.instance.textNode("+244 953 712 955"));
+        ensureConfig(ConfigType.ContactEmail, JsonNodeFactory.instance.textNode("contato@igrejabaluarte.com"));
+        ensureConfig(ConfigType.ContactEndereco, JsonNodeFactory.instance.textNode("Rua da Igreja, 123 - Centro, Cidade/UF"));
+        ensureConfig(ConfigType.ContactFacebookUrl, JsonNodeFactory.instance.textNode("https://facebook.com"));
+        ensureConfig(ConfigType.ContactInstagramUrl, JsonNodeFactory.instance.textNode("https://instagram.com"));
+        ensureConfig(ConfigType.ContactYoutubeUrl, JsonNodeFactory.instance.textNode("https://youtube.com"));
+        ensureConfig(ConfigType.ContactTwitterUrl, JsonNodeFactory.instance.textNode("https://twitter.com"));
+        ensureConfig(ConfigType.ContactHorariosCulto, defaultHorariosCulto());
+    }
+
+    private void ensureConfig(ConfigType type, JsonNode value) {
+        if (configurationRepository.findByType(type).isPresent()) {
+            return;
+        }
+        save(new ConfiguracaoDto(value, type));
+    }
+
+    private ArrayNode defaultHorariosCulto() {
+        ArrayNode array = JsonNodeFactory.instance.arrayNode();
+        array.add(horarioDia("Domingo", List.of("09:00 - Escola Bíblica", "19:00 - Culto de Celebração")));
+        array.add(horarioDia("Quarta-feira", List.of("20:00 - Culto de Oração")));
+        array.add(horarioDia("Sábado", List.of("19:00 - Ensaio do Louvor")));
+        return array;
+    }
+
+    private ObjectNode horarioDia(String dia, List<String> horarios) {
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        node.put("dia", dia);
+        ArrayNode h = node.putArray("horarios");
+        for (String item : horarios) {
+            h.add(item);
+        }
+        return node;
     }
 
 
@@ -155,6 +220,240 @@ public class ConfigService {
         return lista;
     }
 
+    private enum DashboardPeriodo {
+        hoje, semana, mes, ano
+    }
+
+    private DashboardPeriodo parsePeriodo(String periodo) {
+        if (periodo == null || periodo.isBlank()) return DashboardPeriodo.semana;
+        try {
+            return DashboardPeriodo.valueOf(periodo.trim().toLowerCase(Locale.ROOT));
+        } catch (Exception ignore) {
+            return DashboardPeriodo.semana;
+        }
+    }
+
+    private record TimeRange(LocalDateTime start, LocalDateTime end) {}
+
+    private TimeRange rangeFor(DashboardPeriodo periodo, LocalDate today) {
+        return switch (periodo) {
+            case hoje -> new TimeRange(today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+            case semana -> new TimeRange(today.minusDays(6).atStartOfDay(), today.plusDays(1).atStartOfDay());
+            case mes -> new TimeRange(today.minusDays(29).atStartOfDay(), today.plusDays(1).atStartOfDay());
+            case ano -> new TimeRange(today.minusDays(364).atStartOfDay(), today.plusDays(1).atStartOfDay());
+        };
+    }
+
+    public Map<String, Object> Charts() {
+        return Charts(null);
+    }
+
+    public Map<String, Object> Charts(String periodoRaw) {
+        LocalDate today = LocalDate.now();
+        DashboardPeriodo periodo = parsePeriodo(periodoRaw);
+
+        List<Map<String, Object>> visitas = new ArrayList<>();
+        List<Map<String, Object>> crescimento = new ArrayList<>();
+
+        DateTimeFormatter dayMonth = DateTimeFormatter.ofPattern("dd/MM");
+
+        if (periodo == DashboardPeriodo.hoje) {
+            LocalDateTime startDay = today.atStartOfDay();
+            for (int h = 0; h < 24; h++) {
+                LocalDateTime start = startDay.plusHours(h);
+                LocalDateTime end = start.plusHours(1);
+                var vistos = vistosRepository.findByDataBetween(start, end);
+                long totalVisitas = vistos.size();
+                long usuarios = vistos.stream()
+                        .map(v -> v.getIp())
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .count();
+
+                String label = String.format("%02dh", h);
+                visitas.add(Map.of("mes", label, "visitas", totalVisitas, "usuarios", usuarios));
+
+                long membrosAteFim = Math.max(0, userRepository.countByDataCadastroBefore(end) - 1);
+                crescimento.add(Map.of("mes", label, "membros", membrosAteFim));
+            }
+        } else if (periodo == DashboardPeriodo.ano) {
+            for (int i = 11; i >= 0; i--) {
+                YearMonth ym = YearMonth.from(today.minusMonths(i));
+                LocalDateTime start = ym.atDay(1).atStartOfDay();
+                LocalDateTime end = ym.plusMonths(1).atDay(1).atStartOfDay();
+
+                var vistos = vistosRepository.findByDataBetween(start, end);
+                long totalVisitas = vistos.size();
+                long usuarios = vistos.stream()
+                        .map(v -> v.getIp())
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .count();
+
+                String mes = ym.getMonth().getDisplayName(TextStyle.SHORT, new Locale("pt", "BR"));
+                mes = mes.substring(0, 1).toUpperCase() + mes.substring(1);
+
+                visitas.add(Map.of("mes", mes, "visitas", totalVisitas, "usuarios", usuarios));
+
+                long membrosAteFimDoMes = Math.max(0, userRepository.countByDataCadastroBefore(end) - 1);
+                crescimento.add(Map.of("mes", mes, "membros", membrosAteFimDoMes));
+            }
+        } else {
+            int days = periodo == DashboardPeriodo.mes ? 30 : 7;
+            for (int i = days - 1; i >= 0; i--) {
+                LocalDate d = today.minusDays(i);
+                LocalDateTime start = d.atStartOfDay();
+                LocalDateTime end = d.plusDays(1).atStartOfDay();
+
+                var vistos = vistosRepository.findByDataBetween(start, end);
+                long totalVisitas = vistos.size();
+                long usuarios = vistos.stream()
+                        .map(v -> v.getIp())
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .count();
+
+                String label = periodo == DashboardPeriodo.semana
+                        ? switch (d.getDayOfWeek()) {
+                            case MONDAY -> "Seg";
+                            case TUESDAY -> "Ter";
+                            case WEDNESDAY -> "Qua";
+                            case THURSDAY -> "Qui";
+                            case FRIDAY -> "Sex";
+                            case SATURDAY -> "Sáb";
+                            case SUNDAY -> "Dom";
+                        }
+                        : dayMonth.format(d);
+
+                visitas.add(Map.of("mes", label, "visitas", totalVisitas, "usuarios", usuarios));
+
+                long membrosAteFim = Math.max(0, userRepository.countByDataCadastroBefore(end) - 1);
+                crescimento.add(Map.of("mes", label, "membros", membrosAteFim));
+            }
+        }
+
+        // ===== Distribuição de conteúdo (contagens) =====
+        long totArtigos = artigosRepository.count();
+        long totVideos = midiaRepository.countByType(MidiaType.VIDEO);
+        long totAudios = midiaRepository.countByType(MidiaType.AUDIO);
+        long totActividades = actividadeRepository.count();
+
+        List<Map<String, Object>> conteudo = List.of(
+                Map.of("nome", "Artigos", "valor", totArtigos, "cor", "#CB2020"),
+                Map.of("nome", "Vídeos", "valor", totVideos, "cor", "#E64D4D"),
+                Map.of("nome", "Áudios", "valor", totAudios, "cor", "#F97272"),
+                Map.of("nome", "Eventos", "valor", totActividades, "cor", "#FB9A9A"));
+
+        // ===== Engajamento (período selecionado) =====
+        List<Map<String, Object>> engajamento = new ArrayList<>();
+        if (periodo == DashboardPeriodo.hoje) {
+            LocalDate d = today;
+            LocalDateTime start = d.atStartOfDay();
+            LocalDateTime end = d.plusDays(1).atStartOfDay();
+
+            long comentarios = comentarioRepository.countByActividadeIsNotNullAndDataPublicacao(d);
+            long curtidas = comentarioLikeRepository.countByDataLikeBetween(start, end);
+            long compartilhamentos = userDownloadRepository.countByDataBetween(start, end);
+
+            engajamento.add(Map.of(
+                    "dia", "Hoje",
+                    "comentarios", comentarios,
+                    "curtidas", curtidas,
+                    "compartilhamentos", compartilhamentos));
+        } else if (periodo == DashboardPeriodo.ano) {
+            for (int i = 11; i >= 0; i--) {
+                YearMonth ym = YearMonth.from(today.minusMonths(i));
+                LocalDateTime start = ym.atDay(1).atStartOfDay();
+                LocalDateTime end = ym.plusMonths(1).atDay(1).atStartOfDay();
+
+                LocalDate startDate = start.toLocalDate();
+                LocalDate endDateInclusive = end.minusDays(1).toLocalDate();
+
+                long comentarios = comentarioRepository.countByActividadeIsNotNullAndDataPublicacaoBetween(startDate, endDateInclusive);
+                long curtidas = comentarioLikeRepository.countByDataLikeBetween(start, end);
+                long compartilhamentos = userDownloadRepository.countByDataBetween(start, end);
+
+                String label = ym.getMonth().getDisplayName(TextStyle.SHORT, new Locale("pt", "BR"));
+                label = label.substring(0, 1).toUpperCase() + label.substring(1);
+
+                engajamento.add(Map.of(
+                        "dia", label,
+                        "comentarios", comentarios,
+                        "curtidas", curtidas,
+                        "compartilhamentos", compartilhamentos));
+            }
+        } else {
+            int days = periodo == DashboardPeriodo.mes ? 30 : 7;
+            for (int i = days - 1; i >= 0; i--) {
+                LocalDate d = today.minusDays(i);
+                LocalDateTime start = d.atStartOfDay();
+                LocalDateTime end = d.plusDays(1).atStartOfDay();
+
+                long comentarios = comentarioRepository.countByActividadeIsNotNullAndDataPublicacao(d);
+                long curtidas = comentarioLikeRepository.countByDataLikeBetween(start, end);
+                long compartilhamentos = userDownloadRepository.countByDataBetween(start, end);
+
+                String label = periodo == DashboardPeriodo.semana
+                        ? switch (d.getDayOfWeek()) {
+                            case MONDAY -> "Seg";
+                            case TUESDAY -> "Ter";
+                            case WEDNESDAY -> "Qua";
+                            case THURSDAY -> "Qui";
+                            case FRIDAY -> "Sex";
+                            case SATURDAY -> "Sáb";
+                            case SUNDAY -> "Dom";
+                        }
+                        : dayMonth.format(d);
+
+                engajamento.add(Map.of(
+                        "dia", label,
+                        "comentarios", comentarios,
+                        "curtidas", curtidas,
+                        "compartilhamentos", compartilhamentos));
+            }
+        }
+
+        return Map.of(
+                "visitas", visitas,
+                "conteudo", conteudo,
+                "engajamento", engajamento,
+                "crescimento", crescimento);
+    }
+
+    public AdminDashboardStatsDto dashboardStats() {
+        return dashboardStats(null);
+    }
+
+    public AdminDashboardStatsDto dashboardStats(String periodoRaw) {
+        LocalDate today = LocalDate.now();
+        DashboardPeriodo periodo = parsePeriodo(periodoRaw);
+        TimeRange range = rangeFor(periodo, today);
+
+        double membrosLimite = numberValueOrDefault(ConfigType.MembrosLimite, 0);
+        double actividadeLimite = numberValueOrDefault(ConfigType.ActividadeLimite, 0);
+        double inscritosLimite = numberValueOrDefault(ConfigType.IncritosLimiteActividade, 0);
+        double comentariosLimite = numberValueOrDefault(ConfigType.ComentarioLimiteActividade, 0);
+        double visitasLimite = numberValueOrDefault(ConfigType.VisitasLimite, 0);
+        double newlesterLimite = numberValueOrDefault(ConfigType.NewlesterLimite, 0);
+
+        long membrosTotal = Math.max(0, userRepository.countByDataCadastroBetween(range.start(), range.end()) - 1);
+        long actividadesTotal = actividadeRepository.countByDataPublicacaoBetween(range.start(), range.end());
+        long inscritosTotal = inscritosRepository.countByDataInscricaoBetween(range.start(), range.end());
+        long comentariosTotal = comentarioRepository.countByActividadeIsNotNullAndDataPublicacaoBetween(
+                range.start().toLocalDate(),
+                range.end().minusDays(1).toLocalDate());
+        long visitasTotal = vistosRepository.countByDataBetween(range.start(), range.end());
+        long newlesterTotal = newlesterRepository.count();
+
+        return new AdminDashboardStatsDto(
+                new Value(membrosTotal, membrosLimite),
+                new Value(actividadesTotal, actividadeLimite),
+                new Value(inscritosTotal, inscritosLimite),
+                new Value(comentariosTotal, comentariosLimite),
+                new Value(visitasTotal, visitasLimite),
+                new Value(newlesterTotal, newlesterLimite));
+    }
+
     public List<CarouselItemDto> homeCarousel() {
         return carouselItemService.listOrdered();
     }
@@ -196,6 +495,69 @@ public class ConfigService {
                 .map(ConfiguracaoModel::getValue)
                 .map(value -> asDouble(value, fallback))
                 .orElse(fallback);
+    }
+
+    private String stringValueOrDefault(ConfigType type, String fallback) {
+        return configurationRepository.findByType(type)
+                .map(ConfiguracaoModel::getValue)
+                .map(value -> {
+                    if (value == null || value.isNull()) return fallback;
+                    if (value.isTextual()) return value.asText();
+                    if (value.isNumber() || value.isBoolean()) return value.asText();
+                    return fallback;
+                })
+                .orElse(fallback);
+    }
+
+    private JsonNode jsonValueOrNull(ConfigType type) {
+        return configurationRepository.findByType(type)
+                .map(ConfiguracaoModel::getValue)
+                .orElse(null);
+    }
+
+    public PublicContactConfigDto publicContactConfig() {
+        ensureDefaults();
+
+        String telefone = stringValueOrDefault(ConfigType.ContactTelefone, "");
+        String whatsapp = stringValueOrDefault(ConfigType.ContactWhatsapp, "");
+        String email = stringValueOrDefault(ConfigType.ContactEmail, "");
+        String endereco = stringValueOrDefault(ConfigType.ContactEndereco, "");
+        String facebook = stringValueOrDefault(ConfigType.ContactFacebookUrl, "");
+        String instagram = stringValueOrDefault(ConfigType.ContactInstagramUrl, "");
+        String youtube = stringValueOrDefault(ConfigType.ContactYoutubeUrl, "");
+        String twitter = stringValueOrDefault(ConfigType.ContactTwitterUrl, "");
+
+        List<PublicContactConfigDto.HorarioCulto> horarios = new ArrayList<>();
+        JsonNode horariosNode = jsonValueOrNull(ConfigType.ContactHorariosCulto);
+        if (horariosNode != null && horariosNode.isArray()) {
+            for (JsonNode item : horariosNode) {
+                String dia = item.path("dia").asText("");
+                List<String> hs = new ArrayList<>();
+                JsonNode list = item.path("horarios");
+                if (list.isArray()) {
+                    for (JsonNode h : list) {
+                        if (h != null && !h.isNull()) hs.add(h.asText());
+                    }
+                }
+                if (!dia.isBlank() && !hs.isEmpty()) {
+                    horarios.add(new PublicContactConfigDto.HorarioCulto(dia, hs));
+                }
+            }
+        }
+        if (horarios.isEmpty()) {
+            horarios = List.of(
+                    new PublicContactConfigDto.HorarioCulto("Domingo", List.of("09:00 - Escola Bíblica", "19:00 - Culto de Celebração")),
+                    new PublicContactConfigDto.HorarioCulto("Quarta-feira", List.of("20:00 - Culto de Oração")),
+                    new PublicContactConfigDto.HorarioCulto("Sábado", List.of("19:00 - Ensaio do Louvor")));
+        }
+
+        return new PublicContactConfigDto(
+                telefone,
+                whatsapp,
+                email,
+                endereco,
+                new PublicContactConfigDto.Socials(facebook, instagram, youtube, twitter),
+                horarios);
     }
 
     public AdminConfigDto adminConfig() {

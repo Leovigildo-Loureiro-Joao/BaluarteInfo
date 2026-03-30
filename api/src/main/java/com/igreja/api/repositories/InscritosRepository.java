@@ -8,11 +8,13 @@ import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.InscritosModel;
 import com.igreja.api.models.UserModel;
 import java.util.List;
+import java.time.LocalDateTime;
 
 
 public interface InscritosRepository extends JpaRepository<InscritosModel, Long> {
     List<InscritosModel> findByActividade(ActividadeModel actividade);
     long countByActividade(ActividadeModel actividade);
+    long countByDataInscricaoBetween(LocalDateTime start, LocalDateTime end);
     Page<InscritosModel> findByActividade(ActividadeModel actividade, Pageable pageable);
     Page<InscritosModel> findByUser(UserModel user, Pageable pageable);
     Page<InscritosModel> findAll(Pageable pageable);

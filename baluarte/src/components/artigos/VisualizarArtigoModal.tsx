@@ -22,6 +22,7 @@ import { ArtigoAdminView, tiposArtigo } from "../../pages/Artigos/ArtigosAdmin";
 import rectangleImage from "../../assets/rectangle.jpg";
 import { useState, useEffect, useRef } from "react";
 import { apiFetch } from "../../utils/api";
+import { getAuthToken } from "../../utils/auth";
 import { createPortal } from "react-dom";
 
 interface VisualizarArtigoModalProps {
@@ -104,8 +105,11 @@ export const VisualizarArtigoModal = ({ artigo, onClose, onEdit }: VisualizarArt
     fetchConteudo();
   }, [artigo.id, artigo.descricao]);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (artigo.pdf) {
+      if (getAuthToken()) {
+        apiFetch(`/user/me/download/artigo/${artigo.id}`, { method: "POST" }).catch(() => {});
+      }
       if (typeof artigo.pdf === 'string') {
         window.open(artigo.pdf, '_blank');
       } else if (artigo.pdf instanceof File) {

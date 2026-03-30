@@ -30,7 +30,7 @@ import {
 import { LiaBibleSolid } from "react-icons/lia";
 import { fadeInUp, staggerContainer } from "../../utils/animation";
 import { apiFetch } from "../../utils/api";
-import { MidiaProjection, PageResponse } from "../../types/api";
+import { AudioProjection, MidiaProjection, PageResponse, VideoProjection } from "../../types/api";
 import { ImageViewerModal } from "../../components/midia/ImageViewerModal";
 
 // Tipos baseados nos seus Enums
@@ -68,6 +68,9 @@ export const MidiaPage = () => {
   const [selectedVideoType, setSelectedVideoType] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [midia, setMidia] = useState<MidiaProjection[]>([]);
+  const [latestVideos, setLatestVideos] = useState<VideoProjection[]>([]);
+  const [latestAudios, setLatestAudios] = useState<AudioProjection[]>([]);
+  const [latestLoading, setLatestLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -89,6 +92,49 @@ export const MidiaPage = () => {
       setSelectedVideoType(null);
     }
   }, [selectedType]);
+
+  const showHighlights =
+    !searchTerm.trim() && !selectedType && !selectedAudioType && !selectedVideoType;
+
+  useEffect(() => {
+    if (!showHighlights) return;
+    let active = true;
+    (async () => {
+      setLatestLoading(true);
+      try {
+        const [videoRes, audioRes] = await Promise.all([
+          apiFetch("/user/midia/video?page=0&size=6"),
+          apiFetch("/user/midia/audio?page=0&size=6"),
+        ]);
+
+        if (active) {
+          if (videoRes.ok) {
+            const payload = (await videoRes.json()) as VideoProjection[];
+            setLatestVideos(Array.isArray(payload) ? payload : []);
+          } else {
+            setLatestVideos([]);
+          }
+
+          if (audioRes.ok) {
+            const payload = (await audioRes.json()) as AudioProjection[];
+            setLatestAudios(Array.isArray(payload) ? payload : []);
+          } else {
+            setLatestAudios([]);
+          }
+        }
+      } catch {
+        if (!active) return;
+        setLatestVideos([]);
+        setLatestAudios([]);
+      } finally {
+        if (active) setLatestLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [showHighlights]);
 
   useEffect(() => {
     let active = true;
@@ -194,6 +240,84 @@ export const MidiaPage = () => {
 
       {/* Conteúdo principal */}
       <section className="py-12 container-custom">
+        {showHighlights && (latestLoading || latestVideos.length > 0 || latestAudios.length > 0) && (
+          <div className="mb-10 grid gap-6 md:grid-cols-2">
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <FiPlay className="text-primary" />
+                  Últimos vídeos
+                </h3>
+              </div>
+
+              {latestLoading && latestVideos.length === 0 ? (
+                <div className="text-sm text-gray-500">Carregando...</div>
+              ) : latestVideos.length === 0 ? (
+                <div className="text-sm text-gray-500">Nenhum vídeo encontrado.</div>
+              ) : (
+                <div className="space-y-3">
+                  {latestVideos.map((item) => (
+                    <Link
+                      key={String(item.id)}
+                      to={`/midia/${item.id}`}
+                      className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                        <FiPlay />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">{item.titulo}</p>
+                        <p className="text-xs text-gray-500 truncate">{(item.autor ?? "").trim() || "Baluarte"}</p>
+                      </div>
+                      <FiChevronRight className="text-gray-400" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <FiHeadphones className="text-primary" />
+                  Últimos áudios
+                </h3>
+              </div>
+
+              {latestLoading && latestAudios.length === 0 ? (
+                <div className="text-sm text-gray-500">Carregando...</div>
+              ) : latestAudios.length === 0 ? (
+                <div className="text-sm text-gray-500">Nenhum áudio encontrado.</div>
+              ) : (
+                <div className="space-y-3">
+                  {latestAudios.map((item) => (
+                    <Link
+                      key={String(item.id)}
+                      to={`/midia/${item.id}`}
+                      className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      <img
+                        src={item.imagem || "https://via.placeholder.com/64"}
+                        alt={item.titulo}
+                        className="w-12 h-12 rounded-lg object-cover bg-gray-100"
+                        loading="lazy"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 truncate">{item.titulo}</p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {(item.autor ?? "").trim() || "Baluarte"}
+                          {item.tempo ? ` • ${item.tempo}` : ""}
+                        </p>
+                      </div>
+                      <FiChevronRight className="text-gray-400" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar de filtros - Desktop */}
           <motion.aside 

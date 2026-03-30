@@ -1,5 +1,5 @@
 // src/pages/Admin/ConteudoSobrePage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiEdit2,
@@ -30,6 +30,8 @@ import {
   GiSecretBook
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
+import { apiFetch } from "../../utils/api.js";
+import type { SobreDto } from "../../types/api";
 
 // Tipos para cada seção
 interface Historia {
@@ -92,8 +94,8 @@ interface Localizacao {
     whatsapp?: string;
   };
   mapa: {
-    latitude: number;
-    longitude: number;
+    latitude: number | null;
+    longitude: number | null;
     embed: string;
   };
 }
@@ -244,7 +246,8 @@ const SecaoEditavel = ({
   children,
   onSave,
   editando,
-  onToggleEdit
+  onToggleEdit,
+  disabled = false
 }: { 
   titulo: string; 
   icone: any; 
@@ -252,6 +255,7 @@ const SecaoEditavel = ({
   onSave: () => void;
   editando: boolean;
   onToggleEdit: () => void;
+  disabled?: boolean;
 }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-6">
@@ -265,12 +269,14 @@ const SecaoEditavel = ({
             <>
               <button
                 onClick={onToggleEdit}
+                disabled={disabled}
                 className="p-2 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors"
               >
                 <FiX size={18} />
               </button>
               <button
                 onClick={onSave}
+                disabled={disabled}
                 className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
               >
                 <FiSave size={18} />
@@ -279,6 +285,7 @@ const SecaoEditavel = ({
           ) : (
             <button
               onClick={onToggleEdit}
+              disabled={disabled}
               className="p-2 text-primary-500 hover:bg-primary-50 rounded-lg transition-colors"
             >
               <FiEdit2 size={18} />
@@ -460,11 +467,49 @@ export const ConteudoSobrePage = () => {
   const [secaoEditando, setSecaoEditando] = useState<string | null>(null);
   const [modalValorAberto, setModalValorAberto] = useState(false);
   const [valorEditando, setValorEditando] = useState<Valor | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const handleSaveSecao = (secao: string) => {
-    // Aqui salvaria na API
-    console.log(`Salvando seção ${secao}:`, conteudo);
-    setSecaoEditando(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const res = await apiFetch("/admin/sobre", { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar o conteúdo do Sobre.");
+        const payload = (await res.json()) as SobreDto;
+        setConteudo(payload as unknown as ConteudoSobre);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setLoadError(err instanceof Error ? err.message : "Não foi possível carregar o conteúdo do Sobre.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [reloadToken]);
+
+  const handleSaveSecao = async (secao: string) => {
+    setActionError("");
+    setSaving(true);
+    try {
+      const res = await apiFetch("/admin/sobre", { method: "PUT", body: conteudo });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Falha ao salvar o conteúdo do Sobre.");
+      }
+      const payload = (await res.json()) as SobreDto;
+      setConteudo(payload as unknown as ConteudoSobre);
+      setSecaoEditando(null);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : `Falha ao salvar seção ${secao}.`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -478,6 +523,20 @@ export const ConteudoSobrePage = () => {
           <p className="text-gray-500">
             Gerencie todo o conteúdo da página "Sobre Nós" da igreja
           </p>
+          <div className="mt-4 flex flex-wrap gap-3 items-center">
+            <button
+              onClick={() => setReloadToken((t) => t + 1)}
+              disabled={loading || saving}
+              className={`px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 ${
+                loading || saving ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              Recarregar
+            </button>
+            {loading && <span className="text-sm text-gray-500">Carregando...</span>}
+            {loadError && <span className="text-sm text-red-600">{loadError}</span>}
+            {actionError && <span className="text-sm text-red-600">{actionError}</span>}
+          </div>
         </div>
 
         {/* História */}
@@ -487,6 +546,7 @@ export const ConteudoSobrePage = () => {
           editando={secaoEditando === 'historia'}
           onToggleEdit={() => setSecaoEditando(secaoEditando === 'historia' ? null : 'historia')}
           onSave={() => handleSaveSecao('historia')}
+          disabled={loading || saving}
         >
           <div className="space-y-4">
             <InputComPreview
@@ -562,6 +622,7 @@ export const ConteudoSobrePage = () => {
           editando={secaoEditando === 'valores'}
           onToggleEdit={() => setSecaoEditando(secaoEditando === 'valores' ? null : 'valores')}
           onSave={() => handleSaveSecao('valores')}
+          disabled={loading || saving}
         >
           <div className="space-y-4">
             {conteudo.valores.map((valor, index) => (
@@ -614,6 +675,7 @@ export const ConteudoSobrePage = () => {
           editando={secaoEditando === 'pastores'}
           onToggleEdit={() => setSecaoEditando(secaoEditando === 'pastores' ? null : 'pastores')}
           onSave={() => handleSaveSecao('pastores')}
+          disabled={loading || saving}
         >
           <div className="space-y-4">
             {conteudo.pastores.map((pastor) => (
@@ -652,6 +714,7 @@ export const ConteudoSobrePage = () => {
           editando={secaoEditando === 'localizacao'}
           onToggleEdit={() => setSecaoEditando(secaoEditando === 'localizacao' ? null : 'localizacao')}
           onSave={() => handleSaveSecao('localizacao')}
+          disabled={loading || saving}
         >
           <div className="grid grid-cols-2 gap-4">
             <InputComPreview
@@ -708,6 +771,7 @@ export const ConteudoSobrePage = () => {
           editando={secaoEditando === 'cta'}
           onToggleEdit={() => setSecaoEditando(secaoEditando === 'cta' ? null : 'cta')}
           onSave={() => handleSaveSecao('cta')}
+          disabled={loading || saving}
         >
           <div className="space-y-4">
             <InputComPreview

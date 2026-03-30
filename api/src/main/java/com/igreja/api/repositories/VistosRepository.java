@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 public interface VistosRepository extends JpaRepository<VistosModel,Integer> {
     List<VistosModel> findByArtigo(ArtigoModel artigo);
     List<VistosModel> findByMidia(MidiaModel midia);
+    List<VistosModel> findByDataBetween(LocalDateTime start, LocalDateTime end);
+    long countByDataBetween(LocalDateTime start, LocalDateTime end);
     long countByMidia(MidiaModel midia);
     long countByArtigo(ArtigoModel artigo);
     boolean existsByMidiaAndIpAndDataAfter(MidiaModel midia, String ip, LocalDateTime data);

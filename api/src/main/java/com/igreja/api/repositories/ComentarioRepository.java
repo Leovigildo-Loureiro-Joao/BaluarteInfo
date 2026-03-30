@@ -12,13 +12,23 @@ import com.igreja.api.models.ActividadeModel;
 import com.igreja.api.models.ComentarioModel;
 import com.igreja.api.models.UserModel;
 import java.util.List;
+import java.time.LocalDate;
 
 
 public interface ComentarioRepository extends JpaRepository<ComentarioModel,Integer>{
     List<ComentarioModel> findByActividade(ActividadeModel actividade);
+    List<ComentarioModel> findByParentOrderByDataPublicacaoAsc(ComentarioModel parent);
+    long countByParent(ComentarioModel parent);
     long countByActividade(ActividadeModel actividade);
-    Page<ComentarioModel> findAllByOrderByDataPublicacaoDesc(Pageable pageable);
-    Page<ComentarioModel> findAllByStatusOrderByDataPublicacaoDesc(ComentarioStatus status, Pageable pageable);
+    long countByActividadeIsNotNull();
+    long countByDataPublicacao(LocalDate dataPublicacao);
+    long countByDataPublicacaoBetween(LocalDate start, LocalDate end);
+    long countByActividadeIsNotNullAndDataPublicacao(LocalDate dataPublicacao);
+    long countByActividadeIsNotNullAndDataPublicacaoBetween(LocalDate start, LocalDate end);
+    Page<ComentarioModel> findAllByParentIsNullOrderByDataPublicacaoDesc(Pageable pageable);
+    Page<ComentarioModel> findAllByParentIsNullAndStatusOrderByDataPublicacaoDesc(ComentarioStatus status, Pageable pageable);
+    Page<ComentarioModel> findAllByParentIsNullAndAnaliseOrderByDataPublicacaoDesc(boolean analise, Pageable pageable);
+    Page<ComentarioModel> findAllByParentIsNullAndStatusAndAnaliseOrderByDataPublicacaoDesc(ComentarioStatus status, boolean analise, Pageable pageable);
     Page<ComentarioModel> findByUserOrderByDataPublicacaoDesc(UserModel user, Pageable pageable);
 
     @Query("""

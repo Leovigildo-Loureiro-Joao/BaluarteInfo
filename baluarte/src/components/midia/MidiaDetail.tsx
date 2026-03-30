@@ -36,8 +36,8 @@ import {
 } from "react-icons/gi";
 import { LiaBibleSolid } from "react-icons/lia";
 import { apiFetch } from "../../utils/api";
-import { getStoredUser, hasRole } from "../../utils/auth";
-import type { ComentarioResult, MidiaRelacionadoEdicaoItem, PageResponse } from "../../types/api";
+import { getAuthToken, getStoredUser, hasRole } from "../../utils/auth";
+import type { ComentarioResult, MidiaRelacionadoItem, MidiaRelacionadoEdicaoItem, MidiaRelacionadosDto, PageResponse } from "../../types/api";
 
 // Tipos de áudio para badge
 const audioTypeInfo: Record<string, { label: string, icon: any, color: string }> = {
@@ -299,7 +299,7 @@ const VideoPlayer = ({
 };
 
 // Componente de Player de Áudio Aprimorado
-const AudioPlayer = ({ src, title, author, type, thumbnail, onQualifiedView }: any) => {
+const AudioPlayer = ({ src, title, author, type, thumbnail, onQualifiedView, onDownload }: any) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -388,6 +388,10 @@ const AudioPlayer = ({ src, title, author, type, thumbnail, onQualifiedView }: a
   const progress = (currentTime / duration) * 100 || 0;
   const AudioIcon = audioTypeInfo[type]?.icon || GiMicrophone;
   const audioColor = audioTypeInfo[type]?.color || "bg-primary";
+  const handleDownload = () => {
+    onDownload?.();
+    window.open(src, "_blank", "noreferrer");
+  };
 
   return (
     <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
@@ -482,7 +486,11 @@ const AudioPlayer = ({ src, title, author, type, thumbnail, onQualifiedView }: a
               </div>
             </div>
 
-            <button className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors">
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+            >
               <FiDownload size={16} />
               <span className="text-sm">Download</span>
             </button>
@@ -660,6 +668,9 @@ export const MidiaDetalhe = () => {
   const [relacionadosEdicoesTotalPages, setRelacionadosEdicoesTotalPages] = useState(0);
   const [relacionadosEdicoesLoading, setRelacionadosEdicoesLoading] = useState(false);
   const [relacionadosEdicoesError, setRelacionadosEdicoesError] = useState("");
+  const [relacionados, setRelacionados] = useState<MidiaRelacionadosDto | null>(null);
+  const [relacionadosLoading, setRelacionadosLoading] = useState(false);
+  const [relacionadosError, setRelacionadosError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -741,6 +752,35 @@ export const MidiaDetalhe = () => {
     };
   }, [id]);
 
+  useEffect(() => {
+    let active = true;
+
+    const loadRelacionados = async () => {
+      if (!id) return;
+      setRelacionados(null);
+      setRelacionadosError("");
+      setRelacionadosLoading(true);
+      try {
+        const response = await apiFetch(`/user/midia/${id}/relacionados?size=8`);
+        if (!response.ok) throw new Error("Falha ao carregar relacionados.");
+        const payload = (await response.json()) as MidiaRelacionadosDto;
+        if (!active) return;
+        setRelacionados(payload);
+      } catch (err) {
+        if (!active) return;
+        setRelacionados(null);
+        setRelacionadosError("Não foi possível carregar relacionados.");
+      } finally {
+        if (active) setRelacionadosLoading(false);
+      }
+    };
+
+    loadRelacionados();
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
   const carregarMaisRelacionadosEdicoes = async () => {
     if (!id) return;
     if (relacionadosEdicoesLoading) return;
@@ -773,6 +813,16 @@ export const MidiaDetalhe = () => {
   useEffect(() => {
     if (midia?.type === "IMAGE") setActiveTab("sobre");
   }, [midia?.type]);
+
+  const registerDownload = async (midiaId: number) => {
+    if (!midiaId || Number.isNaN(midiaId)) return;
+    if (!getAuthToken()) return;
+    try {
+      await apiFetch(`/user/me/download/midia/${midiaId}`, { method: "POST" });
+    } catch {
+      // ignore
+    }
+  };
 
   const registerViewIfEligible = async (watchedSeconds: number) => {
     const numericId = midia?.id ?? Number(id);
@@ -875,6 +925,7 @@ export const MidiaDetalhe = () => {
             {isImage && midia.url && (
               <a
                 href={midia.url}
+                onClick={() => registerDownload(midia.id)}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-100 transition-colors"
@@ -926,6 +977,7 @@ export const MidiaDetalhe = () => {
                   type={midia.audioType}
                   thumbnail={midia.imagem}
                   onQualifiedView={registerViewIfEligible}
+                  onDownload={() => registerDownload(midia.id)}
                 />
               ) : (
                 <div className="bg-black rounded-2xl overflow-hidden">
@@ -1019,6 +1071,7 @@ export const MidiaDetalhe = () => {
                     {midia.url && (
                       <a
                         href={midia.url}
+                        onClick={() => registerDownload(midia.id)}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
@@ -1078,6 +1131,7 @@ export const MidiaDetalhe = () => {
               {midia.url && (
                 <a
                   href={midia.url}
+                  onClick={() => registerDownload(midia.id)}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-5 inline-flex w-full items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
@@ -1087,6 +1141,70 @@ export const MidiaDetalhe = () => {
                 </a>
               )}
             </div>
+
+            {(relacionadosLoading ||
+              relacionadosError ||
+              (relacionados?.eventosAtuais?.length ?? 0) > 0 ||
+              (relacionados?.eventosPassados?.length ?? 0) > 0) && (
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-lg">Relacionados</h3>
+                  <span className="text-xs text-gray-500">Eventos</span>
+                </div>
+
+                {relacionadosError && <p className="text-sm text-red-600">{relacionadosError}</p>}
+
+                {!relacionadosError && relacionadosLoading && (
+                  <div className="space-y-3 animate-pulse">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-3 bg-gray-200 rounded w-4/5" />
+                          <div className="h-3 bg-gray-200 rounded w-2/5" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!relacionadosError && !relacionadosLoading && (
+                  <div className="space-y-5">
+                    {[
+                      { label: "Atuais", items: relacionados?.eventosAtuais ?? [] },
+                      { label: "Passados", items: relacionados?.eventosPassados ?? [] },
+                    ]
+                      .filter((group) => group.items.length > 0)
+                      .map((group) => (
+                        <div key={group.label}>
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{group.label}</p>
+                          <div className="space-y-3">
+                            {group.items.slice(0, 6).map((item: MidiaRelacionadoItem) => (
+                              <Link
+                                key={item.id}
+                                to={`/midia/${item.id}`}
+                                className="flex gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                              >
+                                <img
+                                  src={item.imagem || item.url}
+                                  alt={item.titulo}
+                                  className="w-12 h-12 rounded-lg object-cover bg-gray-100"
+                                  loading="lazy"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-gray-800 truncate">{item.titulo}</p>
+                                  <p className="text-xs text-gray-500 truncate">{(item.autor ?? "").trim() || "Baluarte"}</p>
+                                </div>
+                                <FiChevronRight className="text-gray-400 mt-1" />
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {(relacionadosEdicoesLoading || relacionadosEdicoesError || relacionadosEdicoes.length > 0) && (
               <div className="bg-white rounded-2xl shadow-lg p-6">

@@ -20,6 +20,7 @@ import com.igreja.api.projection.midia.VideoProjection;
 
 
 public interface MidiaRepository extends JpaRepository<MidiaModel,Integer>{
+    long countByType(MidiaType type);
 
     @Query(
         value = """

@@ -1073,7 +1073,7 @@ export const ActividadeDetails = () => {
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
                 <FiUser className="text-primary-500" />
-                Organizador
+                Moderador
               </h3>
               <p className="font-medium mb-2">{actividade.organizador}</p>
               

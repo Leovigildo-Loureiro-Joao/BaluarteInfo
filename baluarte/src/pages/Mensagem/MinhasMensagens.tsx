@@ -1,36 +1,9 @@
 // src/pages/Mensagem/MinhasMensagens.tsx
-import { useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiXCircle } from "react-icons/fi";
-
-interface MinhaMensagem {
-  id: number;
-  assunto: string;
-  descricao: string;
-  resposta?: string;
-  dataEnvio: string;
-  dataResposta?: string;
-  status: "respondida" | "pendente" | "lida";
-}
-
-const minhasMensagensMock: MinhaMensagem[] = [
-  {
-    id: 1,
-    assunto: "Dúvida sobre horários",
-    descricao: "Gostaria de saber mais sobre os horários dos cultos de quarta-feira.",
-    resposta: "Olá! Os cultos de quarta-feira acontecem às 20h. Esperamos você!",
-    dataEnvio: "2024-03-10T14:30:00",
-    dataResposta: "2024-03-11T09:15:00",
-    status: "respondida",
-  },
-  {
-    id: 2,
-    assunto: "Pedido de Oração",
-    descricao: "Preciso de oração pela minha saúde.",
-    dataEnvio: "2024-03-12T08:20:00",
-    status: "pendente",
-  },
-];
+import { apiFetch } from "../../utils/api.js";
+import { MensagemData, MensagemRecord, MensagemType, PageResponse, StatusMensage } from "../../types/api";
 
 type MinhasMensagensDrawerProps = {
   open: boolean;
@@ -38,15 +11,87 @@ type MinhasMensagensDrawerProps = {
 };
 
 export const MinhasMensagensDrawer = ({ open, onClose }: MinhasMensagensDrawerProps) => {
-  const [mensagens] = useState(minhasMensagensMock);
+  const [mensagens, setMensagens] = useState<MensagemRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const [page, setPage] = useState(0);
+  const [size] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [reloadToken, setReloadToken] = useState(0);
   const [novaMensagem, setNovaMensagem] = useState({ assunto: "", descricao: "" });
   const [showForm, setShowForm] = useState(false);
 
-  const handleEnviarMensagem = (e: FormEvent) => {
+  const queryString = useMemo(() => {
+    const qs = new URLSearchParams({ page: String(page), size: String(size) });
+    return qs.toString();
+  }, [page, size]);
+
+  useEffect(() => {
+    if (!open) return;
+    const controller = new AbortController();
+    (async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const res = await apiFetch(`/user/me/mensagens?${queryString}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar mensagens.");
+        const payload = (await res.json()) as PageResponse<MensagemRecord>;
+        const content = payload.content ?? [];
+        setTotalPages(payload.totalPages ?? 0);
+        if (page === 0) setMensagens(content);
+        else setMensagens((current) => [...current, ...content]);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setLoadError(err instanceof Error ? err.message : "Não foi possível carregar mensagens.");
+        if (page === 0) setMensagens([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [open, queryString, page, reloadToken]);
+
+  useEffect(() => {
+    if (!open) return;
+    // Sempre que abrir, começa da primeira página.
+    setPage(0);
+  }, [open]);
+
+  const handleEnviarMensagem = async (e: FormEvent) => {
     e.preventDefault();
-    alert("Mensagem enviada com sucesso!");
-    setShowForm(false);
-    setNovaMensagem({ assunto: "", descricao: "" });
+    if (sending) return;
+    setSending(true);
+    setSendError("");
+    try {
+      const payload: MensagemData = {
+        assunto: novaMensagem.assunto,
+        descricao: novaMensagem.descricao
+      };
+      const res = await apiFetch("/user/mensagem/send", { method: "POST", body: payload });
+      if (!res.ok) throw new Error("Falha ao enviar mensagem.");
+      setShowForm(false);
+      setNovaMensagem({ assunto: "", descricao: "" });
+      setReloadToken((v) => v + 1);
+      setPage(0);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "Não foi possível enviar a mensagem.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const marcarComoLida = async (mensagem: MensagemRecord) => {
+    if (mensagem.tipo !== MensagemType.Send || mensagem.lido) return;
+    // marca apenas mensagens enviadas pela igreja para o usuário
+    setMensagens((current) => current.map((m) => (m.id === mensagem.id ? { ...m, lido: true } : m)));
+    try {
+      const res = await apiFetch(`/user/me/mensagens/${mensagem.id}/lido?lido=true`, { method: "PUT" });
+      if (!res.ok) throw new Error("Falha ao marcar como lida.");
+    } catch {
+      setMensagens((current) => current.map((m) => (m.id === mensagem.id ? { ...m, lido: false } : m)));
+    }
   };
 
   const handleClose = () => {
@@ -141,15 +186,27 @@ export const MinhasMensagensDrawer = ({ open, onClose }: MinhasMensagensDrawerPr
                   </div>
                   <button
                     type="submit"
-                    className="w-full rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600"
+                    disabled={sending}
+                    className="w-full rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Enviar
+                    {sending ? "A enviar..." : "Enviar"}
                   </button>
                 </form>
+                {sendError ? (
+                  <p className="mt-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3">
+                    {sendError}
+                  </p>
+                ) : null}
               </motion.div>
             )}
 
             <div className="mt-5 space-y-4">
+              {loadError ? (
+                <p className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3">
+                  {loadError}
+                </p>
+              ) : null}
+
               {mensagens.map((msg) => (
                 <motion.article
                   key={msg.id}
@@ -157,38 +214,61 @@ export const MinhasMensagensDrawer = ({ open, onClose }: MinhasMensagensDrawerPr
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 16 }}
                   className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm"
+                  onClick={() => marcarComoLida(msg)}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h4 className="text-base font-semibold text-gray-900">{msg.assunto}</h4>
                       <p className="text-xs text-gray-500">
-                        Enviada em {new Date(msg.dataEnvio).toLocaleDateString("pt-BR")}
+                        {msg.dataPublicacao
+                          ? new Date(msg.dataPublicacao).toLocaleDateString("pt-BR")
+                          : ""}
                       </p>
                     </div>
                     <span
                       className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${
-                        msg.status === "respondida"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-yellow-100 text-yellow-600"
+                        msg.tipo === MensagemType.Send
+                          ? msg.lido
+                            ? "bg-green-100 text-green-600"
+                            : "bg-blue-100 text-blue-600"
+                          : msg.status === StatusMensage.Enviado
+                            ? "bg-green-100 text-green-600"
+                            : "bg-yellow-100 text-yellow-600"
                       }`}
                     >
-                      {msg.status === "respondida" ? "Respondida" : "Aguardando"}
+                      {msg.tipo === MensagemType.Send
+                        ? msg.lido
+                          ? "Resposta lida"
+                          : "Nova resposta"
+                        : msg.status === StatusMensage.Enviado
+                          ? "Enviada"
+                          : "Pendente"}
                     </span>
                   </div>
 
-                  <p className="mt-3 text-sm text-gray-700">📝 {msg.descricao}</p>
+                  <p className="mt-3 text-sm text-gray-700">
+                    {msg.tipo === MensagemType.Send ? "💬" : "📝"} {msg.descricao}
+                  </p>
 
-                  {msg.resposta && (
-                    <div className="mt-3 rounded-xl border-l-4 border-primary-500 bg-primary-50 p-3 text-sm text-gray-700">
-                      <p className="text-gray-500">Resposta da igreja:</p>
-                      <p>💬 {msg.resposta}</p>
-                      <p className="mt-1 text-[11px] text-gray-400">
-                        {new Date(msg.dataResposta!).toLocaleDateString("pt-BR")}
-                      </p>
-                    </div>
-                  )}
                 </motion.article>
               ))}
+
+              {loading ? (
+                <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                  <div className="h-3 w-2/3 bg-gray-200 rounded animate-pulse" />
+                  <div className="mt-2 h-3 w-1/3 bg-gray-200 rounded animate-pulse" />
+                </div>
+              ) : null}
+
+              {!loading && totalPages > 0 && page < totalPages - 1 ? (
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => p + 1)}
+                  className="w-full rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
+                >
+                  Carregar mais
+                </button>
+              ) : null}
             </div>
           </motion.aside>
         </motion.section>

@@ -1,204 +1,270 @@
-// src/pages/Actividades/ActividadeDetalhe.tsx
-import { useState, useEffect } from "react";
+// src/pages/Actividade/ActividadeDetail.tsx
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link, useParams } from "react-router-dom";
-import { 
-  FiCalendar, 
-  FiMapPin, 
-  FiUser, 
-  FiClock,
-  FiShare2,
-  FiHeart,
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
   FiArrowLeft,
+  FiCalendar,
+  FiClock,
+  FiHeart,
+  FiLayers,
+  FiMapPin,
+  FiMessageCircle,
   FiPhone,
-  FiMail,
+  FiShare2,
   FiUsers,
-  FiCheckCircle,
   FiAlertCircle,
-  FiDownload,
-  FiImage
+  FiCheckCircle,
 } from "react-icons/fi";
-import { 
-  GiCalendar, 
-  GiPartyPopper, 
-  GiPrayer,  
-  GiHeartBeats,
-  GiFamilyHouse,
-  GiDuration
-} from "react-icons/gi";
-import { LiaBibleSolid, LiaChairSolid } from "react-icons/lia";
+import { GiDuration } from "react-icons/gi";
 import { GaleriaActividade } from "../../components/actividades/GaleriaActividade";
+import {
+  ActividadeSummary,
+  ComentarioResult,
+  PageResponse,
+  ProgramacaoItemView,
+  ProgramacaoTipo,
+} from "../../types/api";
+import { apiFetch } from "../../utils/api";
+import { getAuthToken, getStoredUser } from "../../utils/auth";
 
-// Componente de Inscrição
-const InscricaoForm = ({ actividade, onClose }: { actividade: any, onClose: () => void }) => {
+const readApiErrorMessage = async (res: Response, fallback: string) => {
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    try {
+      const json = await res.json();
+      if (json?.message) return String(json.message);
+      if (json?.error) return String(json.error);
+    } catch {
+      // ignore
+    }
+  }
+  try {
+    const text = await res.text();
+    if (text) return text;
+  } catch {
+    // ignore
+  }
+  return fallback;
+};
+
+// Modal de Inscrição (convidado / convidar alguém) via endpoint público.
+const InscricaoForm = ({ actividade, onClose }: { actividade: ActividadeSummary; onClose: () => void }) => {
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [pdfError, setPdfError] = useState("");
+  const [inscricaoId, setInscricaoId] = useState<number | null>(null);
+  const [qrBlobUrl, setQrBlobUrl] = useState<string>("");
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
     telefone: "",
-    idade: "",
-    comoConheceu: "",
-    observacoes: ""
   });
+
+  useEffect(() => {
+    return () => {
+      if (qrBlobUrl) URL.revokeObjectURL(qrBlobUrl);
+    };
+  }, [qrBlobUrl]);
+
+  const downloadPdf = async () => {
+    if (!inscricaoId) {
+      setPdfError("Não foi possível identificar a inscrição para gerar o PDF.");
+      return;
+    }
+    if (isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    setPdfError("");
+    try {
+      const res = await apiFetch(`/public/inscritos/${inscricaoId}/pdf?email=${encodeURIComponent(formData.email)}`, {
+        method: "GET",
+        headers: { Accept: "application/pdf" },
+      });
+      if (!res.ok) {
+        const msg = await readApiErrorMessage(res, "Não foi possível baixar o PDF.");
+        throw new Error(msg || "Não foi possível baixar o PDF.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ficha-inscricao-${inscricaoId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Não foi possível baixar o PDF.";
+      setPdfError(msg || "Não foi possível baixar o PDF.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
+      setSubmitError("");
       setStep(2);
     } else {
-      // Enviar inscrição
-      alert("Inscrição realizada com sucesso! Entraremos em contato em breve.");
-      onClose();
+      // passo 2: confirma e gera QR (PNG) via endpoint público
+      if (isSubmitting) return;
+      setIsSubmitting(true);
+      setSubmitError("");
+      (async () => {
+        try {
+          const res = await apiFetch(`/public/inscritos/${Number(actividade.id)}`, {
+            method: "POST",
+            headers: {
+              Accept: "image/png",
+            },
+            body: {
+              nome: formData.nome,
+              email: formData.email,
+              telefone: formData.telefone,
+            },
+          });
+
+          if (!res.ok) {
+            const msg = await readApiErrorMessage(res, "Não foi possível gerar o QR da inscrição.");
+            throw new Error(msg || "Não foi possível gerar o QR da inscrição.");
+          }
+
+          const blob = await res.blob();
+          const headerId = Number(res.headers.get("X-Inscricao-Id") || "");
+          setInscricaoId(Number.isFinite(headerId) && headerId > 0 ? headerId : null);
+          if (qrBlobUrl) URL.revokeObjectURL(qrBlobUrl);
+          const blobUrl = URL.createObjectURL(blob);
+          setQrBlobUrl(blobUrl);
+          setStep(3);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "Não foi possível gerar o QR da inscrição.";
+          setSubmitError(msg || "Não foi possível gerar o QR da inscrição.");
+        } finally {
+          setIsSubmitting(false);
+        }
+      })();
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      className="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full  mx-4"
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4"
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5">
         <h3 className="text-2xl font-bold text-primary">Inscrição</h3>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-          <FiAlertCircle size={24} />
+          <FiAlertCircle size={22} />
         </button>
       </div>
 
-      {/* Progresso */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            step >= 1 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
-          }`}>
-            1
-          </div>
-          <span className="text-sm">Dados Pessoais</span>
-        </div>
-        <div className="flex-1 h-0.5 mx-2 bg-gray-200">
-          <div className={`h-full bg-primary transition-all`} style={{ width: step === 1 ? '0%' : '100%' }} />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            step >= 2 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
-          }`}>
-            2
-          </div>
-          <span className="text-sm">Confirmação</span>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="max-h-[60vh] h-full overflow-y-auto">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {step === 1 ? (
-          <div className="space-y-4">
+          <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome Completo *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nome completo *</label>
               <input
                 type="text"
                 required
                 value={formData.nome}
-                onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                E-mail *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">E-mail *</label>
               <input
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Telefone/WhatsApp *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Telefone/WhatsApp *</label>
               <input
                 type="tel"
                 required
                 value={formData.telefone}
-                onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="(11) 99999-9999"
+                placeholder="(xx) xxxxx-xxxx"
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Idade
-              </label>
-              <input
-                type="number"
-                value={formData.idade}
-                onChange={(e) => setFormData({...formData, idade: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
+          </>
+        ) : step === 2 ? (
+          <div className="text-center py-2">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <FiCheckCircle className="text-green-500 text-3xl" />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Como conheceu o evento?
-              </label>
-              <select
-                value={formData.comoConheceu}
-                onChange={(e) => setFormData({...formData, comoConheceu: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                <option value="">Selecione...</option>
-                <option value="igreja">Igreja</option>
-                <option value="redes">Redes Sociais</option>
-                <option value="amigo">Amigo/Conhecido</option>
-                <option value="site">Site</option>
-                <option value="outro">Outro</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Observações
-              </label>
-              <textarea
-                value={formData.observacoes}
-                onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="Alguma necessidade especial? Acompanhante?"
-              />
+            <h4 className="text-xl font-bold mb-2">Confirmar inscrição</h4>
+            <p className="text-gray-600 mb-3">
+              Verifique seus dados e confirme sua inscrição para <strong>{actividade.titulo}</strong>.
+            </p>
+            <div className="bg-gray-50 rounded-lg p-4 text-left text-sm">
+              <p>
+                <strong>Nome:</strong> {formData.nome}
+              </p>
+              <p>
+                <strong>Email:</strong> {formData.email}
+              </p>
+              <p>
+                <strong>Telefone:</strong> {formData.telefone}
+              </p>
             </div>
           </div>
         ) : (
-          <div className="text-center py-6">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FiCheckCircle className="text-green-500 text-4xl" />
+          <div className="text-center py-2">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+              <FiCheckCircle className="text-primary text-3xl" />
             </div>
-            <h4 className="text-xl font-bold mb-2">Quase lá!</h4>
-            <p className="text-gray-600 mb-4">
-              Verifique seus dados e confirme sua inscrição para {actividade.titulo}
+            <h4 className="text-xl font-bold mb-2">QR gerado</h4>
+            <p className="text-gray-600 mb-3">
+              Guarde este QR para validar sua inscrição. Também enviamos a ficha (PDF) no seu email.
             </p>
-
-            <div className="bg-gray-50 rounded-lg p-4 text-left mb-4">
-              <p><strong>Nome:</strong> {formData.nome}</p>
-              <p><strong>Email:</strong> {formData.email}</p>
-              <p><strong>Telefone:</strong> {formData.telefone}</p>
+            {qrBlobUrl && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <img src={qrBlobUrl} alt="QR de inscrição" className="mx-auto max-w-[260px] w-full h-auto" />
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+              <a
+                href={qrBlobUrl || undefined}
+                download={`inscricao-actividade-${actividade.id}.png`}
+                className={`flex-1 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-center ${
+                  qrBlobUrl ? "" : "pointer-events-none opacity-50"
+                }`}
+              >
+                Baixar PNG
+              </a>
+              <button
+                type="button"
+                onClick={downloadPdf}
+                className={`flex-1 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors ${
+                  inscricaoId ? "" : "opacity-50"
+                }`}
+              >
+                {isDownloadingPdf ? "Baixando..." : "Baixar PDF"}
+              </button>
             </div>
-
-            <p className="text-sm text-gray-500 mb-4">
-              Após a confirmação, enviaremos mais informações por e-mail/WhatsApp.
-            </p>
           </div>
         )}
 
-        <div className="flex gap-3 mt-6">
+        {submitError && (
+          <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">{submitError}</div>
+        )}
+        {pdfError && (
+          <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">{pdfError}</div>
+        )}
+
+        <div className="flex gap-3 pt-2">
           {step === 2 && (
             <button
               type="button"
@@ -208,77 +274,370 @@ const InscricaoForm = ({ actividade, onClose }: { actividade: any, onClose: () =
               Voltar
             </button>
           )}
-          <button
-            type="submit"
-            className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-          >
-            {step === 1 ? 'Continuar' : 'Confirmar Inscrição'}
-          </button>
+          {step !== 3 ? (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60"
+            >
+              {step === 1 ? "Continuar" : isSubmitting ? "Gerando..." : "Confirmar e gerar QR"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors"
+            >
+              Fechar
+            </button>
+          )}
         </div>
       </form>
     </motion.div>
   );
 };
 
+const InscricaoContaModal = ({
+  actividade,
+  qrBlobUrl,
+  onClose,
+}: {
+  actividade: ActividadeSummary;
+  qrBlobUrl: string;
+  onClose: () => void;
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-2xl font-bold text-primary">Inscrição confirmada</h3>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <FiAlertCircle size={22} />
+        </button>
+      </div>
+
+      <div className="text-center py-2">
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+          <FiCheckCircle className="text-primary text-3xl" />
+        </div>
+        <h4 className="text-xl font-bold mb-2">QR gerado</h4>
+        <p className="text-gray-600 mb-3">
+          Guarde este QR para validar sua inscrição em <strong>{actividade.titulo}</strong>.
+        </p>
+
+        {qrBlobUrl ? (
+          <div className="bg-gray-50 rounded-lg p-4">
+            <img src={qrBlobUrl} alt="QR de inscrição" className="mx-auto max-w-[260px] w-full h-auto" />
+          </div>
+        ) : (
+          <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600">QR indisponível.</div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <a
+            href={qrBlobUrl || undefined}
+            download={`inscricao-actividade-${actividade.id}.png`}
+            className={`flex-1 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-center ${
+              qrBlobUrl ? "" : "pointer-events-none opacity-50"
+            }`}
+          >
+            Baixar PNG
+          </a>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark transition-colors"
+          >
+            Fechar
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export const ActividadeDetalhe = () => {
   const { id } = useParams();
-  const [actividade, setActividade] = useState<any>(null);
+  const navigate = useNavigate();
+  const actividadeId = Number(id);
+
+  const [actividade, setActividade] = useState<ActividadeSummary | null>(null);
+  const [programacao, setProgramacao] = useState<ProgramacaoItemView[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [showInscricao, setShowInscricao] = useState(false);
+  const [showInscricaoConta, setShowInscricaoConta] = useState(false);
+  const [inscricaoContaBusy, setInscricaoContaBusy] = useState(false);
+  const [inscricaoContaError, setInscricaoContaError] = useState("");
+  const [inscricaoContaQrUrl, setInscricaoContaQrUrl] = useState<string>("");
   const [isLiked, setIsLiked] = useState(false);
+  const [likeBusy, setLikeBusy] = useState(false);
+  const [activeTab, setActiveTab] = useState<"sobre" | "programacao" | "comentarios" | "edicoes" | "galeria">("sobre");
 
-    const [activeTab, setActiveTab] = useState<'sobre' | 'programacao' | 'galeria'>('sobre');
+  const [comentarios, setComentarios] = useState<ComentarioResult[]>([]);
+  const [comentariosLoading, setComentariosLoading] = useState(false);
+  const [comentariosHasLoaded, setComentariosHasLoaded] = useState(false);
+  const [comentariosError, setComentariosError] = useState("");
+  const [newComentario, setNewComentario] = useState("");
+  const [comentarioSubmitting, setComentarioSubmitting] = useState(false);
+  const [likeComentarioBusyIds, setLikeComentarioBusyIds] = useState<number[]>([]);
 
-
+  const [edicoes, setEdicoes] = useState<ActividadeSummary[]>([]);
+  const [edicoesLoading, setEdicoesLoading] = useState(false);
+  const [edicoesHasLoaded, setEdicoesHasLoaded] = useState(false);
+  const [edicoesError, setEdicoesError] = useState("");
+  const [edicoesPage, setEdicoesPage] = useState(0);
+  const [edicoesTotalPages, setEdicoesTotalPages] = useState(0);
 
   useEffect(() => {
-    // Simular busca de dados
-    setTimeout(() => {
-      const item = {
-        id: 1,
-        titulo: "Conferência de Jovens 2024",
-        descricao: "Três dias de louvor, palavra e comunhão para a juventude que busca um encontro genuíno com Deus. Teremos preletores convidados, banda de louvor, momentos de oração e muito mais.",
-        tema: "Fogo e Unção",
-        endereco: "Igreja Baluarte - Auditório Principal, Rua da Igreja, 123 - Centro",
-        organizador: "Pr. João Santos",
-        contactos: "(11) 98765-4321",
-        email: "jovens@igrejabaluarte.com",
-        tipo: "JOVENS",
-        publico: "JOVENS",
-        duracao: "MULTIPLOS_DIAS",
-        dataPublicacao: "2024-01-05",
-        dataEvento: "2024-03-01",
-        dataFim: "2024-03-03",
-        horaEvento: "20:00",
-        imagem: "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80",
-        inscritos: 89,
-        capacidade: 150,
-        programacao: [
-          { dia: "Sexta (01/03)", horario: "20:00", atividade: "Abertura e Louvor" },
-          { dia: "Sexta (01/03)", horario: "21:00", atividade: "Mensagem: Fogo do Espírito" },
-          { dia: "Sábado (02/03)", horario: "09:00", atividade: "Oficina: Liderança Jovem" },
-          { dia: "Sábado (02/03)", horario: "15:00", atividade: "Tarde de Integração" },
-          { dia: "Sábado (02/03)", horario: "20:00", atividade: "Culto de Avivamento" },
-          { dia: "Domingo (03/03)", horario: "09:00", atividade: "Encerramento e Santa Ceia" }
-        ],
-        pregadores: [
-          { nome: "Pr. Antônio Silva", tema: "A Unção do Jovem" },
-          { nome: "Pra. Maria Oliveira", tema: "Propósito e Vocação" },
-          { nome: "Pr. João Santos", tema: "Fogo que não se apaga" }
-        ],
-        requisitos: [
-          "Idade entre 15 e 30 anos",
-          "Bíblia e caderno",
-          "Desejo de buscar a Deus"
-        ],
-        valor: "R$ 50,00 (inclui alimentação)",
-        vagasRestantes: 150 - 89
-      };
+    return () => {
+      if (inscricaoContaQrUrl) URL.revokeObjectURL(inscricaoContaQrUrl);
+    };
+  }, [inscricaoContaQrUrl]);
 
-      setActividade(item);
+  const selectTab = (tab: "sobre" | "programacao" | "comentarios" | "edicoes" | "galeria") => {
+    setActiveTab(tab);
+    if (tab === "comentarios" && !comentariosHasLoaded) {
+      loadComentarios();
+    }
+    if (tab === "edicoes" && !edicoesHasLoaded) {
+      loadEdicoes(0, false);
+    }
+  };
+
+  useEffect(() => {
+    let active = true;
+
+    if (!Number.isFinite(actividadeId)) {
+      setLoadError("Actividade inválida.");
       setLoading(false);
-    }, 1000);
-  }, [id]);
+      return;
+    }
+
+    const loadAll = async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const [actividadeRes, programacaoRes] = await Promise.all([
+          apiFetch(`/user/actividade/${actividadeId}`),
+          apiFetch(`/user/actividade/${actividadeId}/programacao`),
+        ]);
+
+        if (!actividadeRes.ok) throw new Error("Falha ao buscar a actividade.");
+        const actividadePayload = (await actividadeRes.json()) as ActividadeSummary;
+        const programacaoPayload = programacaoRes.ok
+          ? ((await programacaoRes.json()) as ProgramacaoItemView[])
+          : [];
+
+        if (!active) return;
+        setActividade(actividadePayload);
+        setProgramacao(Array.isArray(programacaoPayload) ? programacaoPayload : []);
+      } catch {
+        if (!active) return;
+        setLoadError("Não foi possível carregar a actividade.");
+        setActividade(null);
+        setProgramacao([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    loadAll();
+    return () => {
+      active = false;
+    };
+  }, [actividadeId]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch(`/user/actividade/${actividadeId}/favorito`, { method: "GET" });
+        if (!res.ok) return;
+        const json = (await res.json()) as { favorito?: boolean };
+        if (!active) return;
+        setIsLiked(Boolean(json?.favorito));
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [actividadeId]);
+
+  const loadComentarios = async () => {
+    if (comentariosLoading) return;
+    setComentariosLoading(true);
+    setComentariosError("");
+    try {
+      const res = await apiFetch(`/user/actividade/${actividadeId}/comentarios`);
+      if (!res.ok) {
+        const msg = await readApiErrorMessage(res, "Não foi possível carregar os comentários.");
+        throw new Error(msg || "Não foi possível carregar os comentários.");
+      }
+      const payload = (await res.json()) as ComentarioResult[];
+      setComentarios(Array.isArray(payload) ? payload : []);
+      setComentariosHasLoaded(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Não foi possível carregar os comentários.";
+      setComentariosError(msg || "Não foi possível carregar os comentários.");
+      setComentarios([]);
+    } finally {
+      setComentariosLoading(false);
+    }
+  };
+
+  const handleSubmitComentario = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComentario.trim()) return;
+    if (comentarioSubmitting) return;
+
+    const token = getAuthToken();
+    if (!token) {
+      navigate("/auth/login");
+      return;
+    }
+
+    const user = getStoredUser() as any;
+    if (!user?.id) {
+      navigate("/auth/login");
+      return;
+    }
+
+    setComentarioSubmitting(true);
+    setComentariosError("");
+    try {
+      const res = await apiFetch("/user/comentario", {
+        method: "POST",
+        body: {
+          idUser: user.id,
+          idSeccao: actividadeId,
+          seccao: "Actividade",
+          descricao: newComentario.trim(),
+        },
+      });
+      if (!res.ok) {
+        const msg = await readApiErrorMessage(res, "Não foi possível enviar o comentário.");
+        throw new Error(msg || "Não foi possível enviar o comentário.");
+      }
+      const payload = (await res.json()) as ComentarioResult;
+      setComentarios((prev) => [payload, ...prev]);
+      setNewComentario("");
+      setComentariosHasLoaded(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Não foi possível enviar o comentário.";
+      setComentariosError(msg || "Não foi possível enviar o comentário.");
+    } finally {
+      setComentarioSubmitting(false);
+    }
+  };
+
+  const curtirComentario = async (comentarioId: number) => {
+    if (likeComentarioBusyIds.includes(comentarioId)) return;
+    const token = getAuthToken();
+    if (!token) {
+      navigate("/auth/login");
+      return;
+    }
+    setLikeComentarioBusyIds((prev) => [...prev, comentarioId]);
+    try {
+      const res = await apiFetch(`/user/comentario/${comentarioId}/curtir`, { method: "POST" });
+      if (!res.ok) return;
+      const payload = (await res.json()) as { likes?: number };
+      if (typeof payload?.likes === "number") {
+        setComentarios((prev) =>
+          prev.map((c) => (c.id === comentarioId ? { ...c, likes: payload.likes } : c))
+        );
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLikeComentarioBusyIds((prev) => prev.filter((id) => id !== comentarioId));
+    }
+  };
+
+  const loadEdicoes = async (page: number, append: boolean) => {
+    if (edicoesLoading) return;
+    setEdicoesLoading(true);
+    setEdicoesError("");
+    try {
+      const res = await apiFetch(`/user/actividade/${actividadeId}/edicoes?page=${page}&size=6`);
+      if (!res.ok) {
+        const msg = await readApiErrorMessage(res, "Não foi possível carregar as edições.");
+        throw new Error(msg || "Não foi possível carregar as edições.");
+      }
+      const payload = (await res.json()) as PageResponse<ActividadeSummary>;
+      const list = Array.isArray(payload?.content) ? payload.content : [];
+      setEdicoes((prev) => (append ? [...prev, ...list] : list));
+      setEdicoesPage(typeof payload?.page === "number" ? payload.page : page);
+      setEdicoesTotalPages(typeof payload?.totalPages === "number" ? payload.totalPages : 0);
+      setEdicoesHasLoaded(true);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Não foi possível carregar as edições.";
+      setEdicoesError(msg || "Não foi possível carregar as edições.");
+      setEdicoes([]);
+      setEdicoesTotalPages(0);
+    } finally {
+      setEdicoesLoading(false);
+    }
+  };
+
+  const toggleFavorito = async () => {
+    if (likeBusy) return;
+    const token = getAuthToken();
+    if (!token) {
+      navigate("/auth/login");
+      return;
+    }
+    const next = !isLiked;
+    setIsLiked(next);
+    setLikeBusy(true);
+    try {
+      const res = await apiFetch(`/user/actividade/${actividadeId}/favorito`, {
+        method: next ? "POST" : "DELETE",
+      });
+      if (!res.ok) {
+        const msg = await readApiErrorMessage(res, "Não foi possível atualizar o favorito.");
+        throw new Error(msg || "Não foi possível atualizar o favorito.");
+      }
+      const payload = (await res.json()) as { favorito?: boolean };
+      setIsLiked(Boolean(payload?.favorito));
+    } catch {
+      setIsLiked(!next);
+    } finally {
+      setLikeBusy(false);
+    }
+  };
+
+  const programacaoGrouped = useMemo(() => {
+    const items = [...programacao].filter((p) => p?.inicio).sort((a, b) => String(a.inicio).localeCompare(String(b.inicio)));
+    const byDay = new Map<string, ProgramacaoItemView[]>();
+    for (const item of items) {
+      const d = new Date(item.inicio);
+      const day = d.toLocaleDateString("pt-BR", { weekday: "long" });
+      const date = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      const label = `${day.charAt(0).toUpperCase() + day.slice(1)} (${date})`;
+      const list = byDay.get(label) ?? [];
+      list.push(item);
+      byDay.set(label, list);
+    }
+    return Array.from(byDay.entries()).map(([label, items]) => ({ label, items }));
+  }, [programacao]);
+
+  const palestrantesList = useMemo(() => {
+    const raw = (actividade?.palestrantes ?? "").trim();
+    if (!raw) return [];
+    return raw
+      .split(/\r?\n|;|,/g)
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }, [actividade?.palestrantes]);
 
   if (loading) {
     return (
@@ -288,308 +647,491 @@ export const ActividadeDetalhe = () => {
     );
   }
 
-  const TipoIcon = {
-    JOVENS: GiHeartBeats,
-    CULTO: GiPrayer,
-    EVENTO: GiPartyPopper,
-    ESCOLA: LiaBibleSolid,
-    FAMILIA: GiFamilyHouse,
-    LOUVOR: LiaChairSolid,
-    ORACAO: GiPrayer
-  }[actividade.tipo] || GiCalendar;
+  if (!actividade) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="container-custom">
+          <div className="bg-white rounded-2xl shadow p-8 text-center">
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Erro</h2>
+            <p className="text-gray-600 mb-6">{loadError || "Não foi possível carregar a actividade."}</p>
+            <Link
+              to="/actividades"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+            >
+              <FiArrowLeft />
+              Voltar
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const tipoColor = {
-    JOVENS: "bg-green-500",
-    CULTO: "bg-purple-500",
-    EVENTO: "bg-pink-500",
-    ESCOLA: "bg-blue-500",
-    FAMILIA: "bg-amber-500",
-    LOUVOR: "bg-indigo-500",
-    ORACAO: "bg-red-500"
-  }[actividade.tipo] || "bg-primary";
+  const dataEvento = actividade.dataEvento ? new Date(actividade.dataEvento) : null;
+  const capacidade = typeof actividade.capacidade === "number" ? actividade.capacidade : null;
+  const inscritos = typeof actividade.inscritos === "number" ? actividade.inscritos : 0;
+  const vagasRestantes = capacidade != null ? Math.max(0, capacidade - inscritos) : null;
+  const agora = Date.now();
+  const actividadeJaPassou = dataEvento ? dataEvento.getTime() <= agora : true;
+  const inscricoesEncerradas = actividadeJaPassou || (vagasRestantes != null && vagasRestantes <= 0);
+  const inscricaoDisabledReason = actividadeJaPassou
+    ? "Lamentamos mas esta actividade ja passou"
+    : vagasRestantes != null && vagasRestantes <= 0
+    ? "Lamentamos, as vagas já esgotaram."
+    : "";
+
+  const isLoggedIn = Boolean(getAuthToken());
+
+  const handleInscreverMe = async () => {
+    if (!actividade) return;
+    if (!isLoggedIn) {
+      navigate("/auth/login");
+      return;
+    }
+    if (inscricoesEncerradas) return;
+    if (inscricaoContaBusy) return;
+
+    setInscricaoContaBusy(true);
+    setInscricaoContaError("");
+    try {
+      const res = await apiFetch(`/user/inscritos/${Number(actividade.id)}`, {
+        method: "POST",
+        headers: { Accept: "image/png" },
+      });
+      if (!res.ok) {
+        const msg = await readApiErrorMessage(res, "Não foi possível concluir a inscrição.");
+        throw new Error(msg || "Não foi possível concluir a inscrição.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      setInscricaoContaQrUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+      setShowInscricaoConta(true);
+    } catch (err) {
+      setInscricaoContaError(err instanceof Error ? err.message : "Não foi possível concluir a inscrição.");
+    } finally {
+      setInscricaoContaBusy(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container-custom">
-        {/* Header com navegação */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Link
-            to="/actividades"
-            className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors"
-          >
+          <Link to="/actividades" className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors">
             <FiArrowLeft />
             Voltar para Actividades
           </Link>
-          
+
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setIsLiked(!isLiked)}
+            <button
+              onClick={toggleFavorito}
+              disabled={likeBusy}
               className={`p-2 rounded-lg transition-colors ${
-                isLiked ? 'text-red-500' : 'text-gray-500 hover:text-primary'
-              }`}
+                isLiked ? "text-red-500" : "text-gray-500 hover:text-primary"
+              } ${likeBusy ? "opacity-60 pointer-events-none" : ""}`}
+              title="Favoritar"
             >
-              <FiHeart className={isLiked ? 'fill-current' : ''} size={20} />
+              <FiHeart className={isLiked ? "fill-current" : ""} size={20} />
             </button>
-            <button className="p-2 text-gray-500 hover:text-primary rounded-lg transition-colors">
+            <button className="p-2 text-gray-500 hover:text-primary rounded-lg transition-colors" title="Compartilhar">
               <FiShare2 size={20} />
             </button>
           </div>
         </div>
 
-        {/* Hero Section */}
-        <section className="relative h-[400px] rounded-3xl overflow-hidden mb-8">
-          <img
-            src={actividade.imagem}
-            alt={actividade.titulo}
-            className="w-full h-full object-cover"
-          />
+        {/* Hero */}
+        <section className="relative h-[380px] rounded-3xl overflow-hidden mb-8">
+          <img src={actividade.img} alt={actividade.titulo} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          
+
           <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
             <div className="flex items-center gap-2 mb-2">
-              <span className={`${tipoColor} text-white text-xs px-3 py-1 rounded-full flex items-center gap-1`}>
-                <TipoIcon size={12} />
-                {actividade.tipo}
-              </span>
-              <span className="bg-black/50 text-white text-xs px-3 py-1 rounded-full">
-                {actividade.inscritos} inscritos
-              </span>
+              <span className="bg-black/50 text-white text-xs px-3 py-1 rounded-full">{actividade.tipoEvento}</span>
+              <span className="bg-black/50 text-white text-xs px-3 py-1 rounded-full">{actividade.duracao}</span>
             </div>
-            
-            <h1 className="text-4xl md:text-5xl font-bold mb-3">{actividade.titulo}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-2">{actividade.titulo}</h1>
             <p className="text-xl text-white/90 max-w-3xl">{actividade.tema}</p>
           </div>
         </section>
 
-        {/* Main Content */}
+        {/* Main */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Coluna principal */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Sobre */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
-            >
-              <h2 className="text-2xl font-bold mb-4">Sobre o evento</h2>
-              <p className="text-gray-700 leading-relaxed mb-6">
-                {actividade.descricao}
-              </p>
-
-              {/* Info cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <FiCalendar className="text-primary text-xl mx-auto mb-2" />
-                  <div className="text-sm font-medium">Data</div>
-                  <div className="text-xs text-gray-500">
-                    {new Date(actividade.dataEvento).toLocaleDateString('pt-BR')}
-                    {actividade.dataFim && ` - ${new Date(actividade.dataFim).toLocaleDateString('pt-BR')}`}
-                  </div>
-                </div>
-                
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <FiClock className="text-primary text-xl mx-auto mb-2" />
-                  <div className="text-sm font-medium">Horário</div>
-                  <div className="text-xs text-gray-500">{actividade.horaEvento}</div>
-                </div>
-                
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <FiUsers className="text-primary text-xl mx-auto mb-2" />
-                  <div className="text-sm font-medium">Público</div>
-                  <div className="text-xs text-gray-500">{actividade.publico}</div>
-                </div>
-                
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <GiDuration className="text-primary text-xl mx-auto mb-2" />
-                  <div className="text-sm font-medium">Duração</div>
-                  <div className="text-xs text-gray-500">{actividade.duracao}</div>
-                </div>
+          {/* Conteúdo */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+              <div className="border-b border-gray-200">
+                <nav className="flex">
+                  {[
+                    { id: "sobre", label: "Sobre", icon: FiCalendar },
+                    { id: "programacao", label: "Programação", icon: FiClock },
+                    { id: "comentarios", label: "Comentários", icon: FiMessageCircle },
+                    { id: "edicoes", label: "Edições", icon: FiLayers },
+                    { id: "galeria", label: "Galeria", icon: FiUsers },
+                  ].map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => selectTab(tab.id as any)}
+                        className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors relative ${
+                          activeTab === tab.id ? "text-primary" : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      >
+                        <Icon size={18} />
+                        {tab.label}
+                        {activeTab === tab.id && (
+                          <motion.div layoutId="activeActividadeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </nav>
               </div>
-            </motion.div>
 
-
-{/* Abas de navegação */}
-<div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-  <div className="border-b border-gray-200">
-    <nav className="flex">
-      {[
-        { id: 'sobre', label: 'Sobre', icon: FiCalendar },
-        { id: 'programacao', label: 'Programação', icon: FiClock },
-        { id: 'galeria', label: 'Galeria', icon: FiImage }
-      ].map((tab) => {
-        const Icon = tab.icon;
-        return (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium transition-colors relative ${
-              activeTab === tab.id
-                ? 'text-primary'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Icon size={18} />
-            {tab.label}
-            {activeTab === tab.id && (
-              <motion.div
-                layoutId="activeActividadeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-              />
-            )}
-          </button>
-        );
-      })}
-    </nav>
-  </div>
-
-  <div className="p-6">
-    {activeTab === 'sobre' && (
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Sobre o evento</h2>
-        <p className="text-gray-700 leading-relaxed mb-6">
-          {actividade.descricao}
-        </p>
-
-        {/* Info cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <FiCalendar className="text-primary text-xl mx-auto mb-2" />
-            <div className="text-sm font-medium">Data</div>
-            <div className="text-xs text-gray-500">
-              {new Date(actividade.dataEvento).toLocaleDateString('pt-BR')}
-              {actividade.dataFim && ` - ${new Date(actividade.dataFim).toLocaleDateString('pt-BR')}`}
-            </div>
-          </div>
-          
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <FiClock className="text-primary text-xl mx-auto mb-2" />
-            <div className="text-sm font-medium">Horário</div>
-            <div className="text-xs text-gray-500">{actividade.horaEvento}</div>
-          </div>
-          
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <FiUsers className="text-primary text-xl mx-auto mb-2" />
-            <div className="text-sm font-medium">Público</div>
-            <div className="text-xs text-gray-500">{actividade.publico}</div>
-          </div>
-          
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <GiDuration className="text-primary text-xl mx-auto mb-2" />
-            <div className="text-sm font-medium">Duração</div>
-            <div className="text-xs text-gray-500">{actividade.duracao}</div>
-          </div>
-        </div>
-
-        {/* Pregadores/Convidados */}
-        {actividade.pregadores && (
-          <div className="mt-6">
-            <h3 className="font-semibold mb-3">Pregadores Convidados</h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {actividade.pregadores.map((pregador: any, index: number) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                    <FiUser className="text-primary" />
-                  </div>
+              <div className="p-6">
+                {activeTab === "sobre" && (
                   <div>
-                    <div className="font-semibold">{pregador.nome}</div>
-                    <div className="text-sm text-gray-500">{pregador.tema}</div>
+                    <h2 className="text-2xl font-bold mb-4">Sobre o evento</h2>
+                    <p className="text-gray-700 leading-relaxed mb-6">{actividade.descricao}</p>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <FiCalendar className="text-primary text-xl mx-auto mb-2" />
+                        <div className="text-sm font-medium">Data</div>
+                        <div className="text-xs text-gray-500">{dataEvento ? dataEvento.toLocaleDateString("pt-BR") : "--"}</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <FiClock className="text-primary text-xl mx-auto mb-2" />
+                        <div className="text-sm font-medium">Horário</div>
+                        <div className="text-xs text-gray-500">
+                          {dataEvento ? dataEvento.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--"}
+                        </div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <FiUsers className="text-primary text-xl mx-auto mb-2" />
+                        <div className="text-sm font-medium">Público</div>
+                        <div className="text-xs text-gray-500">{actividade.publicoAlvo}</div>
+                      </div>
+                      <div className="text-center p-3 bg-gray-50 rounded-lg">
+                        <GiDuration className="text-primary text-xl mx-auto mb-2" />
+                        <div className="text-sm font-medium">Duração</div>
+                        <div className="text-xs text-gray-500">{actividade.duracao}</div>
+                      </div>
+                    </div>
+
+                    {palestrantesList.length > 0 && (
+                      <div className="mt-6">
+                        <h3 className="text-lg font-bold mb-3">Palestrantes</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {palestrantesList.map((nome) => (
+                            <span
+                              key={nome}
+                              className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/15"
+                            >
+                              {nome}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                )}
 
-        {/* Requisitos */}
-        {actividade.requisitos && (
-          <div className="mt-6">
-            <h3 className="font-semibold mb-3">Requisitos</h3>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
-              {actividade.requisitos.map((req: string, index: number) => (
-                <li key={index}>{req}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    )}
+                {activeTab === "programacao" && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">Programação</h2>
+                    {programacaoGrouped.length === 0 ? (
+                      <p className="text-gray-500">A programação ainda não foi definida.</p>
+                    ) : (
+                      <div className="space-y-5">
+                        {programacaoGrouped.map((group) => (
+                          <div key={group.label}>
+                            <h3 className="font-semibold text-gray-800 mb-2">{group.label}</h3>
+                            <div className="space-y-2">
+                              {group.items.map((item) => {
+                                const d = new Date(item.inicio);
+                                const time = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+                                const isPausa = item.tipo === ProgramacaoTipo.Pausa;
+                                return (
+                                  <div key={item.id} className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg">
+                                    <div className="w-20 text-sm font-semibold text-primary">{time}</div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="font-medium text-gray-900">{item.titulo}</p>
+                                        {isPausa && (
+                                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-100">
+                                            Pausa
+                                          </span>
+                                        )}
+                                      </div>
+                                      {item.fim && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          Até{" "}
+                                          {new Date(item.fim).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-    {activeTab === 'programacao' && (
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Programação</h2>
-        <div className="space-y-3">
-          {actividade.programacao.map((item: any, index: number) => (
-            <div key={index} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-              <div className="w-24 text-sm font-medium text-primary">{item.horario}</div>
-              <div className="flex-1">
-                <div className="text-sm text-gray-500">{item.dia}</div>
-                <div className="font-medium">{item.atividade}</div>
+                {activeTab === "comentarios" && (
+                  <div>
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                      <h2 className="text-2xl font-bold">Comentários</h2>
+                      <span className="text-sm text-gray-500">{comentarios.length}</span>
+                    </div>
+
+                    <form onSubmit={handleSubmitComentario} className="mb-6">
+                      <textarea
+                        value={newComentario}
+                        onChange={(e) => setNewComentario(e.target.value)}
+                        placeholder="Compartilhe sua opinião ou testemunho..."
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                        rows={3}
+                      />
+                      <div className="flex justify-end mt-2">
+                        <button
+                          type="submit"
+                          disabled={comentarioSubmitting}
+                          className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60"
+                        >
+                          {comentarioSubmitting ? "Enviando..." : "Comentar"}
+                        </button>
+                      </div>
+                    </form>
+
+                    {comentariosError && (
+                      <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+                        {comentariosError}
+                      </div>
+                    )}
+
+                    {comentariosLoading ? (
+                      <div className="text-center py-8 text-gray-500">Carregando comentários...</div>
+                    ) : comentarios.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">Ainda não há comentários.</div>
+                    ) : (
+                      <div className="space-y-6">
+                        {comentarios.map((comment) => {
+                          const dateLabel = comment.dataPublicacao
+                            ? new Date(comment.dataPublicacao).toLocaleDateString("pt-BR", {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "--";
+                          const likes = typeof comment.likes === "number" ? comment.likes : 0;
+                          const likeBusy = likeComentarioBusyIds.includes(comment.id);
+                          return (
+                            <motion.div
+                              key={comment.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="border-b border-gray-100 last:border-0 pb-6 last:pb-0"
+                            >
+                              <div className="flex gap-3">
+                                <img
+                                  src={comment.imagem}
+                                  alt={comment.name}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <div className="font-semibold text-gray-800 truncate">{comment.name}</div>
+                                      <div className="text-xs text-gray-500">{dateLabel}</div>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => curtirComentario(comment.id)}
+                                      disabled={likeBusy}
+                                      className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary transition-colors disabled:opacity-60"
+                                      title="Curtir"
+                                    >
+                                      <FiHeart size={14} />
+                                      {likes}
+                                    </button>
+                                  </div>
+                                  <p className="text-gray-700 mt-2 whitespace-pre-line">{comment.descricao}</p>
+                                </div>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === "edicoes" && (
+                  <div>
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                      <h2 className="text-2xl font-bold">Outras edições</h2>
+                      {actividade.edicao != null && <span className="text-sm text-gray-500">Edição atual: {actividade.edicao}</span>}
+                    </div>
+
+                    {edicoesError && (
+                      <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+                        {edicoesError}
+                      </div>
+                    )}
+
+                    {edicoesLoading && edicoes.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">Carregando edições...</div>
+                    ) : edicoes.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">Nenhuma outra edição encontrada.</div>
+                    ) : (
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {edicoes.map((item) => {
+                          const d = item.dataEvento ? new Date(item.dataEvento) : null;
+                          const date = d ? d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "--";
+                          return (
+                            <Link
+                              key={String(item.id)}
+                              to={`/actividades/${item.id}`}
+                              className="group flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                            >
+                              <img
+                                src={item.img || "https://via.placeholder.com/120"}
+                                alt=""
+                                className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="font-semibold text-gray-900 truncate">{item.titulo}</div>
+                                  {item.edicao != null && (
+                                    <span className="text-xs px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-700 flex-shrink-0">
+                                      Edição {item.edicao}
+                                    </span>
+                                  )}
+                                </div>
+                                {item.tema && <div className="text-sm text-gray-600 mt-0.5 line-clamp-2">{item.tema}</div>}
+                                <div className="text-xs text-gray-500 mt-2">{date}</div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="flex justify-center mt-6">
+                      <button
+                        type="button"
+                        onClick={() => loadEdicoes(edicoesPage + 1, true)}
+                        disabled={edicoesLoading || (edicoesTotalPages !== 0 && edicoesPage + 1 >= edicoesTotalPages)}
+                        className="px-5 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors disabled:opacity-60"
+                      >
+                        {edicoesLoading ? "Carregando..." : "Carregar mais"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "galeria" && <GaleriaActividade activityId={actividadeId} />}
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {activeTab === 'galeria' && (
-      <GaleriaActividade activityId={parseInt(id || '0')} />
-    )}
-  </div>
-</div>
           </div>
 
           {/* Sidebar */}
-          <motion.aside
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-1 space-y-6"
-          >
-            {/* Card de inscrição */}
+          <motion.aside initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
               <h3 className="text-xl font-bold mb-4">Participe</h3>
-              
-              <div className="mb-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Vagas disponíveis</span>
-                  <span className="font-semibold">{actividade.vagasRestantes} de {actividade.capacidade}</span>
-                </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: `${(actividade.inscritos / actividade.capacidade) * 100}%` }}
-                  />
-                </div>
-              </div>
 
-              {actividade.valor && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500">Investimento</span>
-                  <div className="text-2xl font-bold text-primary">{actividade.valor}</div>
+              {capacidade != null && capacidade > 0 && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Vagas</span>
+                    <span className="font-semibold">
+                      {inscritos}/{capacidade}
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full"
+                      style={{ width: `${Math.min(100, (inscritos / capacidade) * 100)}%` }}
+                    />
+                  </div>
+                  {vagasRestantes != null && <p className="mt-2 text-xs text-gray-500">{vagasRestantes} vagas restantes</p>}
                 </div>
               )}
 
-              <button
-                onClick={() => setShowInscricao(true)}
-                className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors mb-3"
-              >
-                Fazer Inscrição
-              </button>
+              {!inscricoesEncerradas && inscricaoContaError && (
+                <div className="mb-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg p-3 flex items-start gap-2">
+                  <FiAlertCircle className="mt-0.5" />
+                  <span>{inscricaoContaError}</span>
+                </div>
+              )}
 
-              <button className="w-full border border-primary text-primary py-3 rounded-lg font-semibold hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
-                <FiDownload />
-                Baixar Programação
-              </button>
+              {inscricoesEncerradas ? (
+                <>
+                  <button
+                    disabled
+                    className="w-full py-3 rounded-lg font-semibold bg-gray-200 text-gray-600 cursor-not-allowed"
+                  >
+                    Inscrições encerradas
+                  </button>
+                  <p className="mt-2 text-xs text-gray-500">{inscricaoDisabledReason}</p>
+                </>
+              ) : isLoggedIn ? (
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleInscreverMe}
+                    disabled={inscricaoContaBusy}
+                    className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                      inscricaoContaBusy ? "bg-primary/70 text-white cursor-wait" : "bg-primary text-white hover:bg-primary-dark"
+                    }`}
+                  >
+                    {inscricaoContaBusy ? "Inscrevendo..." : "Inscrever-me"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowInscricao(true)}
+                    className="w-full py-3 rounded-lg font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Convidar alguém
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowInscricao(true)}
+                    className="w-full py-3 rounded-lg font-semibold bg-primary text-white hover:bg-primary-dark transition-colors"
+                  >
+                    Inscrever-se como convidado
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/auth/login")}
+                    className="w-full py-3 rounded-lg font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Já tenho conta
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Localização */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
                 <FiMapPin className="text-primary" />
                 Local
               </h3>
               <p className="text-gray-600 text-sm mb-2">{actividade.endereco}</p>
-              <a 
+              <a
                 href={`https://maps.google.com/?q=${encodeURIComponent(actividade.endereco)}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -599,38 +1141,30 @@ export const ActividadeDetalhe = () => {
               </a>
             </div>
 
-            {/* Contato */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
-                <FiUser className="text-primary" />
-                Organizador
+                <FiUsers className="text-primary" />
+                Moderador
               </h3>
               <p className="font-medium mb-2">{actividade.organizador}</p>
-              
+              {palestrantesList.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-sm font-semibold text-gray-800 mb-1">Palestrantes</p>
+                  <ul className="text-sm text-gray-600 list-disc pl-5 space-y-0.5">
+                    {palestrantesList.slice(0, 8).map((nome) => (
+                      <li key={nome}>{nome}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className="space-y-2">
-                <a href={`tel:${actividade.contactos}`} className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors">
+                <a
+                  href={`tel:${actividade.contactos}`}
+                  className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors"
+                >
                   <FiPhone size={14} />
                   <span className="text-sm">{actividade.contactos}</span>
                 </a>
-                {actividade.email && (
-                  <a href={`mailto:${actividade.email}`} className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors">
-                    <FiMail size={14} />
-                    <span className="text-sm">{actividade.email}</span>
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Compartilhar */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="font-bold text-lg mb-3">Compartilhar</h3>
-              <div className="flex gap-2">
-                <button className="flex-1 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  WhatsApp
-                </button>
-                <button className="flex-1 p-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors">
-                  Facebook
-                </button>
               </div>
             </div>
           </motion.aside>
@@ -644,10 +1178,28 @@ export const ActividadeDetalhe = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0  bg-black/60 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
             onClick={() => setShowInscricao(false)}
           >
             <InscricaoForm actividade={actividade} onClose={() => setShowInscricao(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showInscricaoConta && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowInscricaoConta(false)}
+          >
+            <InscricaoContaModal
+              actividade={actividade}
+              qrBlobUrl={inscricaoContaQrUrl}
+              onClose={() => setShowInscricaoConta(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>

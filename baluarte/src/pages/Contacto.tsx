@@ -1,5 +1,5 @@
 // src/pages/Contacto/ContactoPage.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { 
   FiPhone,
@@ -21,8 +21,24 @@ import {
 import { FaFacebook, FaInstagram, FaYoutube, FaTwitter } from "react-icons/fa";
 import { LiaWhatsapp } from "react-icons/lia";
 import { fadeInUp } from "../utils/animation";
+import { apiFetch } from "../utils/api";
+import { getAuthToken, getStoredUser } from "../utils/auth";
+import type { PublicContactConfigDto } from "../types/api";
+
+const toTelHref = (raw: string) => {
+  const digits = (raw ?? "").replace(/[^\d+]/g, "");
+  return digits ? `tel:${digits}` : "tel:";
+};
+
+const toWhatsHref = (raw: string) => {
+  const digits = (raw ?? "").replace(/[^\d]/g, "");
+  return digits ? `https://wa.me/${digits}` : "https://wa.me/";
+};
 
 export const ContactoPage = () => {
+  const [contactConfig, setContactConfig] = useState<PublicContactConfigDto | null>(null);
+  const [contactLoading, setContactLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -32,16 +48,97 @@ export const ContactoPage = () => {
   });
 
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [submitError, setSubmitError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isLoggedIn = Boolean(getAuthToken());
+
+  useEffect(() => {
+    const user = getStoredUser();
+    if (!user) return;
+    setFormData((prev) => ({
+      ...prev,
+      nome: prev.nome || user.nome || "",
+      email: prev.email || user.email || "",
+      telefone: prev.telefone || user.telefone || "",
+    }));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+    (async () => {
+      setContactLoading(true);
+      try {
+        const res = await apiFetch("/public/contacto-config", { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar contactos.");
+        const payload = (await res.json()) as PublicContactConfigDto;
+        if (!active) return;
+        setContactConfig(payload);
+      } catch {
+        if (!active) return;
+        setContactConfig(null);
+      } finally {
+        if (active) setContactLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, []);
+
+  const socials = useMemo(() => {
+    const s = contactConfig?.socials;
+    return [
+      { icon: FaFacebook, href: s?.facebook, color: "bg-blue-600" },
+      { icon: FaInstagram, href: s?.instagram, color: "bg-pink-600" },
+      { icon: FaYoutube, href: s?.youtube, color: "bg-red-600" },
+      { icon: FaTwitter, href: s?.twitter, color: "bg-blue-400" },
+    ].filter((item) => typeof item.href === "string" && item.href.trim().length > 0);
+  }, [contactConfig?.socials]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormStatus('sending');
-    
-    // Simular envio
-    setTimeout(() => {
-      setFormStatus('success');
-      setTimeout(() => setFormStatus('idle'), 3000);
-    }, 1500);
+    if (formStatus === "sending") return;
+    setFormStatus("sending");
+    setSubmitError("");
+
+    try {
+      if (!formData.assunto.trim() || !formData.mensagem.trim()) {
+        throw new Error("Preencha o assunto e a mensagem.");
+      }
+
+      if (isLoggedIn) {
+        const res = await apiFetch("/user/mensagem/send", {
+          method: "POST",
+          body: { assunto: formData.assunto.trim(), descricao: formData.mensagem.trim() },
+        });
+        if (!res.ok) throw new Error("Não foi possível enviar sua mensagem.");
+      } else {
+        if (!formData.nome.trim() || !formData.email.trim() || !formData.telefone.trim()) {
+          throw new Error("Preencha nome, e-mail e telefone.");
+        }
+        const res = await apiFetch("/public/mensagem/send", {
+          method: "POST",
+          body: {
+            nome: formData.nome.trim(),
+            email: formData.email.trim(),
+            telefone: formData.telefone.trim(),
+            assunto: formData.assunto.trim(),
+            descricao: formData.mensagem.trim(),
+          },
+        });
+        if (!res.ok) throw new Error("Não foi possível enviar sua mensagem.");
+      }
+
+      setFormStatus("success");
+      setFormData((prev) => ({ ...prev, assunto: "", mensagem: "" }));
+      setTimeout(() => setFormStatus("idle"), 3000);
+    } catch (err) {
+      setFormStatus("error");
+      setSubmitError(err instanceof Error ? err.message : "Não foi possível enviar sua mensagem.");
+      setTimeout(() => setFormStatus("idle"), 3000);
+    }
   };
 
   return (
@@ -100,8 +197,11 @@ export const ContactoPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Telefone</p>
-                    <a href="tel:1133334444" className="font-medium hover:text-primary transition-colors">
-                      (11) 3333-4444
+                    <a
+                      href={toTelHref(contactConfig?.telefone || "(11) 3333-4444")}
+                      className="font-medium hover:text-primary transition-colors"
+                    >
+                      {contactConfig?.telefone || (contactLoading ? "Carregando..." : "(11) 3333-4444")}
                     </a>
                   </div>
                 </div>
@@ -112,8 +212,13 @@ export const ContactoPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">WhatsApp</p>
-                    <a href="https://wa.me/5511999999999" target="_blank" rel="noopener noreferrer" className="font-medium hover:text-primary transition-colors">
-                      (11) 99999-9999
+                    <a
+                      href={toWhatsHref(contactConfig?.whatsapp || "+5511999999999")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium hover:text-primary transition-colors"
+                    >
+                      {contactConfig?.whatsapp || (contactLoading ? "Carregando..." : "+5511999999999")}
                     </a>
                   </div>
                 </div>
@@ -124,8 +229,11 @@ export const ContactoPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">E-mail</p>
-                    <a href="mailto:contato@igrejabaluarte.com" className="font-medium hover:text-primary transition-colors">
-                      contato@igrejabaluarte.com
+                    <a
+                      href={`mailto:${contactConfig?.email || "contato@igrejabaluarte.com"}`}
+                      className="font-medium hover:text-primary transition-colors"
+                    >
+                      {contactConfig?.email || (contactLoading ? "Carregando..." : "contato@igrejabaluarte.com")}
                     </a>
                   </div>
                 </div>
@@ -136,9 +244,8 @@ export const ContactoPage = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Endereço</p>
-                    <p className="font-medium">
-                      Rua da Igreja, 123 - Centro<br />
-                      Cidade/UF - CEP: 12345-678
+                    <p className="font-medium whitespace-pre-line">
+                      {contactConfig?.endereco || (contactLoading ? "Carregando..." : "Rua da Igreja, 123 - Centro, Cidade/UF")}
                     </p>
                   </div>
                 </div>
@@ -153,11 +260,14 @@ export const ContactoPage = () => {
               </h3>
 
               <div className="space-y-3">
-                {[
-                  { dia: "Domingo", horarios: ["09:00 - Escola Bíblica", "19:00 - Culto de Celebração"] },
-                  { dia: "Quarta-feira", horarios: ["20:00 - Culto de Oração"] },
-                  { dia: "Sábado", horarios: ["19:00 - Ensaio do Louvor"] }
-                ].map((item, index) => (
+                {(contactConfig?.horariosCulto && contactConfig.horariosCulto.length > 0
+                  ? contactConfig.horariosCulto
+                  : [
+                      { dia: "Domingo", horarios: ["09:00 - Escola Bíblica", "19:00 - Culto de Celebração"] },
+                      { dia: "Quarta-feira", horarios: ["20:00 - Culto de Oração"] },
+                      { dia: "Sábado", horarios: ["19:00 - Ensaio do Louvor"] },
+                    ]
+                ).map((item, index) => (
                   <div key={index} className="border-b border-gray-100 last:border-0 pb-3 last:pb-0">
                     <p className="font-semibold text-primary">{item.dia}</p>
                     {item.horarios.map((horario, idx) => (
@@ -175,27 +285,26 @@ export const ContactoPage = () => {
                 Redes Sociais
               </h3>
 
-              <div className="grid grid-cols-4 gap-3">
-                {[
-                  { icon: FaFacebook, href: "https://facebook.com", color: "bg-blue-600" },
-                  { icon: FaInstagram, href: "https://instagram.com", color: "bg-pink-600" },
-                  { icon: FaYoutube, href: "https://youtube.com", color: "bg-red-600" },
-                  { icon: FaTwitter, href: "https://twitter.com", color: "bg-blue-400" }
-                ].map((social, index) => {
-                  const Icon = social.icon;
-                  return (
-                    <a
-                      key={index}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`${social.color} aspect-square rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform`}
-                    >
-                      <Icon size={24} />
-                    </a>
-                  );
-                })}
-              </div>
+              {socials.length === 0 ? (
+                <p className="text-sm text-gray-500">Redes sociais não configuradas.</p>
+              ) : (
+                <div className="grid grid-cols-4 gap-3">
+                  {socials.map((social, index) => {
+                    const Icon = social.icon;
+                    return (
+                      <a
+                        key={index}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`${social.color} aspect-square rounded-xl flex items-center justify-center text-white hover:scale-110 transition-transform`}
+                      >
+                        <Icon size={24} />
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </motion.div>
 
@@ -221,9 +330,10 @@ export const ContactoPage = () => {
                       <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         type="text"
-                        required
+                        required={!isLoggedIn}
                         value={formData.nome}
                         onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                        disabled={isLoggedIn}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                         placeholder="Seu nome completo"
                       />
@@ -239,9 +349,10 @@ export const ContactoPage = () => {
                       <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         type="email"
-                        required
+                        required={!isLoggedIn}
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        disabled={isLoggedIn}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                         placeholder="seu@email.com"
                       />
@@ -259,8 +370,10 @@ export const ContactoPage = () => {
                       <GiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         type="tel"
+                        required={!isLoggedIn}
                         value={formData.telefone}
                         onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                        disabled={isLoggedIn}
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                         placeholder="(11) 99999-9999"
                       />
@@ -308,6 +421,13 @@ export const ContactoPage = () => {
                     />
                   </div>
                 </div>
+
+                {submitError && (
+                  <div className="p-4 bg-red-50 text-red-600 rounded-xl flex items-center gap-2">
+                    <FiAlertCircle />
+                    {submitError}
+                  </div>
+                )}
 
                 {/* Botão de envio */}
                 <button
@@ -460,7 +580,7 @@ export const ContactoPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="https://wa.me/5511999999999"
+                href={toWhatsHref(contactConfig?.whatsapp || "+5511999999999")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-primary rounded-xl font-semibold hover:bg-gray-100 transition-colors"
@@ -469,7 +589,7 @@ export const ContactoPage = () => {
                 Pedir Oração no WhatsApp
               </a>
               <a
-                href="tel:1133334444"
+                href={toTelHref(contactConfig?.telefone || "(11) 3333-4444")}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors"
               >
                 <FiPhone size={20} />

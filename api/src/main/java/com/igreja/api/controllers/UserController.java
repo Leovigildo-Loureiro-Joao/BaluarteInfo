@@ -242,6 +242,12 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll());
     }
 
+    @GetMapping("/admin/user/pending/count")
+    public ResponseEntity<?> pendingUsersCount() {
+        long total = userService.countByStatus(UserStatus.PENDENTE);
+        return ResponseEntity.ok(Map.of("total", total));
+    }
+
     @GetMapping("/admin/user/{id}")
     public ResponseEntity<?> findUserById(@PathVariable("id") long user) {
         return ResponseEntity.ok(userService.findByIdData(user));
@@ -389,6 +395,19 @@ public class UserController {
                         msg.getDataPublicacao()));
         return ResponseEntity.ok(new PageResponse<>(result.getContent(), result.getNumber(), result.getSize(),
                 result.getTotalElements(), result.getTotalPages()));
+    }
+
+    @PutMapping("/user/me/mensagens/{id}/lido")
+    public ResponseEntity<?> markMyMessageAsRead(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable("id") int id,
+            @RequestParam(defaultValue = "true") boolean lido) {
+        var mensagem = mensagemService.Select(id);
+        var email = userDetails.getUsername();
+        if (!(email.equalsIgnoreCase(mensagem.getEmail()) || email.equalsIgnoreCase(mensagem.getDestino()))) {
+            return ResponseEntity.status(403).body(Map.of("message", "Sem permissão para esta mensagem."));
+        }
+        return ResponseEntity.ok(mensagemService.marcarLido(id, lido));
     }
 
     @GetMapping("/user/me/inscricoes")

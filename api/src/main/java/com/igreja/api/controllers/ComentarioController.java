@@ -19,6 +19,7 @@ import com.igreja.api.dto.PageResponse;
 import com.igreja.api.dto.comentario.Analise;
 import com.igreja.api.dto.comentario.ComentarioAdminData;
 import com.igreja.api.dto.comentario.ComentarioDto;
+import com.igreja.api.dto.comentario.ComentarioRespostaDto;
 import com.igreja.api.dto.comentario.ComentarioStatusDto;
 import com.igreja.api.enums.ComentarioStatus;
 import com.igreja.api.enums.ComentarioType;
@@ -108,11 +109,36 @@ public class ComentarioController {
     public ResponseEntity<?> list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) ComentarioStatus status) {
-        var result = comentarioService.pageAdmin(page, size, status);
+            @RequestParam(required = false) ComentarioStatus status,
+            @RequestParam(required = false) Boolean analise) {
+        var result = comentarioService.pageAdmin(page, size, status, analise);
         return ResponseEntity.ok(
                 new PageResponse<ComentarioAdminData>(result.getContent(), result.getNumber(), result.getSize(), result.getTotalElements(),
                         result.getTotalPages()));
+    }
+
+    @GetMapping("/admin/comentario/{id}/respostas")
+    public ResponseEntity<?> respostasAdmin(@PathVariable("id") int id) {
+        return ResponseEntity.ok(comentarioService.respostasAdmin(id));
+    }
+
+    @PostMapping("/admin/comentario/{id}/resposta")
+    public ResponseEntity<?> responder(
+            @PathVariable("id") int id,
+            @RequestBody @Valid ComentarioRespostaDto dto,
+            @AuthenticationPrincipal UserDetails adminDetails,
+            HttpServletRequest request) {
+        var result = comentarioService.responder(id, adminDetails.getUsername(), dto);
+        if (adminDetails != null) {
+            adminAuditLogService.log(adminDetails.getUsername(), "Resposta de comentário",
+                    "Comentário ID " + id + " respondido", resolveIp(request), AdminAuditType.INFO);
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/user/comentario/{id}/respostas")
+    public ResponseEntity<?> respostasPublicas(@PathVariable("id") int id) {
+        return ResponseEntity.ok(comentarioService.respostasPublicas(id));
     }
 
     @PutMapping("/admin/comentario/{id}/status")

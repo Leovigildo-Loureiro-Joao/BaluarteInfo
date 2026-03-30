@@ -10,9 +10,11 @@ import com.igreja.api.enums.MidiaType;
 import com.igreja.api.enums.UserContentType;
 import com.igreja.api.models.UserDownloadModel;
 import com.igreja.api.models.UserModel;
+import java.time.LocalDateTime;
 
 public interface UserDownloadRepository extends JpaRepository<UserDownloadModel, Long> {
     Page<UserDownloadModel> findByUserAndTipoOrderByDataDesc(UserModel user, UserContentType tipo, Pageable pageable);
+    long countByDataBetween(LocalDateTime start, LocalDateTime end);
 
     @Query("""
         SELECT d FROM UserDownloadModel d

@@ -16,6 +16,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.igreja.api.dto.mensage.MensagemData;
 import com.igreja.api.dto.mensage.MensagemDto;
@@ -33,6 +35,8 @@ import lombok.Setter;
 @Service
 public class MensagemService {
 
+    private static final Logger log = LoggerFactory.getLogger(MensagemService.class);
+
     @Autowired
     private MensagemRepository mensagemRepository;
 
@@ -46,23 +50,14 @@ public class MensagemService {
 
      private JavaMailSender mailSender;
 
-    public void EnviarMensagem(MensagemDto mensagemDto){
+    private void enviarMensagem(MensagemDto mensagemDto) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper;
-        ////System.out.println("De: " + user);
-        ////System.out.println("Para: " + mensagemDto.destino());
-        ////System.out.println("Assunto: " + mensagemDto.assunto());
-        ////System.out.println("Descrição: " + mensagemDto.descricao());
-        try {
-            helper = new MimeMessageHelper(message, true);
-            helper.setFrom(user);
-            helper.setTo(mensagemDto.destino());
-            helper.setSubject(mensagemDto.assunto());
-            helper.setText(mensagemDto.descricao(), mensagemDto.descricao());
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setFrom(user);
+        helper.setTo(mensagemDto.destino());
+        helper.setSubject(mensagemDto.assunto());
+        helper.setText(mensagemDto.descricao(), mensagemDto.descricao());
+        mailSender.send(message);
     }
 
     public MensagensModel save(MensagemDto mensagemDto) { 
@@ -75,10 +70,11 @@ public class MensagemService {
         BeanUtils.copyProperties(mensagemDto, mensagensModel);
         mensagensModel.setDestino(sendFromSystem ? mensagemDto.destino() : user);
         try {
-            EnviarMensagem(new MensagemDto(mensagemDto.descricao(), mensagemDto.assunto(),mensagensModel.getDestino()));    
+            enviarMensagem(new MensagemDto(mensagemDto.descricao(), mensagemDto.assunto(),mensagensModel.getDestino()));
             mensagensModel.setStatus(StatusMensage.ENVIADO);
         } catch (Exception e) {
-            ////System.out.println(e.getMessage());
+            mensagensModel.setStatus(StatusMensage.PENDENTE);
+            log.error("Falha ao enviar mensagem (destino={}, assunto={}).", mensagensModel.getDestino(), mensagensModel.getAssunto(), e);
         }
         return mensagemRepository.save(mensagensModel);
     }
@@ -94,10 +90,11 @@ public class MensagemService {
         mensagensModel.setTipo(MensagemType.RECEIVED);
         mensagensModel.setDestino(user);
         try {
-            EnviarMensagem(new MensagemDto(mensagemDto.descricao(), mensagemDto.assunto(), mensagensModel.getDestino()));
+            enviarMensagem(new MensagemDto(mensagemDto.descricao(), mensagemDto.assunto(), mensagensModel.getDestino()));
             mensagensModel.setStatus(StatusMensage.ENVIADO);
         } catch (Exception e) {
-            ////System.out.println(e.getMessage());
+            mensagensModel.setStatus(StatusMensage.PENDENTE);
+            log.error("Falha ao enviar mensagem pública (email={}, assunto={}).", mensagensModel.getEmail(), mensagensModel.getAssunto(), e);
         }
         return mensagemRepository.save(mensagensModel);
     }
@@ -156,14 +153,19 @@ public class MensagemService {
     }
 
     public void EnviarAsPendentes() throws TimeoutException {
-        try {
-            mensagemRepository.findByStatus(StatusMensage.PENDENTE,PageRequest.of(0, 10)).getContent().forEach(t -> {
-                EnviarMensagem(new MensagemDto(t.getDescricao(), t.getAssunto(), t.getDestino()));
+        int failed = 0;
+        for (MensagensModel t : mensagemRepository.findByStatus(StatusMensage.PENDENTE, PageRequest.of(0, 10)).getContent()) {
+            try {
+                enviarMensagem(new MensagemDto(t.getDescricao(), t.getAssunto(), t.getDestino()));
                 t.setStatus(StatusMensage.ENVIADO);
                 mensagemRepository.save(t);
-            });
-        } catch (Exception e) {
-            throw new TimeoutException("A rede caiu");
+            } catch (Exception e) {
+                failed++;
+                log.error("Falha ao reenviar mensagem pendente (id={}, destino={}).", t.getId(), t.getDestino(), e);
+            }
+        }
+        if (failed > 0) {
+            throw new TimeoutException("Falha ao reenviar mensagens pendentes (" + failed + ").");
         }
        
     }

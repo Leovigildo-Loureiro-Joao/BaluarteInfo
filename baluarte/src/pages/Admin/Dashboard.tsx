@@ -1,6 +1,7 @@
 // src/pages/Dashboard/DashboardPage.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { 
   FiUsers, 
   FiEye, 
@@ -38,6 +39,9 @@ import {
   ResponsiveContainer,
   Sector
 } from 'recharts';
+import { apiFetch } from "../../utils/api.js";
+import { getStoredUser } from "../../utils/auth.js";
+import { AdminAuditLogDto, AdminAuditType, AdminDashboardCharts, AdminDashboardStats, DashboardConteudoSlice, DashboardCrescimentoPoint, DashboardEngajamentoPoint, DashboardVisitasPoint, PageResponse } from "../../types/api";
 
 // Dados mockados para os gráficos
 const dadosVisitas = [
@@ -64,12 +68,6 @@ const dadosEngajamento = [
   { dia: 'Sex', comentarios: 85, curtidas: 280, compartilhamentos: 72 },
   { dia: 'Sáb', comentarios: 95, curtidas: 320, compartilhamentos: 88 },
   { dia: 'Dom', comentarios: 120, curtidas: 450, compartilhamentos: 120 },
-];
-
-const resumoEngajamento = [
-  { label: 'Média de Comentários', valor: '69', tendencia: '+8% vs semana passada' },
-  { label: 'Média de Curtidas', valor: '210', tendencia: '+4% vs semana passada' },
-  { label: 'Compartilhamentos', valor: '59', tendencia: '+11% vs semana passada' },
 ];
 
 const dadosAtividadesRecentes = [
@@ -188,20 +186,23 @@ const StatCard = ({
 };
 
 // Componente de Gráfico de Visitas
-const GraficoVisitas = () => {
+const GraficoVisitas = ({ data, periodoLabel }: { data: DashboardVisitasPoint[]; periodoLabel?: string }) => {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-bold text-lg text-gray-800 dark:text-white">Visitas ao Site</h3>
-        <select className="text-sm border border-gray-200 rounded-lg px-3 py-1 bg-white text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100">
-          <option>Últimos 6 meses</option>
-          <option>Último ano</option>
-          <option>Último mês</option>
-        </select>
+        {periodoLabel ? (
+          <span className="text-xs font-medium px-3 py-1 rounded-lg bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-100">
+            {periodoLabel}
+          </span>
+        ) : null}
       </div>
       
       <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={dadosVisitas}>
+        <AreaChart
+          data={data}
+          margin={{ top: 12, right: 18, left: 4, bottom: 8 }}
+        >
           <defs>
             <linearGradient id="colorVisitas" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#CB2020" stopOpacity={0.8}/>
@@ -209,9 +210,13 @@ const GraficoVisitas = () => {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="mes" />
-          <YAxis />
-          <Tooltip />
+          <XAxis dataKey="mes" tickMargin={12} tick={{ fontSize: 12 }} />
+          <YAxis tickMargin={12} tick={{ fontSize: 12 }} />
+          <Tooltip
+            contentStyle={{ borderRadius: 12, padding: "10px 12px" }}
+            labelStyle={{ fontSize: 12 }}
+            itemStyle={{ fontSize: 12 }}
+          />
           <Area 
             type="monotone" 
             dataKey="visitas" 
@@ -226,7 +231,7 @@ const GraficoVisitas = () => {
 };
 
 // Componente de Gráfico de Pizza
-const GraficoConteudo = () => {
+const GraficoConteudo = ({ data }: { data: DashboardConteudoSlice[] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const onPieEnter = (_: any, index: number) => {
@@ -237,7 +242,7 @@ const GraficoConteudo = () => {
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <h3 className="font-bold text-lg mb-6 text-gray-800 dark:text-white">Distribuição de Conteúdo</h3>
       
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={250} className="transition-all duration-75">
         <PieChart>
           <Pie
             activeIndex={activeIndex}
@@ -253,35 +258,49 @@ const GraficoConteudo = () => {
                     startAngle={startAngle}
                     endAngle={endAngle}
                     fill={fill}
+                    cornerRadius={10}
+                    stroke="rgba(255, 255, 255, 0.9)"
+                    strokeWidth={2}
                   />
-                  <text x={cx} y={cy - 20} dy={8} textAnchor="middle" fill="#333" className="text-sm font-bold">
+                  <text x={cx} y={cy - 20} dy={8} textAnchor="middle" fill="#333" className="text-xs font-bold">
                     {payload.nome}
                   </text>
-                  <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill="#666" className="text-xs">
+                  <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill="#666" className="text-[11px]">
                     {value} itens ({(percent * 100).toFixed(0)}%)
                   </text>
                 </g>
               );
             }}
-            data={dadosConteudo}
+            data={data}
             cx="50%"
             cy="50%"
             innerRadius={60}
             outerRadius={80}
             dataKey="valor"
             onMouseEnter={onPieEnter}
+            paddingAngle={2}
+            cornerRadius={10}
+            stroke="rgba(255, 255, 255, 0.9)"
+            strokeWidth={2}
+            isAnimationActive
+            animationDuration={650}
+            animationEasing="ease-in-out"
           >
-            {dadosConteudo.map((entry, index) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.cor} />
             ))}
           </Pie>
-          <Tooltip />
+          <Tooltip
+            contentStyle={{ borderRadius: 12, padding: "10px 12px" }}
+            labelStyle={{ fontSize: 12 }}
+            itemStyle={{ fontSize: 12 }}
+          />
         </PieChart>
       </ResponsiveContainer>
 
       <div className="grid grid-cols-2 gap-2 mt-4">
-        {dadosConteudo.map((item, index) => (
-          <div key={index} className="flex items-center gap-2 text-sm">
+        {data.map((item, index) => (
+          <div key={index} className="flex items-center gap-2 text-xs">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.cor }} />
             <span className="text-gray-600 dark:text-gray-300">{item.nome}</span>
             <span className="font-semibold ml-auto text-gray-800 dark:text-gray-100">{item.valor}</span>
@@ -293,18 +312,39 @@ const GraficoConteudo = () => {
 };
 
 // Componente de Engajamento Diário
-const GraficoEngajamento = () => {
+const GraficoEngajamento = ({ data }: { data: DashboardEngajamentoPoint[] }) => {
+  const resumoEngajamento = useMemo(() => {
+    const total = (key: keyof DashboardEngajamentoPoint) =>
+      data.reduce((acc, item) => acc + Number(item[key] ?? 0), 0);
+
+    const avg = (n: number) => (data.length ? Math.round(n / data.length) : 0);
+
+    const comentarios = total("comentarios");
+    const curtidas = total("curtidas");
+    const compartilhamentos = total("compartilhamentos");
+
+    return [
+      { label: 'Média de Comentários', valor: String(avg(comentarios)), tendencia: `${Math.round(comentarios)} total` },
+      { label: 'Média de Curtidas', valor: String(avg(curtidas)), tendencia: `${Math.round(curtidas)} total` },
+      { label: 'Compartilhamentos', valor: String(avg(compartilhamentos)), tendencia: `${Math.round(compartilhamentos)} total` },
+    ];
+  }, [data]);
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <h3 className="font-bold text-lg mb-6 text-gray-800 dark:text-white">Engajamento Diário</h3>
       
         <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={dadosEngajamento}>
+          <BarChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="dia" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
+          <XAxis dataKey="dia" tickMargin={12} tick={{ fontSize: 12 }} />
+          <YAxis tickMargin={12} tick={{ fontSize: 12 }} />
+          <Tooltip
+            contentStyle={{ borderRadius: 12, padding: "10px 12px" }}
+            labelStyle={{ fontSize: 12 }}
+            itemStyle={{ fontSize: 12 }}
+          />
+          <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12 }} />
           <Bar dataKey="curtidas" fill="#CB2020" radius={[4, 4, 0, 0]} />
           <Bar dataKey="comentarios" fill="#F97272" radius={[4, 4, 0, 0]} />
           <Bar dataKey="compartilhamentos" fill="#FB9A9A" radius={[4, 4, 0, 0]} />
@@ -315,7 +355,7 @@ const GraficoEngajamento = () => {
         {resumoEngajamento.map((stat) => (
           <div key={stat.label} className="flex flex-col bg-gray-50 rounded-xl p-4 border border-gray-100 dark:bg-gray-900/70 dark:border-gray-800">
             <span className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</span>
-            <span className="text-xl font-semibold text-gray-800 dark:text-white">{stat.valor}</span>
+            <span className="text-lg font-semibold text-gray-800 dark:text-white">{stat.valor}</span>
             <span className="text-xs text-gray-400 dark:text-gray-500">{stat.tendencia}</span>
           </div>
         ))}
@@ -325,24 +365,28 @@ const GraficoEngajamento = () => {
 };
 
 // Componente de Crescimento de Membros
-const GraficoMembros = () => {
+const GraficoMembros = ({ data }: { data: DashboardCrescimentoPoint[] }) => {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <h3 className="font-bold text-lg mb-6 text-gray-800 dark:text-white">Crescimento de Membros</h3>
       
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={dadosCrescimento}>
+        <LineChart data={data} margin={{ top: 8, right: 18, left: 4, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="mes" />
-          <YAxis />
-          <Tooltip />
+          <XAxis dataKey="mes" tickMargin={12} tick={{ fontSize: 12 }} />
+          <YAxis tickMargin={12} tick={{ fontSize: 12 }} />
+          <Tooltip
+            contentStyle={{ borderRadius: 12, padding: "10px 12px" }}
+            labelStyle={{ fontSize: 12 }}
+            itemStyle={{ fontSize: 12 }}
+          />
           <Line 
             type="monotone" 
             dataKey="membros" 
             stroke="#CB2020" 
             strokeWidth={3}
-            dot={{ fill: '#CB2020', r: 6 }}
-            activeDot={{ r: 8 }}
+            dot={{ fill: '#CB2020', r: 5 }}
+            activeDot={{ r: 7 }}
           />
         </LineChart>
       </ResponsiveContainer>
@@ -352,50 +396,136 @@ const GraficoMembros = () => {
 
 // Componente de Atividades Recentes
 const AtividadesRecentes = () => {
-  const getIcon = (tipo: string) => {
-    switch(tipo) {
-      case 'inscricao': return <FiUserPlus className="text-blue-500" />;
-      case 'comentario': return <FiMessageCircle className="text-green-500" />;
-      case 'curtida': return <FiHeart className="text-red-500" />;
-      case 'compartilhamento': return <FiShare2 className="text-purple-500" />;
-      case 'novo_membro': return <FiUsers className="text-primary-500" />;
-      default: return <FiClock className="text-gray-500" />;
+  const navigate = useNavigate();
+
+  const [auditLogs, setAuditLogs] = useState<AdminAuditLogDto[]>([]);
+  const [auditLoading, setAuditLoading] = useState(true);
+  const [auditError, setAuditError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setAuditLoading(true);
+      setAuditError("");
+      try {
+        const res = await apiFetch("/admin/profile/audit?page=0&size=5", { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar atividades recentes.");
+        const payload = (await res.json()) as PageResponse<AdminAuditLogDto>;
+        setAuditLogs(payload?.content ?? []);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setAuditLogs([]);
+        setAuditError(err instanceof Error ? err.message : "Não foi possível carregar atividades recentes.");
+      } finally {
+        setAuditLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, []);
+
+  const me = getStoredUser();
+  const actorLabel = (me?.name || me?.nome || me?.email || "Você") as string;
+
+  const timeAgo = (iso: string) => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    const diffMs = Date.now() - d.getTime();
+    const minutes = Math.max(0, Math.floor(diffMs / 60000));
+    if (minutes < 1) return "agora";
+    if (minutes < 60) return `${minutes} min atrás`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h atrás`;
+    const days = Math.floor(hours / 24);
+    return `${days}d atrás`;
+  };
+
+  const getIcon = (tipo: AdminAuditType) => {
+    switch (tipo) {
+      case AdminAuditType.SUCESSO:
+        return <FiTrendingUp className="text-green-600" />;
+      case AdminAuditType.ALERTA:
+        return <FiClock className="text-orange-600" />;
+      case AdminAuditType.ERRO:
+        return <FiTrendingDown className="text-red-600" />;
+      case AdminAuditType.INFO:
+      default:
+        return <FiEye className="text-blue-600" />;
     }
+  };
+
+  const rotaPorAcao = (acao: string) => {
+    const a = (acao || "").toLowerCase();
+    if (a.includes("coment")) return "/admin/comentarios";
+    if (a.includes("mensag")) return "/admin/mensagens";
+    if (a.includes("usuár") || a.includes("usuario") || a.includes("role")) return "/admin/usuarios";
+    if (a.includes("config")) return "/admin/configuracoes";
+    if (a.includes("artigo")) return "/admin/artigos";
+    if (a.includes("mídia") || a.includes("midia") || a.includes("vídeo") || a.includes("video")) return "/admin/videos";
+    if (a.includes("áudio") || a.includes("audio")) return "/admin/audios";
+    if (a.includes("atividade") || a.includes("actividade") || a.includes("program")) return "/admin/actividades";
+    return "/admin/audit";
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-bold text-lg">Atividades Recentes</h3>
-        <button className="text-primary-500 text-sm hover:underline">Ver todas</button>
+        <button
+          className="text-primary-500 text-sm hover:underline"
+          type="button"
+          onClick={() => navigate("/admin/audit")}
+        >
+          Ver todas
+        </button>
       </div>
 
       <div className="space-y-4">
-        {dadosAtividadesRecentes.map((atividade) => (
-          <motion.div
-            key={atividade.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 dark:hover:bg-gray-800"
-          >
-            <img
-              src={atividade.avatar}
-              alt=""
-              className="w-8 h-8 rounded-full"
-            />
-            <div className="flex-1">
-              <p className="text-sm">
-                <span className="font-semibold">{atividade.usuario}</span>
-                {' '}{atividade.acao}{' '}
-                <span className="text-primary-500 font-medium">{atividade.alvo}</span>
-              </p>
-              <p className="text-xs text-gray-400 mt-1 dark:text-gray-500">{atividade.hora}</p>
+        {auditError ? (
+          <div className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-4">
+            {auditError}
+          </div>
+        ) : auditLoading ? (
+          Array.from({ length: 4 }).map((_, idx) => (
+            <div key={idx} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse dark:bg-gray-800" />
+              <div className="flex-1">
+                <div className="h-3 w-64 bg-gray-200 rounded mb-2 animate-pulse dark:bg-gray-800" />
+                <div className="h-3 w-32 bg-gray-200 rounded animate-pulse dark:bg-gray-800" />
+              </div>
             </div>
-            <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center dark:bg-gray-800">
-              {getIcon(atividade.tipo)}
-            </div>
-          </motion.div>
-        ))}
+          ))
+        ) : auditLogs.length === 0 ? (
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Sem atividades recentes.
+          </div>
+        ) : (
+          auditLogs.map((log) => (
+            <motion.button
+              key={log.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              type="button"
+              onClick={() => navigate(rotaPorAcao(log.acao))}
+              className="w-full text-left flex items-start gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 dark:hover:bg-gray-800"
+            >
+              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center dark:bg-gray-800">
+                {getIcon(log.tipo)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-800 dark:text-gray-100 truncate">
+                  <span className="font-semibold">{actorLabel}</span>{" "}
+                  <span className="text-gray-700 dark:text-gray-200">{log.acao}</span>
+                </p>
+                {log.detalhes ? (
+                  <p className="text-xs text-gray-500 mt-1 dark:text-gray-400 truncate">{log.detalhes}</p>
+                ) : null}
+                <p className="text-xs text-gray-400 mt-1 dark:text-gray-500">
+                  {timeAgo(log.data)}
+                </p>
+              </div>
+            </motion.button>
+          ))
+        )}
       </div>
     </div>
   );
@@ -403,11 +533,13 @@ const AtividadesRecentes = () => {
 
 // Componente de Ações Rápidas
 const AcoesRapidas = () => {
+  const navigate = useNavigate();
+
   const acoes = [
-    { icone: FiBookOpen, label: 'Novo Artigo', cor: 'primary' },
-    { icone: FiVideo, label: 'Novo Vídeo', cor: 'blue' },
-    { icone: FiCalendar, label: 'Novo Evento', cor: 'green' },
-    { icone: FiUsers, label: 'Nova Campanha', cor: 'purple' },
+    { icone: FiBookOpen, label: 'Novo Artigo', cor: 'primary', href: '/admin/artigos' },
+    { icone: FiVideo, label: 'Novo Vídeo', cor: 'blue', href: '/admin/videos' },
+    { icone: FiCalendar, label: 'Novo Evento', cor: 'green', href: '/admin/actividades' },
+    { icone: FiUsers, label: 'Nova Campanha', cor: 'purple', href: '/admin/mensagens' },
   ];
 
   return (
@@ -429,6 +561,7 @@ const AcoesRapidas = () => {
             key={index}
             className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all ${cores[acao.cor as keyof typeof cores]}`}
             type="button"
+            onClick={() => navigate(acao.href)}
           >
               <Icon size={24} className="mb-2" />
               <span className="text-xs font-medium">{acao.label}</span>
@@ -441,38 +574,65 @@ const AcoesRapidas = () => {
 };
 
 // Componente de Metas
-const Metas = () => {
-  const metas = [
-    { titulo: 'Novos Membros', atual: 45, meta: 60, cor: '#CB2020' },
-    { titulo: 'Artigos Publicados', atual: 28, meta: 40, cor: '#E64D4D' },
-    { titulo: 'Eventos Realizados', atual: 12, meta: 15, cor: '#F97272' },
-    { titulo: 'Taxa de Engajamento', atual: 76, meta: 85, cor: '#FB9A9A', unidade: '%' },
-  ];
+const Metas = ({ stats, loading }: { stats: AdminDashboardStats | null; loading: boolean }) => {
+  const metas = useMemo(() => {
+    if (!stats) return [];
+    const list = [
+      { key: "membros" as const, titulo: "Membros", cor: "#CB2020" },
+      { key: "actividades" as const, titulo: "Atividades", cor: "#E64D4D" },
+      { key: "inscritos" as const, titulo: "Inscrições", cor: "#F97272" },
+      { key: "comentarios" as const, titulo: "Comentários", cor: "#FB9A9A" },
+      { key: "visitas" as const, titulo: "Visitas", cor: "#9CA3AF" },
+      { key: "newlester" as const, titulo: "Newsletter", cor: "#60A5FA" },
+    ];
+    return list
+      .map((item) => {
+        const stat = stats[item.key];
+        const atual = Number(stat?.value ?? 0);
+        const meta = Number(stat?.tot ?? 0);
+        return { ...item, atual, meta };
+      })
+      .filter((m) => Number.isFinite(m.meta) && m.meta > 0);
+  }, [stats]);
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <h3 className="font-bold text-lg mb-4 text-gray-800 dark:text-white">Metas do Mês</h3>
       
       <div className="space-y-4">
-        {metas.map((meta, index) => (
-          <div key={index}>
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-gray-600 dark:text-gray-300">{meta.titulo}</span>
-              <span className="font-semibold text-gray-800 dark:text-white">
-                {meta.atual}{meta.unidade || ''} / {meta.meta}{meta.unidade || ''}
-              </span>
+        {loading && metas.length === 0 ? (
+          Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx}>
+              <div className="flex items-center justify-between text-sm mb-2">
+                <div className="h-3 w-28 bg-gray-200 rounded animate-pulse dark:bg-gray-800" />
+                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse dark:bg-gray-800" />
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700" />
             </div>
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${(meta.atual / meta.meta) * 100}%` }}
-                transition={{ duration: 1, delay: index * 0.1 }}
-                className="h-full rounded-full"
-                style={{ backgroundColor: meta.cor }}
-              />
+          ))
+        ) : metas.length === 0 ? (
+          <div className="text-sm text-gray-500 dark:text-gray-400">Nenhuma meta configurada (limites = 0).</div>
+        ) : (
+          metas.map((meta, index) => (
+            <div key={meta.key}>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-gray-600 dark:text-gray-300">{meta.titulo}</span>
+                <span className="font-semibold text-gray-800 dark:text-white">
+                  {Math.round(meta.atual)} / {Math.round(meta.meta)}
+                </span>
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.max(0, Math.min(100, (meta.atual / meta.meta) * 100))}%` }}
+                  transition={{ duration: 1, delay: index * 0.1 }}
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: meta.cor }}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
@@ -481,6 +641,169 @@ const Metas = () => {
 // Componente Principal do Dashboard
 export const DashboardPage = () => {
   const [periodo, setPeriodo] = useState('semana');
+  const [stats, setStats] = useState<AdminDashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState("");
+  const [charts, setCharts] = useState<AdminDashboardCharts | null>(null);
+  const [chartsLoading, setChartsLoading] = useState(true);
+  const [chartsError, setChartsError] = useState("");
+
+  const periodoLabel = useMemo(() => {
+    switch (periodo) {
+      case "hoje":
+        return "Hoje";
+      case "semana":
+        return "Esta semana";
+      case "mes":
+        return "Este mês";
+      case "ano":
+        return "Este ano";
+      default:
+        return "Período";
+    }
+  }, [periodo]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setStatsLoading(true);
+      setStatsError("");
+      try {
+        const qs = new URLSearchParams({ periodo }).toString();
+        const res = await apiFetch(`/admin/dashboard/stats?${qs}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar estatísticas.");
+        const payload = (await res.json()) as AdminDashboardStats;
+        setStats(payload);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setStats(null);
+        setStatsError(err instanceof Error ? err.message : "Não foi possível carregar estatísticas.");
+      } finally {
+        setStatsLoading(false);
+      }
+    })();
+    return () => {
+      controller.abort();
+    };
+  }, [periodo]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setChartsLoading(true);
+      setChartsError("");
+      try {
+        const qs = new URLSearchParams({ periodo }).toString();
+        const res = await apiFetch(`/admin/dashboard/charts?${qs}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar gráficos.");
+        const payload = (await res.json()) as AdminDashboardCharts;
+        setCharts(payload);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setCharts(null);
+        setChartsError(err instanceof Error ? err.message : "Não foi possível carregar gráficos.");
+      } finally {
+        setChartsLoading(false);
+      }
+    })();
+    return () => {
+      controller.abort();
+    };
+  }, [periodo]);
+
+  const statCards = useMemo(() => {
+    if (!stats) return [];
+    const fmt = (n: number) => new Intl.NumberFormat("pt-BR").format(Math.round(n));
+    const desc = (value: number, tot: number) => {
+      if (!Number.isFinite(tot) || tot <= 0) return undefined;
+      const pct = Math.max(0, Math.min(100, Math.round((value / tot) * 100)));
+      return `Limite: ${fmt(tot)} • ${pct}%`;
+    };
+    return [
+      { titulo: "Membros", valor: fmt(stats.membros.value), icone: FiUsers, cor: "primary", descricao: desc(stats.membros.value, stats.membros.tot) },
+      { titulo: "Visitas", valor: fmt(stats.visitas.value), icone: FiEye, cor: "blue", descricao: desc(stats.visitas.value, stats.visitas.tot) },
+      { titulo: "Atividades", valor: fmt(stats.actividades.value), icone: FiCalendar, cor: "orange", descricao: desc(stats.actividades.value, stats.actividades.tot) },
+      { titulo: "Inscrições", valor: fmt(stats.inscritos.value), icone: FiUserPlus, cor: "green", descricao: desc(stats.inscritos.value, stats.inscritos.tot) },
+      { titulo: "Comentários", valor: fmt(stats.comentarios.value), icone: FiMessageCircle, cor: "purple", descricao: desc(stats.comentarios.value, stats.comentarios.tot) },
+      { titulo: "Newsletter", valor: fmt(stats.newlester.value), icone: FiShare2, cor: "blue", descricao: desc(stats.newlester.value, stats.newlester.tot) },
+    ];
+  }, [stats]);
+
+  const visitasChart = charts?.visitas?.length ? charts.visitas : dadosVisitas;
+  const conteudoChart = charts?.conteudo?.length ? charts.conteudo : dadosConteudo;
+  const engajamentoChart = charts?.engajamento?.length ? charts.engajamento : dadosEngajamento;
+  const crescimentoChart = charts?.crescimento?.length ? charts.crescimento : dadosCrescimento;
+
+  const resumoCrescimento = useMemo(() => {
+    const periodoDesc = (() => {
+      switch (periodo) {
+        case "hoje":
+          return "hoje";
+        case "semana":
+          return "nos últimos 7 dias";
+        case "mes":
+          return "nos últimos 30 dias";
+        case "ano":
+          return "nos últimos 12 meses";
+        default:
+          return "no período selecionado";
+      }
+    })();
+
+    if (chartsLoading) {
+      return { titulo: "Crescimento consistente!", texto: "Carregando dados de crescimento..." };
+    }
+
+    const points = crescimentoChart ?? [];
+    if (points.length < 2) {
+      return { titulo: "Crescimento consistente!", texto: `Sem dados suficientes ${periodoDesc}.` };
+    }
+
+    const start = Number(points[0]?.membros ?? 0);
+    const end = Number(points[points.length - 1]?.membros ?? 0);
+    const delta = end - start;
+    const fmtInt = (n: number) => new Intl.NumberFormat("pt-BR").format(Math.round(n));
+
+    if (!Number.isFinite(start) || !Number.isFinite(end)) {
+      return { titulo: "Crescimento consistente!", texto: `Sem dados suficientes ${periodoDesc}.` };
+    }
+
+    if (start <= 0) {
+      const deltaTxt = delta === 0 ? "0" : delta > 0 ? `+${fmtInt(delta)}` : `-${fmtInt(Math.abs(delta))}`;
+      return {
+        titulo: delta >= 0 ? "Crescimento consistente!" : "Atenção ao crescimento",
+        texto: `Variação de membros: ${deltaTxt} ${periodoDesc}.`,
+      };
+    }
+
+    const pct = (delta / start) * 100;
+    const pctTxt = `${pct >= 0 ? "+" : ""}${pct.toFixed(1).replace(".", ",")}%`;
+
+    return {
+      titulo: pct >= 0 ? "Crescimento consistente!" : "Atenção ao crescimento",
+      texto: `Sua igreja cresceu ${pctTxt} ${periodoDesc}. Continue o bom trabalho!`,
+    };
+  }, [chartsLoading, crescimentoChart, periodo]);
+
+  const exportarRelatorio = () => {
+    if (typeof window === "undefined") return;
+    const payload = {
+      periodo,
+      geradoEm: new Date().toISOString(),
+      stats,
+      charts,
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dashboard-${periodo}-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-950">
@@ -508,61 +831,70 @@ export const DashboardPage = () => {
               <option value="ano">Este ano</option>
             </select>
             
-            <button className="px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors text-sm font-medium">
+            <button
+              className="px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+              type="button"
+              disabled={statsLoading || chartsLoading}
+              onClick={exportarRelatorio}
+              title="Exporta um JSON com stats + charts do período selecionado"
+            >
               Exportar Relatório
             </button>
           </div>
         </div>
 
         {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <StatCard
-            titulo="Total de Membros"
-            valor={512}
-            icone={FiUsers}
-            variacao={{ valor: 12, positiva: true }}
-            cor="primary"
-          />
-          <StatCard
-            titulo="Visualizações"
-            valor="2.5k"
-            icone={FiEye}
-            variacao={{ valor: 8, positiva: true }}
-            cor="blue"
-            descricao="últimos 30 dias"
-          />
-          <StatCard
-            titulo="Engajamento"
-            valor="76%"
-            icone={FiHeart}
-            variacao={{ valor: 3, positiva: false }}
-            cor="purple"
-          />
-          <StatCard
-            titulo="Conteúdos"
-            valor={120}
-            icone={FiBookOpen}
-            variacao={{ valor: 15, positiva: true }}
-            cor="green"
-          />
+        {statsError && (
+          <div className="mb-6 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-4">
+            {statsError}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-6">
+          {statsLoading && statCards.length === 0 ? (
+            Array.from({ length: 6 }).map((_, idx) => (
+              <div key={idx} className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 dark:bg-gray-900 dark:border-gray-800">
+                <div className="h-3 w-24 bg-gray-200 rounded mb-3 animate-pulse dark:bg-gray-800" />
+                <div className="h-7 w-20 bg-gray-200 rounded mb-2 animate-pulse dark:bg-gray-800" />
+                <div className="h-3 w-32 bg-gray-200 rounded animate-pulse dark:bg-gray-800" />
+              </div>
+            ))
+          ) : (
+            statCards.map((card) => (
+              <StatCard
+                key={card.titulo}
+                titulo={card.titulo}
+                valor={card.valor}
+                icone={card.icone}
+                cor={card.cor}
+                descricao={card.descricao}
+              />
+            ))
+          )}
         </div>
+
+        {chartsError && (
+          <div className="mb-6 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-4">
+            {chartsError}
+          </div>
+        )}
 
         {/* Gráficos Principal e Distribuição */}
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
-            <GraficoVisitas />
+            <GraficoVisitas data={visitasChart} periodoLabel={periodoLabel} />
           </div>
           <div>
-            <GraficoConteudo />
+            <GraficoConteudo data={conteudoChart} />
           </div>
         </div>
 
         {/* Engajamento e Crescimento */}
         <div className="grid lg:grid-cols-2 gap-6 mb-6">
-          <GraficoEngajamento />
+          <GraficoEngajamento data={engajamentoChart} />
           <div className="space-y-6">
-            <GraficoMembros />
-            <Metas />
+            <GraficoMembros data={crescimentoChart} />
+            <Metas stats={stats} loading={statsLoading || chartsLoading} />
           </div>
         </div>
 
@@ -584,10 +916,10 @@ export const DashboardPage = () => {
             </div>
             <div>
               <h4 className="font-semibold text-gray-800 mb-1 dark:text-white">
-                Crescimento consistente!
+                {resumoCrescimento.titulo}
               </h4>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Sua igreja cresceu 15% nos últimos 30 dias. Continue o bom trabalho!
+                {resumoCrescimento.texto}
               </p>
             </div>
             <button className="ml-auto px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors text-sm font-medium dark:bg-primary-500/10 dark:text-primary-200 dark:hover:bg-primary-500/20">

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import com.igreja.api.dto.comentario.Analise;
 import com.igreja.api.dto.comentario.ComentarioAdminData;
 import com.igreja.api.dto.comentario.ComentarioDto;
+import com.igreja.api.dto.comentario.ComentarioRespostaDto;
 import com.igreja.api.dto.comentario.ComentarioResult;
 import com.igreja.api.dto.comentario.ComentarioStatusDto;
 import com.igreja.api.dto.user.UserComentarioData;
@@ -130,16 +131,66 @@ public class ComentarioService {
 
     public Page<ComentarioResult> page(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dataPublicacao").descending());
-        return comentarioRepository.findAllByOrderByDataPublicacaoDesc(pageable)
+        return comentarioRepository.findAllByParentIsNullOrderByDataPublicacaoDesc(pageable)
                 .map(this::toResult);
     }
 
-    public Page<ComentarioAdminData> pageAdmin(int page, int size, ComentarioStatus status) {
+    public Page<ComentarioAdminData> pageAdmin(int page, int size, ComentarioStatus status, Boolean analise) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dataPublicacao").descending());
-        Page<ComentarioModel> result = status == null
-                ? comentarioRepository.findAllByOrderByDataPublicacaoDesc(pageable)
-                : comentarioRepository.findAllByStatusOrderByDataPublicacaoDesc(status, pageable);
+        Page<ComentarioModel> result;
+        if (status != null && analise != null) {
+            result = comentarioRepository.findAllByParentIsNullAndStatusAndAnaliseOrderByDataPublicacaoDesc(status,
+                    analise.booleanValue(), pageable);
+        } else if (status != null) {
+            result = comentarioRepository.findAllByParentIsNullAndStatusOrderByDataPublicacaoDesc(status, pageable);
+        } else if (analise != null) {
+            result = comentarioRepository.findAllByParentIsNullAndAnaliseOrderByDataPublicacaoDesc(
+                    analise.booleanValue(), pageable);
+        } else {
+            result = comentarioRepository.findAllByParentIsNullOrderByDataPublicacaoDesc(pageable);
+        }
         return result.map(this::toAdminData);
+    }
+
+    public ComentarioAdminData responder(int comentarioId, String adminEmail, @Valid ComentarioRespostaDto dto) {
+        ComentarioModel parent = findByid(comentarioId);
+        UserModel admin = userRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new NoSuchElementException("Este user mão existe verifique se o email esta correto"));
+
+        ComentarioModel reply = new ComentarioModel();
+        reply.setUser(admin);
+        reply.setDescricao(dto.descricao());
+        reply.setDataPublicacao(LocalDate.now());
+        reply.setStatus(ComentarioStatus.ATIVO);
+        reply.setDenuncias(0);
+        reply.setAnalise(false);
+        reply.setParent(parent);
+
+        if (parent.getArtigo() != null) {
+            reply.setArtigo(parent.getArtigo());
+        } else if (parent.getMidia() != null) {
+            reply.setMidia(parent.getMidia());
+        } else if (parent.getActividade() != null) {
+            reply.setActividade(parent.getActividade());
+        }
+
+        return toAdminData(comentarioRepository.save(reply));
+    }
+
+    public java.util.List<ComentarioAdminData> respostasAdmin(int comentarioId) {
+        ComentarioModel parent = findByid(comentarioId);
+        return comentarioRepository.findByParentOrderByDataPublicacaoAsc(parent)
+                .stream()
+                .map(this::toAdminData)
+                .toList();
+    }
+
+    public java.util.List<ComentarioResult> respostasPublicas(int comentarioId) {
+        ComentarioModel parent = findByid(comentarioId);
+        return comentarioRepository.findByParentOrderByDataPublicacaoAsc(parent)
+                .stream()
+                .map(this::toResult)
+                .toList();
     }
 
     public Page<UserComentarioData> pageForUser(String email, int page, int size) {
@@ -181,6 +232,8 @@ public class ComentarioService {
         }
 
         UserModel user = model.getUser();
+        Integer parentId = model.getParent() == null ? null : model.getParent().getId();
+        int respostas = model.getParent() == null ? (int) comentarioRepository.countByParent(model) : 0;
         return new ComentarioAdminData(
                 model.getId(),
                 seccao,
@@ -193,8 +246,10 @@ public class ComentarioService {
                 model.getDescricao(),
                 model.getDataPublicacao(),
                 (int) comentarioLikeRepository.countByComentario(model),
+                parentId,
                 model.getStatus(),
-                model.getDenuncias());
+                model.getDenuncias(),
+                respostas);
     }
 
     private UserComentarioData toUserData(ComentarioModel model) {

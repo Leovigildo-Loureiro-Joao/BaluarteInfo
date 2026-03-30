@@ -447,10 +447,10 @@ const ModalVideo = ({
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full my-8"
+          className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full my-8 p-4"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 max-h-[90vh] overflow-y-scroll">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <FiVideo className="text-primary-500" />

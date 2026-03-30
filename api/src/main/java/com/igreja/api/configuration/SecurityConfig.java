@@ -65,6 +65,7 @@ public class SecurityConfig {
                 .requestMatchers("/public/inscritos/**").permitAll()
                 .requestMatchers("/public/mensagem/**").permitAll()
                 .requestMatchers("/public/sobre").permitAll()
+                .requestMatchers("/public/salvacao").permitAll()
                 // Views de mídia (contabiliza após 30s) não depende de autenticação no MVP.
                 .requestMatchers(HttpMethod.POST, "/user/midia/*/view", "/user/me/midia/*/view").permitAll()
                 .requestMatchers(HttpMethod.POST, "/user/me/download/**").permitAll()
@@ -102,7 +103,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Inscricao-Id", "Content-Disposition"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

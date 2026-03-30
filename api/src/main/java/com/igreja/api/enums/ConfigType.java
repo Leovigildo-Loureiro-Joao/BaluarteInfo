@@ -17,5 +17,15 @@ public enum ConfigType {
     MensagemReenviarPendentes,
     InscricaoQrEnabled,
     InscricaoQrAutoDisable,
-    InscricaoQrExpiresHours
+    InscricaoQrExpiresHours,
+
+    ContactTelefone,
+    ContactWhatsapp,
+    ContactEmail,
+    ContactEndereco,
+    ContactFacebookUrl,
+    ContactInstagramUrl,
+    ContactYoutubeUrl,
+    ContactTwitterUrl,
+    ContactHorariosCulto
 }

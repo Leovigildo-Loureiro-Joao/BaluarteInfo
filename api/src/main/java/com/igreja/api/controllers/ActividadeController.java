@@ -25,6 +25,7 @@ import com.igreja.api.enums.PublicoAlvoType;
 import com.igreja.api.services.ActividadeService;
 import com.igreja.api.services.AdminAuditLogService;
 import com.igreja.api.enums.AdminAuditType;
+import com.igreja.api.dto.PageResponse;
 
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -107,6 +108,48 @@ public class ActividadeController {
     @GetMapping(value = "/user/actividade/{id}")
     public ResponseEntity<?> SelectArigo(@PathVariable int id) throws IOException {
         return ResponseEntity.ok(actividadeService.detail(id));
+    }
+
+    @GetMapping(value = "/user/actividade/{id}/favorito")
+    public ResponseEntity<?> isFavorito(
+            @PathVariable int id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        boolean favorito = userDetails != null && actividadeService.isFavorito(id, userDetails.getUsername());
+        return ResponseEntity.ok(java.util.Map.of("favorito", favorito));
+    }
+
+    @PostMapping(value = "/user/actividade/{id}/favorito")
+    public ResponseEntity<?> favorite(
+            @PathVariable int id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(java.util.Map.of("message", "Não autenticado."));
+        }
+        boolean favorito = actividadeService.favorite(id, userDetails.getUsername());
+        return ResponseEntity.ok(java.util.Map.of("favorito", favorito));
+    }
+
+    @DeleteMapping(value = "/user/actividade/{id}/favorito")
+    public ResponseEntity<?> unfavorite(
+            @PathVariable int id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(java.util.Map.of("message", "Não autenticado."));
+        }
+        boolean favorito = actividadeService.unfavorite(id, userDetails.getUsername());
+        return ResponseEntity.ok(java.util.Map.of("favorito", favorito));
+    }
+
+    @GetMapping(value = "/user/me/favoritos/actividades")
+    public ResponseEntity<?> myFavoritosActividades(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(java.util.Map.of("message", "Não autenticado."));
+        }
+        var result = actividadeService.favoritosByUser(userDetails.getUsername(), page, size);
+        return ResponseEntity.ok(new PageResponse<>(result.content(), result.page(), result.size(), result.totalElements(), result.totalPages()));
     }
 
     @GetMapping(value = "/user/actividade/{id}/programacao")

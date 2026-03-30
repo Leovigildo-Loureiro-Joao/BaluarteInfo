@@ -58,6 +58,13 @@ public class UserService implements UserDetailsService{
         return userDtoDatas;
     }
 
+    public long countByStatus(UserStatus status) {
+        if (status == null) {
+            return userRepository.count();
+        }
+        return userRepository.countByStatus(status);
+    }
+
 
     public UserModel findById(long id){
         return userRepository.findById(id).orElseThrow(()->new NoSuchElementException("It is user not exists"));

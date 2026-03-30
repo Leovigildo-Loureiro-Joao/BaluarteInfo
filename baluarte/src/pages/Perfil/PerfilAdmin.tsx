@@ -1,5 +1,5 @@
 // src/pages/Admin/PerfilAdminPage.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { 
   FiUser,
@@ -26,92 +26,20 @@ import {
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { LiaQrcodeSolid } from "react-icons/lia";
+import { apiFetch } from "../../utils/api.js";
+import { clearAuthSession } from "../../utils/auth.js";
+import type { AdminAuditLogDto, AdminAuditType, AdminProfileDto, PageResponse } from "../../types/api";
+import { AdminAuditType as AdminAuditTypeEnum } from "../../types/api";
+import { useNavigate } from "react-router-dom";
 
-// Tipos
-interface AdminUser {
-  id: string;
-  nome: string;
-  email: string;
-  telefone: string;
-  cargo: 'Secretário' | 'Presbítero' | 'Administrador';
-  avatar?: string;
-  dataCadastro: string;
-  ultimoAcesso: string;
-  doisFatores?: boolean;
-  endereco?: {
-    cidade: string;
-    estado: string;
-  };
-}
+type AdminUser = AdminProfileDto;
 
-interface AuditLog {
-  id: string;
-  acao: string;
-  detalhes: string;
-  ip: string;
-  data: string;
-  tipo: 'info' | 'sucesso' | 'alerta' | 'erro';
-}
-
-// Dados mockados
-const adminMock: AdminUser = {
-  id: '1',
-  nome: 'João Silva',
-  email: 'joao.silva@igrejabaluarte.com',
-  telefone: '(11) 99999-9999',
-  cargo: 'Secretário',
-  avatar: 'https://i.pravatar.cc/150?img=1',
-  dataCadastro: '2023-01-15T10:30:00',
-  ultimoAcesso: '2024-03-12T14:25:00',
-  doisFatores: true,
-  endereco: {
-    cidade: 'São Paulo',
-    estado: 'SP'
-  }
+type ProfileUpdatePayload = {
+  nome?: string;
+  telefone?: string;
+  cidade?: string;
+  estado?: string;
 };
-
-const auditLogsMock: AuditLog[] = [
-  {
-    id: '1',
-    acao: 'Login realizado',
-    detalhes: 'Acesso ao painel administrativo',
-    ip: '192.168.1.100',
-    data: '2024-03-12T14:25:00',
-    tipo: 'sucesso'
-  },
-  {
-    id: '2',
-    acao: 'Artigo publicado',
-    detalhes: 'Título: "A Soberania de Deus em Tempos de Crise"',
-    ip: '192.168.1.100',
-    data: '2024-03-11T09:15:00',
-    tipo: 'info'
-  },
-  {
-    id: '3',
-    acao: 'Usuário aprovado',
-    detalhes: 'Novo membro: Maria Oliveira',
-    ip: '192.168.1.100',
-    data: '2024-03-10T16:30:00',
-    tipo: 'sucesso'
-  },
-  {
-    id: '4',
-    acao: 'Tentativa de login falha',
-    detalhes: 'Senha incorreta',
-    ip: '192.168.1.105',
-    data: '2024-03-09T22:10:00',
-    tipo: 'erro'
-  },
-  {
-    id: '5',
-    acao: 'Configurações alteradas',
-    detalhes: 'Intervalo do dashboard modificado',
-    ip: '192.168.1.100',
-    data: '2024-03-08T11:45:00',
-    tipo: 'alerta'
-  }
-];
 
 // Componente de Informações Pessoais
 const InformacoesPessoais = ({ 
@@ -124,13 +52,14 @@ const InformacoesPessoais = ({
   admin: AdminUser; 
   editando: boolean;
   onEdit: () => void;
-  onSave: (data: Partial<AdminUser>) => void;
+  onSave: (data: ProfileUpdatePayload) => void;
   onCancel: () => void;
 }) => {
   const [formData, setFormData] = useState({
     nome: admin.nome,
-    telefone: admin.telefone,
-    endereco: admin.endereco
+    telefone: admin.telefone ?? "",
+    cidade: admin.cidade ?? "",
+    estado: admin.estado ?? ""
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -206,14 +135,8 @@ const InformacoesPessoais = ({
               </label>
               <input
                 type="text"
-                value={formData.endereco?.cidade || ''}
-                onChange={(e) => setFormData({
-                  ...formData, 
-                  endereco: { 
-                    cidade: e.target.value, 
-                    estado: formData.endereco?.estado || '' 
-                  }
-                })}
+                value={formData.cidade}
+                onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
@@ -223,14 +146,8 @@ const InformacoesPessoais = ({
               </label>
               <input
                 type="text"
-                value={formData.endereco?.estado || ''}
-                onChange={(e) => setFormData({
-                  ...formData, 
-                  endereco: { 
-                    cidade: formData.endereco?.cidade || '', 
-                    estado: e.target.value 
-                  }
-                })}
+                value={formData.estado}
+                onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
             </div>
@@ -253,18 +170,16 @@ const InformacoesPessoais = ({
           <div className="flex items-center gap-3 py-2 border-b border-gray-100">
             <dt className="w-24 text-sm text-gray-500">Cargo:</dt>
             <dd className="flex-1 font-medium flex items-center gap-2">
-              {admin.cargo === 'Secretário' ? <GiSecretBook className="text-purple-500" /> : 
-               admin.cargo === 'Presbítero' ? <GiCrown className="text-blue-500" /> : 
-               <GiShield className="text-green-500" />}
+              <GiShield className="text-green-500" />
               {admin.cargo}
             </dd>
           </div>
-          {admin.endereco && (
+          {admin.cidade && admin.estado && (
             <div className="flex items-center gap-3 py-2 border-b border-gray-100">
               <dt className="w-24 text-sm text-gray-500">Local:</dt>
               <dd className="flex-1 font-medium flex items-center gap-1">
                 <FiMapPin size={14} className="text-gray-400" />
-                {admin.endereco.cidade}/{admin.endereco.estado}
+                {admin.cidade}/{admin.estado}
               </dd>
             </div>
           )}
@@ -302,10 +217,12 @@ const SegurancaCard = ({ admin }: { admin: AdminUser }) => {
           <div>
             <p className="font-medium">Último acesso</p>
             <p className="text-sm text-gray-500">
-              {formatDistanceToNow(new Date(admin.ultimoAcesso), { 
+              {admin.ultimoAcesso
+                ? formatDistanceToNow(new Date(admin.ultimoAcesso), { 
                 addSuffix: true, 
                 locale: ptBR 
-              })}
+              })
+                : "-"}
             </p>
           </div>
           <FiClock className="text-gray-400" size={18} />
@@ -315,7 +232,7 @@ const SegurancaCard = ({ admin }: { admin: AdminUser }) => {
           <div>
             <p className="font-medium">Membro desde</p>
             <p className="text-sm text-gray-500">
-              {format(new Date(admin.dataCadastro), 'dd/MM/yyyy')}
+              {admin.dataCadastro ? format(new Date(admin.dataCadastro), 'dd/MM/yyyy') : "-"}
             </p>
           </div>
           <FiCalendar className="text-gray-400" size={18} />
@@ -326,12 +243,12 @@ const SegurancaCard = ({ admin }: { admin: AdminUser }) => {
 };
 
 // Componente de Audit Log
-const AuditLogItem = ({ log }: { log: AuditLog }) => {
+const AuditLogItem = ({ log }: { log: AdminAuditLogDto }) => {
   const getIcon = () => {
     switch(log.tipo) {
-      case 'sucesso': return <FiCheckCircle className="text-green-500" size={16} />;
-      case 'alerta': return <FiAlertCircle className="text-yellow-500" size={16} />;
-      case 'erro': return <FiX className="text-red-500" size={16} />;
+      case AdminAuditTypeEnum.SUCESSO: return <FiCheckCircle className="text-green-500" size={16} />;
+      case AdminAuditTypeEnum.ALERTA: return <FiAlertCircle className="text-yellow-500" size={16} />;
+      case AdminAuditTypeEnum.ERRO: return <FiX className="text-red-500" size={16} />;
       default: return <FiClock className="text-blue-500" size={16} />;
     }
   };
@@ -346,11 +263,11 @@ const AuditLogItem = ({ log }: { log: AuditLog }) => {
             {formatDistanceToNow(new Date(log.data), { addSuffix: true, locale: ptBR })}
           </p>
         </div>
-        <p className="text-sm text-gray-500">{log.detalhes}</p>
+        {log.detalhes && <p className="text-sm text-gray-500">{log.detalhes}</p>}
         <div className="flex items-center gap-2 mt-1">
           <span className="text-xs text-gray-400 flex items-center gap-1">
             <FiGlobe size={10} />
-            {log.ip}
+            {log.ip ?? "-"}
           </span>
         </div>
       </div>
@@ -360,20 +277,159 @@ const AuditLogItem = ({ log }: { log: AuditLog }) => {
 
 // Componente Principal
 export const PerfilAdminPage = () => {
-  const [admin, setAdmin] = useState<AdminUser>(adminMock);
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [editando, setEditando] = useState(false);
-  const [auditLogs] = useState<AuditLog[]>(auditLogsMock);
-  const [filtroAudit, setFiltroAudit] = useState<string>('todos');
+  const [auditLogs, setAuditLogs] = useState<AdminAuditLogDto[]>([]);
+  const [filtroAudit, setFiltroAudit] = useState<AdminAuditType | 'todos'>('todos');
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [auditLoading, setAuditLoading] = useState(true);
+  const [auditError, setAuditError] = useState("");
+  const [auditPage, setAuditPage] = useState(0);
+  const [auditSize] = useState(10);
+  const [auditTotalPages, setAuditTotalPages] = useState(0);
+  const [reloadToken, setReloadToken] = useState(0);
 
-  const handleSave = (data: Partial<AdminUser>) => {
-    setAdmin({ ...admin, ...data });
-    setEditando(false);
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const res = await apiFetch("/admin/profile", { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar perfil do admin.");
+        const payload = (await res.json()) as AdminProfileDto;
+        setAdmin(payload);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setAdmin(null);
+        setLoadError(err instanceof Error ? err.message : "Não foi possível carregar o perfil do admin.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [reloadToken]);
+
+  const auditQueryString = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("page", String(auditPage));
+    params.set("size", String(auditSize));
+    if (filtroAudit !== "todos") {
+      params.set("tipo", String(filtroAudit));
+    }
+    return params.toString();
+  }, [auditPage, auditSize, filtroAudit]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      setAuditLoading(true);
+      setAuditError("");
+      try {
+        const res = await apiFetch(`/admin/profile/audit?${auditQueryString}`, { signal: controller.signal });
+        if (!res.ok) throw new Error("Falha ao carregar audit logs.");
+        const payload = (await res.json()) as PageResponse<AdminAuditLogDto>;
+        setAuditLogs(payload.content ?? []);
+        setAuditTotalPages(payload.totalPages ?? 0);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setAuditLogs([]);
+        setAuditTotalPages(0);
+        setAuditError(err instanceof Error ? err.message : "Não foi possível carregar audit logs.");
+      } finally {
+        setAuditLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [auditQueryString, reloadToken]);
+
+  const handleSave = async (data: ProfileUpdatePayload) => {
+    if (!admin) return;
+    if (savingProfile) return;
+    setActionError("");
+    setSavingProfile(true);
+    try {
+      const res = await apiFetch("/admin/profile", { method: "PUT", body: data });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Falha ao salvar perfil.");
+      }
+      const payload = (await res.json()) as AdminProfileDto;
+      setAdmin(payload);
+      setEditando(false);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Não foi possível salvar o perfil.");
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
-  const filteredLogs = auditLogs.filter(log => {
-    if (filtroAudit === 'todos') return true;
-    return log.tipo === filtroAudit;
-  });
+  const handleUploadAvatar = async (file: File) => {
+    if (uploadingAvatar) return;
+    setActionError("");
+    setUploadingAvatar(true);
+    try {
+      const form = new FormData();
+      form.append("img", file);
+      const res = await apiFetch("/user/me/avatar", { method: "PUT", body: form });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Falha ao atualizar avatar.");
+      }
+      setReloadToken((t) => t + 1);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Falha ao atualizar avatar.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleLogoutAll = async () => {
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' });
+    } catch {
+      // ignore
+    } finally {
+      clearAuthSession();
+      navigate('/auth/login');
+    }
+  };
+
+  const filteredLogs = auditLogs;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-10">
+        <div className="container-custom max-w-5xl">
+          <div className="bg-white border border-gray-200 rounded-xl p-6 text-gray-600">Carregando perfil...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!admin) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-10">
+        <div className="container-custom max-w-5xl">
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <p className="text-red-600 text-sm">{loadError || "Não foi possível carregar o perfil do admin."}</p>
+            <button
+              onClick={() => setReloadToken((t) => t + 1)}
+              className="mt-4 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden py-8">
@@ -403,7 +459,22 @@ export const PerfilAdminPage = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-white text-primary-500 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleUploadAvatar(file);
+                }}
+              />
+              <button
+                type="button"
+                disabled={uploadingAvatar}
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 w-8 h-8 bg-white text-primary-500 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 <FiCamera size={14} />
               </button>
             </div>
@@ -417,9 +488,7 @@ export const PerfilAdminPage = () => {
               </p>
               <div className="flex items-center gap-2 mt-2">
                 <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full flex items-center gap-1">
-                  {admin.cargo === 'Secretário' ? <GiSecretBook size={12} /> : 
-                   admin.cargo === 'Presbítero' ? <GiCrown size={12} /> : 
-                   <GiShield size={12} />}
+                  <GiShield size={12} />
                   {admin.cargo}
                 </span>
               </div>
@@ -449,22 +518,54 @@ export const PerfilAdminPage = () => {
 
                 <select
                   value={filtroAudit}
-                  onChange={(e) => setFiltroAudit(e.target.value)}
+                  onChange={(e) => {
+                    setAuditPage(0);
+                    setFiltroAudit(e.target.value as any);
+                  }}
                   className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
                 >
                   <option value="todos">Todos</option>
-                  <option value="sucesso">Sucesso</option>
-                  <option value="alerta">Alertas</option>
-                  <option value="erro">Erros</option>
-                  <option value="info">Info</option>
+                  <option value={AdminAuditTypeEnum.SUCESSO}>Sucesso</option>
+                  <option value={AdminAuditTypeEnum.ALERTA}>Alertas</option>
+                  <option value={AdminAuditTypeEnum.ERRO}>Erros</option>
+                  <option value={AdminAuditTypeEnum.INFO}>Info</option>
                 </select>
               </div>
 
               <div className="space-y-1 max-h-96 overflow-y-auto pr-2">
-                {filteredLogs.map((log) => (
+                {auditLoading && <div className="text-sm text-gray-500 p-3">Carregando logs...</div>}
+                {!auditLoading && auditError && <div className="text-sm text-red-600 p-3">{auditError}</div>}
+                {!auditLoading && !auditError && filteredLogs.map((log) => (
                   <AuditLogItem key={log.id} log={log} />
                 ))}
               </div>
+
+              {auditTotalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => setAuditPage((p) => Math.max(0, p - 1))}
+                    disabled={auditLoading || auditPage <= 0}
+                    className={`px-4 py-2 rounded-lg border border-gray-200 ${
+                      auditLoading || auditPage <= 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                    }`}
+                  >
+                    Anterior
+                  </button>
+                  <div className="text-sm text-gray-600">
+                    Página <span className="font-semibold">{auditPage + 1}</span> de{" "}
+                    <span className="font-semibold">{auditTotalPages}</span>
+                  </div>
+                  <button
+                    onClick={() => setAuditPage((p) => Math.min(auditTotalPages - 1, p + 1))}
+                    disabled={auditLoading || auditPage >= auditTotalPages - 1}
+                    className={`px-4 py-2 rounded-lg border border-gray-200 ${
+                      auditLoading || auditPage >= auditTotalPages - 1 ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-50"
+                    }`}
+                  >
+                    Próxima
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -475,7 +576,16 @@ export const PerfilAdminPage = () => {
             {/* Sessão */}
             <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
               <h3 className="text-lg font-bold mb-4">Sessão</h3>
-              <button className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
+              {actionError && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
+                  {actionError}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={handleLogoutAll}
+                className="w-full px-4 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+              >
                 <FiLogOut size={18} />
                 Encerrar todas as sessões
               </button>
