@@ -1,9 +1,11 @@
 package com.igreja.api.services;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -14,12 +16,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+
+import jakarta.annotation.PreDestroy;
 
 @Service
 public class CloudDinaryService {
@@ -96,13 +103,15 @@ public class CloudDinaryService {
     public String uploadFileAsync(MultipartFile file, String resourceType) throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
             try {
+            byte[] fileBytes = "image".equals(resourceType) ? readAndCompressImage(file) : file.getBytes();
             String publicId = buildPublicIdFromFilename(file == null ? null : file.getOriginalFilename());
             
-            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), 
+            Map uploadResult = cloudinary.uploader().uploadLarge(fileBytes, 
                 ObjectUtils.asMap(
                     "resource_type", resourceType,
                     "folder", "upload",
-                    "timeout", 4000,
+                    "timeout", 120000,
+                    "chunk_size", 6291456,
                     "quality", "auto:fast",
                     "public_id", publicId,
                     "filename_override", publicId
@@ -114,20 +123,22 @@ public class CloudDinaryService {
                 
                 throw new RuntimeException("Falha no upload do arquivo", e);
             }
-        }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
+        }).get(120, TimeUnit.SECONDS);
     }
 
     public CloudinaryUploadResult uploadFileWithInfoAsync(MultipartFile file, String resourceType)
             throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
             try {
+                byte[] fileBytes = "image".equals(resourceType) ? readAndCompressImage(file) : file.getBytes();
                 String publicId = buildPublicIdFromFilename(file == null ? null : file.getOriginalFilename());
 
-                Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                Map uploadResult = cloudinary.uploader().uploadLarge(fileBytes,
                         ObjectUtils.asMap(
                                 "resource_type", resourceType,
                                 "folder", "upload",
-                                "timeout", 4000,
+                                "timeout", 120000,
+                                "chunk_size", 6291456,
                                 "quality", "auto:fast",
                                 "public_id", publicId,
                                 "filename_override", publicId));
@@ -152,7 +163,7 @@ public class CloudDinaryService {
             } catch (IOException e) {
                 throw new RuntimeException("Falha no upload do arquivo", e);
             }
-        }).get(30, TimeUnit.SECONDS);
+        }).get(120, TimeUnit.SECONDS);
     }
 
 
@@ -162,11 +173,12 @@ public class CloudDinaryService {
                 ////System.out.println(this.uniqueName);
             String publicId = sanitizePublicId(UUID.randomUUID().toString());
             
-            Map uploadResult = cloudinary.uploader().upload(file, 
+            Map uploadResult = cloudinary.uploader().uploadLarge(file, 
                 ObjectUtils.asMap(
                     "resource_type", resourceType,
                     "folder", "upload",
-                    "timeout", 4000,
+                    "timeout", 120000,
+                    "chunk_size", 6291456,
                     "quality", "auto:fast",
                     "public_id", publicId
                 ));
@@ -177,7 +189,7 @@ public class CloudDinaryService {
             } catch (IOException e) {
                 throw new RuntimeException("Falha no upload do arquivo", e);
             }
-        }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
+        }).get(120, TimeUnit.SECONDS);
     }
 
     // Upload assíncrono para BufferedImage
@@ -189,11 +201,12 @@ public class CloudDinaryService {
                 ImageIO.write(image, "JPEG", baos);
                 byte[] imageBytes = baos.toByteArray();
                 String publicId = sanitizePublicId(UUID.randomUUID().toString());
-                Map uploadResult = cloudinary.uploader().upload(imageBytes, 
+                Map uploadResult = cloudinary.uploader().uploadLarge(imageBytes, 
                     ObjectUtils.asMap(
                         "resource_type", resourceType,
                         "folder", "upload",
-                         "timeout", 4000,
+                         "timeout", 120000,
+                        "chunk_size", 6291456,
                         "quality", "auto:fast",
                         "public_id", publicId
                     ));
@@ -203,7 +216,7 @@ public class CloudDinaryService {
             } catch (IOException e) {
                 throw new RuntimeException("Falha no upload da imagem", e);
             }
-        }).get(30, TimeUnit.SECONDS); // ✅ Tempo aumentado
+        }).get(120, TimeUnit.SECONDS);
     }
 
     // Upload assíncrono para imagem enviada como MultipartFile (capa)
@@ -211,12 +224,14 @@ public class CloudDinaryService {
             throws InterruptedException, ExecutionException, TimeoutException {
         return uploadExecutor.submit(() -> {
             try {
+                byte[] compressed = readAndCompressImage(imageFile);
                 String publicId = buildPublicIdFromFilename(imageFile == null ? null : imageFile.getOriginalFilename());
-                Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(),
+                Map uploadResult = cloudinary.uploader().uploadLarge(compressed,
                         ObjectUtils.asMap(
                                 "resource_type", resourceType,
                                 "folder", "upload",
-                                "timeout", 4000,
+                                "timeout", 120000,
+                                "chunk_size", 6291456,
                                 "quality", "auto:fast",
                                 "public_id", publicId,
                                 "filename_override", publicId));
@@ -226,7 +241,7 @@ public class CloudDinaryService {
             } catch (IOException e) {
                 throw new RuntimeException("Falha no upload da imagem", e);
             }
-        }).get(30, TimeUnit.SECONDS);
+        }).get(120, TimeUnit.SECONDS);
     }
    
     // Exclusão assíncrona
@@ -315,6 +330,43 @@ public class CloudDinaryService {
             throw new IllegalArgumentException("URL do Cloudinary inválida (public_id vazio)");
         }
         return publicId;
+    }
+
+    private byte[] compressImageIfNeeded(byte[] imageBytes) throws IOException {
+        if (imageBytes.length <= 8_388_608) return imageBytes;
+
+        BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
+        if (image == null) return imageBytes;
+
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+        if (!writers.hasNext()) return imageBytes;
+
+        ImageWriter writer = writers.next();
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+
+        float quality = Math.max(0.3f, (float) 8_388_608 / imageBytes.length);
+        param.setCompressionQuality(quality);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (MemoryCacheImageOutputStream output = new MemoryCacheImageOutputStream(baos)) {
+            writer.setOutput(output);
+            writer.write(null, new javax.imageio.IIOImage(image, null, null), param);
+        }
+        writer.dispose();
+
+        byte[] compressed = baos.toByteArray();
+        return compressed.length < imageBytes.length ? compressed : imageBytes;
+    }
+
+    private byte[] readAndCompressImage(MultipartFile file) throws IOException {
+        byte[] original = file.getBytes();
+        return compressImageIfNeeded(original);
+    }
+
+    @PreDestroy
+    public void shutdownExecutor() {
+        uploadExecutor.shutdown();
     }
 
     private String detectResourceType(String url) {

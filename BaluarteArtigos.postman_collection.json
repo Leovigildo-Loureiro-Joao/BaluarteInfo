@@ -1,0 +1,432 @@
+{
+	"info": {
+		"_postman_id": "baluarte-artigos-demo",
+		"name": "Baluarte - Artigos",
+		"description": "Collection para demonstração do sistema de artigos da Igreja Baluarte. Usa a imagem artigo.png da pasta assets.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "artigoId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Autenticação",
+			"item": [
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"token\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@igreja.com\",\n  \"senha\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Criar Artigos (Admin)",
+			"item": [
+				{
+					"name": "Criar - O que é a Fé",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "titulo",
+									"value": "O que é a Fé",
+									"type": "text"
+								},
+								{
+									"key": "descricao",
+									"value": "Um estudo profundo sobre o verdadeiro significado da fé cristã, baseado em Hebreus 11.",
+									"type": "text"
+								},
+								{
+									"key": "escritor",
+									"value": "Pastor João Silva",
+									"type": "text"
+								},
+								{
+									"key": "tipo",
+									"value": "BIBLE_STUDY",
+									"type": "text"
+								},
+								{
+									"key": "markdown",
+									"value": "# O que é a Fé\n\n## Introdução\n\nA fé é o fundamento da vida cristã. Como está escrito em Hebreus 11:1: \"Ora, a fé é o firme fundamento das coisas que se esperam, e a prova das coisas que se não veem.\"\n\n## O Poder da Fé\n\nA fé não é apenas crença intelectual, mas confiança ativa em Deus. Ela transforma vidas, move montanhas e agrada ao coração de Deus.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/artigo",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "artigo"]
+						}
+					}
+				},
+				{
+					"name": "Criar - Graça Divina",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "titulo",
+									"value": "Graça Divina",
+									"type": "text"
+								},
+								{
+									"key": "descricao",
+									"value": "Uma reflexão sobre a graça de Deus e como ela nos alcança mesmo quando não merecemos.",
+									"type": "text"
+								},
+								{
+									"key": "escritor",
+									"value": "Maria Santos",
+									"type": "text"
+								},
+								{
+									"key": "tipo",
+									"value": "DEVOTIONAL",
+									"type": "text"
+								},
+								{
+									"key": "markdown",
+									"value": "# Graça Divina\n\n## A Graça que nos Alcança\n\n\"Porque pela graça sois salvos, por meio da fé; e isto não vem de vós, é dom de Deus.\" (Efésios 2:8)\n\n## Reflexão\n\nA graça de Deus é imerecida, mas abundantemente derramada sobre nós. Não há pecado grande demais que a graça de Deus não possa alcançar. É o favor imerecido de Deus que nos transforma e nos sustenta.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/artigo",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "artigo"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Editar Artigo (Admin)",
+			"item": [
+				{
+					"name": "Editar Artigo",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "titulo",
+									"value": "A Fé que Transforma (Edição Revista)",
+									"type": "text"
+								},
+								{
+									"key": "descricao",
+									"value": "Versão revista e ampliada do estudo sobre a fé em Hebreus 11.",
+									"type": "text"
+								},
+								{
+									"key": "escritor",
+									"value": "Pastor João Silva",
+									"type": "text"
+								},
+								{
+									"key": "tipo",
+									"value": "BIBLE_STUDY",
+									"type": "text"
+								},
+								{
+									"key": "markdown",
+									"value": "# A Fé que Transforma (Edição Revista)\n\nConteúdo actualizado com novas reflexões...",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/artigo/edit/{{artigoId}}",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "artigo", "edit", "{{artigoId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Consultar Artigos (Público)",
+			"item": [
+				{
+					"name": "Listar Artigos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/artigo?page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["user", "artigo"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar - Filtrar por tipo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/artigo?tipo=BIBLE_STUDY&page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["user", "artigo"],
+							"query": [
+								{
+									"key": "tipo",
+									"value": "BIBLE_STUDY"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Detalhe do Artigo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/artigo/{{artigoId}}",
+							"host": ["{{base_url}}"],
+							"path": ["user", "artigo", "{{artigoId}}"]
+						}
+					}
+				},
+				{
+					"name": "Comentários do Artigo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/artigo/{{artigoId}}/comentarioAll",
+							"host": ["{{base_url}}"],
+							"path": ["user", "artigo", "{{artigoId}}", "comentarioAll"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Inteligência Artificial (Admin)",
+			"item": [
+				{
+					"name": "Enhance Preview (Upload PDF)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "titulo",
+									"value": "Estudo com IA",
+									"type": "text"
+								},
+								{
+									"key": "descricao",
+									"value": "Artigo melhorado com inteligência artificial Gemini",
+									"type": "text"
+								},
+								{
+									"key": "instruction",
+									"value": "Melhore o texto mantendo o tom bíblico e adicione referências",
+									"type": "text"
+								},
+								{
+									"key": "pages",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "pdf",
+									"value": "",
+									"type": "file",
+									"src": ""
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/artigo/enhance/preview",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "artigo", "enhance", "preview"]
+						}
+					}
+				},
+				{
+					"name": "Regenerar HTML do Artigo",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/artigo/{{artigoId}}/html",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "artigo", "{{artigoId}}", "html"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Downloads",
+			"item": [
+				{
+					"name": "Registar Download do Artigo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/me/download/artigo/{{artigoId}}",
+							"host": ["{{base_url}}"],
+							"path": ["user", "me", "download", "artigo", "{{artigoId}}"]
+						}
+					}
+				},
+				{
+					"name": "Meus Downloads de Artigos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/me/downloads/artigos",
+							"host": ["{{base_url}}"],
+							"path": ["user", "me", "downloads", "artigos"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Comentários",
+			"item": [
+				{
+					"name": "Criar Comentário",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"conteudo\": \"Excelente artigo! Muito edificante.\",\n  \"artigoId\": {{artigoId}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/comentario",
+							"host": ["{{base_url}}"],
+							"path": ["user", "comentario"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

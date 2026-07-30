@@ -1,0 +1,396 @@
+{
+	"info": {
+		"_postman_id": "baluarte-actividades-demo",
+		"name": "Baluarte - Actividades",
+		"description": "Collection para demonstração do sistema de actividades da Igreja Baluarte. Usa as imagens SemanaSanta.jpg e pascoa.jpg da pasta assets/actividade.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "actividadeId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "inscricaoId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "1. Autenticação",
+			"item": [
+				{
+					"name": "Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"token\", jsonData.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@igreja.com\",\n  \"senha\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Criar Actividades (Admin)",
+			"item": [
+				{
+					"name": "Criar - Semana Santa",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "titulo",
+									"value": "Semana Santa 2025",
+									"type": "text"
+								},
+								{
+									"key": "tema",
+									"value": "Vivendo a Páscoa com Propósito",
+									"type": "text"
+								},
+								{
+									"key": "descricao",
+									"value": "Uma semana especial de reflexão e celebração da Semana Santa, com cultos diários e momentos de oração.",
+									"type": "text"
+								},
+								{
+									"key": "endereco",
+									"value": "Igreja Baluarte, Rua Principal, 123",
+									"type": "text"
+								},
+								{
+									"key": "tipoEvento",
+									"value": "CULTO",
+									"type": "text"
+								},
+								{
+									"key": "publicoAlvo",
+									"value": "TODOS",
+									"type": "text"
+								},
+								{
+									"key": "duracao",
+									"value": "MULTIPLOS_DIAS",
+									"type": "text"
+								},
+								{
+									"key": "organizador",
+									"value": "Pastor João Silva",
+									"type": "text"
+								},
+								{
+									"key": "capacidade",
+									"value": "200",
+									"type": "text"
+								},
+								{
+									"key": "dataEvento",
+									"value": "2025-04-13T19:00:00",
+									"type": "text"
+								},
+								{
+									"key": "contactos",
+									"value": "999888777",
+									"type": "text"
+								},
+								{
+									"key": "edicao",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "palestrantes",
+									"value": "Pastor João Silva\nPastora Maria Silva",
+									"type": "text"
+								},
+								{
+									"key": "img",
+									"value": "",
+									"type": "file",
+									"src": "C:\\Users\\CETE\\Documents\\Leovigildo\\BaluarteInfo\\baluarte\\src\\assets\\actividade\\SemanaSanta.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/actividade",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "actividade"]
+						}
+					}
+				},
+				{
+					"name": "Criar - Páscoa",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "titulo",
+									"value": "Celebração da Páscoa",
+									"type": "text"
+								},
+								{
+									"key": "tema",
+									"value": "Cristo Ressuscitou!",
+									"type": "text"
+								},
+								{
+									"key": "descricao",
+									"value": "Celebração especial da ressurreição de Cristo com louvor, palavra e ceia.",
+									"type": "text"
+								},
+								{
+									"key": "endereco",
+									"value": "Igreja Baluarte, Rua Principal, 123",
+									"type": "text"
+								},
+								{
+									"key": "tipoEvento",
+									"value": "CULTO",
+									"type": "text"
+								},
+								{
+									"key": "publicoAlvo",
+									"value": "TODOS",
+									"type": "text"
+								},
+								{
+									"key": "duracao",
+									"value": "MEDIA",
+									"type": "text"
+								},
+								{
+									"key": "organizador",
+									"value": "Pastor João Silva",
+									"type": "text"
+								},
+								{
+									"key": "capacidade",
+									"value": "300",
+									"type": "text"
+								},
+								{
+									"key": "dataEvento",
+									"value": "2025-04-20T09:00:00",
+									"type": "text"
+								},
+								{
+									"key": "contactos",
+									"value": "999888777",
+									"type": "text"
+								},
+								{
+									"key": "img",
+									"value": "",
+									"type": "file",
+									"src": "C:\\Users\\CETE\\Documents\\Leovigildo\\BaluarteInfo\\baluarte\\src\\assets\\actividade\\pascoa.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/actividade",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "actividade"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Consultar Actividades (Público)",
+			"item": [
+				{
+					"name": "Listar Actividades",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/actividade?page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["user", "actividade"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar - Filtrar por tipo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/actividade?tipoEvento=CULTO&page=0&size=10",
+							"host": ["{{base_url}}"],
+							"path": ["user", "actividade"],
+							"query": [
+								{
+									"key": "tipoEvento",
+									"value": "CULTO"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Detalhe da Actividade",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/actividade/{{actividadeId}}",
+							"host": ["{{base_url}}"],
+							"path": ["user", "actividade", "{{actividadeId}}"]
+						}
+					}
+				},
+				{
+					"name": "Programação da Actividade",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/actividade/{{actividadeId}}/programacao",
+							"host": ["{{base_url}}"],
+							"path": ["user", "actividade", "{{actividadeId}}", "programacao"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Programação (Admin)",
+			"item": [
+				{
+					"name": "Adicionar Item na Programação",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"Culto de Abertura\",\n  \"inicio\": \"2025-04-13T19:00:00\",\n  \"fim\": \"2025-04-13T21:00:00\",\n  \"tipo\": \"SESSAO\",\n  \"ordem\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/admin/actividade/{{actividadeId}}/programacao",
+							"host": ["{{base_url}}"],
+							"path": ["admin", "actividade", "{{actividadeId}}", "programacao"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Inscrição",
+			"item": [
+				{
+					"name": "Inscrever (Público)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Maria Oliveira\",\n  \"email\": \"maria@email.com\",\n  \"telefone\": \"911222333\",\n  \"idade\": 28\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/public/inscritos/{{actividadeId}}",
+							"host": ["{{base_url}}"],
+							"path": ["public", "inscritos", "{{actividadeId}}"]
+						}
+					}
+				},
+				{
+					"name": "Baixar Ficha de Inscrição (PDF)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/public/inscritos/{{inscricaoId}}/pdf",
+							"host": ["{{base_url}}"],
+							"path": ["public", "inscritos", "{{inscricaoId}}", "pdf"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

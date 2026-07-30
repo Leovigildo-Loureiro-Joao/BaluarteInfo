@@ -1,9 +1,10 @@
 package com.igreja.api.jobs;
 
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
+import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.UnableToInterruptJobException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.igreja.api.services.NotificacaoService;
 
 @DisallowConcurrentExecution
-public class NotificacaoCleanupJob implements Job {
+public class NotificacaoCleanupJob implements InterruptableJob {
+    private volatile boolean interrupted = false;
+
+    @Override
+    public void interrupt() throws UnableToInterruptJobException {
+        interrupted = true;
+    }
+
 
     private static final Logger log = LoggerFactory.getLogger(NotificacaoCleanupJob.class);
 

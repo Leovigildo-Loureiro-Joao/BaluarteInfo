@@ -22,6 +22,11 @@ import java.util.concurrent.TimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PreDestroy;
+
+@Component
 public class PdfUtils {
 
     private static final ExecutorService pdfRenderingExecutor = 
@@ -494,6 +499,11 @@ public class PdfUtils {
             }
         }
         return keys;
+    }
+
+    @PreDestroy
+    public void destroy() {
+        shutdown();
     }
 
     // Fecha o pool de threads quando não for mais necessário
