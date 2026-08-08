@@ -75,6 +75,7 @@ public class SecurityConfig {
                         "/user/actividade/*",
                         "/user/actividade/*/programacao",
                         "/user/actividade/*/comentarios",
+                        "/user/actividade/*/comentariosRespostas",
                         "/user/actividade/*/inscritos",
                         "/user/actividade/galeria/*",
                         "/user/actividade/trailler/*",

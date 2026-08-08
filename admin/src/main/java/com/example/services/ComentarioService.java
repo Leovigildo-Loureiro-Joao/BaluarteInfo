@@ -8,8 +8,6 @@ import com.example.dto.comentario.ComentarioDto;
 import com.example.utils.ListUtil;
 
 public class ComentarioService {
-    
-   
 
      public static ComentarioDto find(int id) throws IOException, InterruptedException {
         String resposta=ApiService.get("/user/comentario/"+id);

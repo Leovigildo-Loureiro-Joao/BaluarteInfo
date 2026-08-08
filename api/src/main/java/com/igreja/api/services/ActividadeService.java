@@ -29,6 +29,7 @@ import com.igreja.api.dto.actividade.ProgramacaoItemUpsertDto;
 import com.igreja.api.dto.actividade.ProgramacaoItemView;
 import com.igreja.api.dto.actividade.ProgramacaoStatus;
 import com.igreja.api.dto.comentario.ComentarioResult;
+import com.igreja.api.dto.comentario.ComentarioResultParent;
 import com.igreja.api.dto.PageResponse;
 import com.igreja.api.enums.ActividadeType;
 import com.igreja.api.enums.PublicoAlvoType;
@@ -275,6 +276,30 @@ public class ActividadeService {
       boolean coverDeleted = deleteCloudIfPresent(midia.getImagem());
       return mainDeleted && coverDeleted;
    }
+
+   public  List<ComentarioResultParent> AllComentariosParent(int id) {
+      List<ComentarioResultParent> comentarios=new ArrayList<>();
+      ActividadeModel artigo=Select(id);
+      for (ComentarioModel comentario : comentarioRepository.findByActividade(artigo)) {
+        if (comentario.getParent() == null) continue;
+      
+        UserModel user=comentario.getUser();
+        int likes = (int) comentarioLikeRepository.countByComentario(comentario);
+        comentarios.add(new ComentarioResultParent(
+                comentario.getId(),
+                AvatarUtils.resolveAvatar(user.getImg(), user.getEmail(), user.getNome()),
+                user.getNome(),
+                comentario.getDescricao(),
+                comentario.isAnalise(),
+                comentario.getDataPublicacao(),
+                comentario.getParent().getId(),
+                likes));    
+      
+        
+      }
+      return comentarios;
+    }
+
 
   public List<ComentarioResult> ComentariosAll(int id) {
       List<ComentarioResult> comentarios=new ArrayList<>();

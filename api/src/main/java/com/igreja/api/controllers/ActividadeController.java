@@ -233,9 +233,15 @@ public class ActividadeController {
         return ResponseEntity.ok(actividadeService.ComentariosAllAnalisados(id,analise));
     }
 
-        @GetMapping(value = "/user/actividade/{id}/comentarios")
+    @GetMapping(value = "/user/actividade/{id}/comentarios")
     public ResponseEntity<?> AllComentarios(@PathVariable int id) throws IOException {
         return ResponseEntity.ok(actividadeService.ComentariosAll(id));
+    }
+
+    
+    @GetMapping(value = "/user/actividade/{id}/comentariosRespostas")
+    public ResponseEntity<?> AllComentariosParent(@PathVariable int id) throws IOException {
+        return ResponseEntity.ok(actividadeService.AllComentariosParent(id));
     }
     
         @GetMapping(value = "/user/actividade/{id}/inscritos")

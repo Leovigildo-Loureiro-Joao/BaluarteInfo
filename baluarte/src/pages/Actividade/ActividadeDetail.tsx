@@ -21,6 +21,7 @@ import { GaleriaActividade } from "../../components/actividades/GaleriaActividad
 import {
   ActividadeSummary,
   ComentarioResult,
+  ComentarioResultParent,
   PageResponse,
   ProgramacaoItemView,
   ProgramacaoTipo,
@@ -380,6 +381,7 @@ export const ActividadeDetalhe = () => {
   const [activeTab, setActiveTab] = useState<"sobre" | "programacao" | "comentarios" | "edicoes" | "galeria">("sobre");
 
   const [comentarios, setComentarios] = useState<ComentarioResult[]>([]);
+  const [comentariosParent, setComentariosParent] = useState<ComentarioResultParent[]>([]);
   const [comentariosLoading, setComentariosLoading] = useState(false);
   const [comentariosHasLoaded, setComentariosHasLoaded] = useState(false);
   const [comentariosError, setComentariosError] = useState("");
@@ -404,6 +406,7 @@ export const ActividadeDetalhe = () => {
     setActiveTab(tab);
     if (tab === "comentarios" && !comentariosHasLoaded) {
       loadComentarios();
+      loadComentariosRespostas();
     }
     if (tab === "edicoes" && !edicoesHasLoaded) {
       loadEdicoes(0, false);
@@ -484,10 +487,35 @@ export const ActividadeDetalhe = () => {
       const payload = (await res.json()) as ComentarioResult[];
       setComentarios(Array.isArray(payload) ? payload : []);
       setComentariosHasLoaded(true);
+
+      
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Não foi possível carregar os comentários.";
       setComentariosError(msg || "Não foi possível carregar os comentários.");
       setComentarios([]);
+    } finally {
+      setComentariosLoading(false);
+    }
+  };
+
+    const loadComentariosRespostas = async () => {
+    if (comentariosLoading) return;
+    setComentariosError("");
+    try {
+      const res = await apiFetch(`/user/actividade/${actividadeId}/comentariosRespostas`);
+      if (!res.ok) {
+        const msg = await readApiErrorMessage(res, "Não foi possível carregar os comentários.");
+        throw new Error(msg || "Não foi possível carregar os comentários.");
+      }
+      const payload = (await res.json()) as ComentarioResultParent[];
+      setComentariosParent(Array.isArray(payload) ? payload : []);
+      setComentariosHasLoaded(true);
+      console.log(comentariosParent)
+      
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Não foi possível carregar os comentários.";
+      setComentariosError(msg || "Não foi possível carregar os comentários.");
+      setComentariosParent([]);
     } finally {
       setComentariosLoading(false);
     }
@@ -946,7 +974,7 @@ export const ActividadeDetalhe = () => {
                                 <img
                                   src={comment.imagem}
                                   alt={comment.name}
-                                  className="w-10 h-10 rounded-full object-cover"
+                                  className="w-10 h-10 rounded-full border border-primary-500 object-cover"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start justify-between gap-3">
@@ -968,9 +996,60 @@ export const ActividadeDetalhe = () => {
                                   <p className="text-gray-700 mt-2 whitespace-pre-line">{comment.descricao}</p>
                                 </div>
                               </div>
+                              <div className="translate-x-10 flex flex-col gap-5 p-5 w-[90%]">
+                                 {comentariosParent.filter((p)=> comment.id==p.parent).map((comment) => {
+                                const dateLabel = comment.dataPublicacao
+                                  ? new Date(comment.dataPublicacao).toLocaleDateString("pt-BR", {
+                                      day: "2-digit",
+                                      month: "short",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : "--";
+                                const likes = typeof comment.likes === "number" ? comment.likes : 0;
+                                const likeBusy = likeComentarioBusyIds.includes(comment.id);
+                                return (
+                                  <motion.div
+                                    key={comment.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="border-b border-gray-100 last:border-0 pb-6 last:pb-0"
+                                  >
+                                    <div className="flex gap-3">
+                                      <img
+                                        src={comment.imagem}
+                                        alt={comment.name}
+                                        className="w-10 h-10 rounded-full border border-primary-500 object-cover"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div className="min-w-0">
+                                            <div className="font-semibold text-gray-800 truncate">{comment.name}</div>
+                                            <div className="text-xs text-gray-500">{dateLabel}</div>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => curtirComentario(comment.id)}
+                                            disabled={likeBusy}
+                                            className="flex items-center gap-1 text-sm text-gray-500 hover:text-primary transition-colors disabled:opacity-60"
+                                            title="Curtir"
+                                          >
+                                            <FiHeart size={14} />
+                                            {likes}
+                                          </button>
+                                        </div>
+                                        <p className="text-gray-700 mt-2 whitespace-pre-line">{comment.descricao}</p>
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                );
+                              })}
+                              </div>
                             </motion.div>
+                            
                           );
                         })}
+
                       </div>
                     )}
                   </div>

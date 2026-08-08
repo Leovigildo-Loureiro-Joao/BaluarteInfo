@@ -246,7 +246,7 @@ export const ArtigosPage = () => {
                               : 'hover:bg-gray-100 text-gray-700'
                           }`}
                         >
-                          <Icon className={selectedTipo === tipo.value ? 'text-white' : tipo.color.replace('bg-', 'text-')} />
+                          <Icon className={selectedTipo === tipo.value ? 'text-white' : 'text-black'} />
                           <span className="flex-1 text-left">{tipo.label}</span>
                           <span className="text-xs opacity-75">
                             {artigosByTipo[tipo.value] || 0}

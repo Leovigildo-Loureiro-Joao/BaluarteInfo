@@ -60,7 +60,6 @@ public class ComentarioService {
     public ComentarioResult save(ComentarioDto dto){
         UserModel user=userRepository.findById(dto.idUser()).orElseThrow(()-> new NoSuchElementException("Este user mão existe verifique se o id esta correto"));
         ComentarioModel comentario= new ComentarioModel();
-        ////System.out.println("Cheguei aqui");
         var seccao=Seccao(dto).orElseThrow(()-> new NoSuchElementException("Este dado ja foi eliminado da base de dados"));
         BeanUtils.copyProperties(dto, comentario);
         comentario.setUser(user);
@@ -68,8 +67,6 @@ public class ComentarioService {
         comentario.setStatus(ComentarioStatus.ATIVO);
         comentario.setDenuncias(0);
         comentario=swSeccao(comentario,seccao);
-         ////System.out.println("Terminei aqui"+comentario);
-         //Object[] c=comentarioRepository.Result(comentarioRepository.save(comentario).getId());
 
         return toResult(comentarioRepository.save(comentario));
     }
@@ -152,10 +149,16 @@ public class ComentarioService {
         return result.map(this::toAdminData);
     }
 
+    public UserModel findAdminEmail(String email){
+        return userRepository.findByEmail(email)
+            .orElseThrow(
+                () -> new NoSuchElementException("Este user mão existe verifique se o email esta correto")
+            );
+    }
+
     public ComentarioAdminData responder(int comentarioId, String adminEmail, @Valid ComentarioRespostaDto dto) {
         ComentarioModel parent = findByid(comentarioId);
-        UserModel admin = userRepository.findByEmail(adminEmail)
-                .orElseThrow(() -> new NoSuchElementException("Este user mão existe verifique se o email esta correto"));
+        UserModel admin = findAdminEmail(adminEmail);
 
         ComentarioModel reply = new ComentarioModel();
         reply.setUser(admin);

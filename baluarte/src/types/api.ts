@@ -348,6 +348,17 @@ export interface ComentarioResult {
   likes?: number;
 }
 
+export interface ComentarioResultParent {
+  id: number;
+  imagem: string;
+  name: string;
+  descricao: string;
+  analise: boolean;
+  dataPublicacao?: string;
+  parent?:number;
+  likes?: number;
+}
+
 export interface ComentarioAdminData {
   id: number;
   seccao: ComentarioType;

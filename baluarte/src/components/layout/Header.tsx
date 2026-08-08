@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiMail, FiMenu, FiX } from "react-icons/fi";
+import { FiMail, FiMenu, FiX, FiLogIn } from "react-icons/fi";
 import { icone, perfil } from "../../assets/Assets";
 import Navbar from "./NavBar";
 import { getAuthToken, getStoredUser } from "../../utils/auth.js";
@@ -108,6 +108,16 @@ export const Header = ({ onOpenMensagens }: HeaderProps) => {
               </>
             )}
 
+            {!isAuthenticated && (
+              <Link
+                to="/auth/login"
+                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white hover:bg-white/10 transition-colors text-sm"
+              >
+                <FiLogIn className="w-4 h-4" />
+                Entrar
+              </Link>
+            )}
+
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
@@ -196,6 +206,17 @@ export const Header = ({ onOpenMensagens }: HeaderProps) => {
                       <FiMail className="w-5 h-5" />
                     </button>
                   </div>
+                )}
+
+                {!isAuthenticated && (
+                  <Link
+                    to="/auth/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/10 border border-white/20 p-3 text-white hover:bg-white/20 transition-colors"
+                  >
+                    <FiLogIn className="w-5 h-5" />
+                    <span className="font-medium">Entrar</span>
+                  </Link>
                 )}
 
                 <nav className="mt-5 space-y-1">
